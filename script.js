@@ -1,12 +1,8 @@
-function startLoading() {
-  const bar = document.getElementById('loader-bar');
-  bar.style.width = '100%';
-  setTimeout(() => { bar.style.width = '0%'; }, 1000); // Hide after load
-}
+
 import { supabase } from './supabaseClient.js';
-let allProducts = [];
+let allProducts = []; 
 let currentPage = 1;
-const itemsPerPage = 16; // This must be at the top of the file
+const itemsPerPage = 16; 
 // // --- 1. CART LOGIC ---
 let cart = [];
 
@@ -114,68 +110,78 @@ window.closeModal = () => {
         modal.style.display = 'none';
     }
 };
-
-
-
 async function fetchAtelierProducts() {
-    const { data, error } = await supabase
-        .from('products')
-        .select('*');
-
-    if (error) {
-        console.error('Error fetching:', error);
-        return;
-    }
-
-    allProducts = data; // 1. Save all 44 items to memory
-    renderProducts(allProducts); // 2. Tell the helper to draw Page 1
+    const { data, error } = await supabase.from('products').select('*');
+    if (error) return console.error('Error:', error);
+    
+    allProducts = data;
+    renderProducts(allProducts);
 }
+
+// --- 3. RENDER PRODUCTS WITH PAGINATION ---
 function renderProducts(products) {
     const productGrid = document.querySelector('.product-grid');
     if (!productGrid) return;
-    
-    productGrid.innerHTML = ''; // Clear the grid
+    productGrid.innerHTML = '';
 
-    // 1. Slice for pagination (Items 1-8)
     const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const paginatedItems = products.slice(startIndex, endIndex);
+    const paginatedItems = products.slice(startIndex, startIndex + itemsPerPage);
 
-    // 2. Loop and Draw (MAKE SURE THIS PART IS INCLUDED)
-        paginatedItems.forEach(product => {
+    paginatedItems.forEach(product => {
         const productCard = document.createElement('div');
         productCard.className = 'product-card';
         productCard.innerHTML = `
             <img src="${product.image_url}" alt="${product.title}">
             <h3>${product.title}</h3>
             <p>$${product.price}</p>
-            <button onclick="addToBag('${product.id}')">ADD TO BAG</button>
+            <button class="add-to-bag-btn" data-id="${product.id}">ADD TO BAG</button>
         `;
         productGrid.appendChild(productCard);
     });
 
-    // 3. Create the 1, 2, 3 buttons
-    renderPaginationButtons(products.length);
+    renderPaginationControls(products.length);
 }
 
-document.getElementById('back-to-shop').addEventListener('click', (e) => {
-    e.preventDefault();
+// --- 4. PAGINATION BUTTONS (1, 2, 3...) ---
+function renderPaginationControls(totalItems) {
+    const container = document.getElementById('pagination-controls');
+    if (!container) return;
+    container.innerHTML = '';
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+    for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.innerText = i;
+        btn.className = (i === currentPage) ? 'page-btn active' : 'page-btn';
+        btn.onclick = () => {
+            currentPage = i;
+            renderProducts(allProducts);
+            document.getElementById('shop-page').scrollIntoView({ behavior: 'smooth' });
+        };
+        container.appendChild(btn);
+    }
+}
+
+// --- 5. CHECKOUT TOGGLE LOGIC ---
+// This hides the shop and shows the form instantly
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('checkout-btn')) { // From Bag to Shipping
+        document.getElementById('shop-page').style.display = 'none';
+        document.getElementById('checkout-section').style.display = 'block';
+        window.scrollTo(0, 0);
+    }
     
-        // 1. Hide the Checkout Section
-    const checkoutSection = document.getElementById('checkout-section');
-    if (checkoutSection) {
-        checkoutSection.style.display = 'none';
+    if (e.target.id === 'back-to-shop') { // From Shipping back to Shop
+        document.getElementById('checkout-section').style.display = 'none';
+        document.getElementById('shop-page').style.display = 'block';
+        window.scrollTo(0, 0);
     }
+});
 
-    // 2. Show the Shop Page (Title + Products)
-    const shopPage = document.getElementById('shop-page');
-    if (shopPage) {
-        shopPage.style.display = 'block';
-    }
-
-    // 3. Scroll to the very top so they see the logo/hero
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
+// --- 6. STOP THE PAGE REFRESH (Critical) ---
+document.getElementById('shipping-form').addEventListener('submit', (e) => {
+    e.preventDefault(); 
+    // Your Paystack logic goes here...
 });
 const shippingForm = document.getElementById('shipping-form');
 
