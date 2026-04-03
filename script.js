@@ -65,58 +65,22 @@ window.closeCart = () => {
     const cartPanel = document.getElementById('cart-panel');
     if (cartPanel) cartPanel.classList.remove('active');
 };
+// --- 1. THE BRAIN: FETCH DATA ---
 async function fetchAtelierProducts() {
-    const productGrid = document.querySelector('.product-grid');
     const { data, error } = await supabase.from('products').select('*');
+    if (error) return console.error('Supabase Error:', error);
 
-    if (error) return console.error(error);
-    
-                productGrid.innerHTML = data.map(product => {
-            const sizes = product.category === 'footwear' ? [7, 8, 9, 10, 11] : ['S', 'M', 'L', 'XL'];
-            const sizeOptions = sizes.map(s => `<option value="${s}">${s}</option>`).join('');
+    allProducts = data; // Save all 44 items to memory
+    renderProducts(allProducts); // Draw Page 1
+}
 
-            return `
-                <div class="product-card">
-                    <div class="image-container" onclick="window.openQuickView('${product.title}', ${product.price}, '${product.image_url}', '${product.description}')">
-                        <img src="${product.image_url || 'https://via.placeholder.com'}" alt="${product.title}">
-                    </div>
-                    <h3>${product.title}</h3>
-                    <p class="price">$${product.price}</p>
-                    <select id="size-${product.id}" class="size-select">
-                        ${sizeOptions}
-                    </select>
-                    <button class="add-to-cart" onclick="window.addToBag('${product.title}', ${product.price}, '${product.image_url}', '${product.id}')">
-                        Add to Bag
-                    </button>
-                </div>
-            `;
-        }).join('');
-
-
-    }
-window.openQuickView = (title, price, img, desc) => {
-    document.getElementById('modal-title').innerText = title;
-    document.getElementById('modal-price').innerText = `$${price}`;
-    document.getElementById('modal-img').src = img;
-    document.getElementById('modal-description').innerText = desc || "Premium Atelier quality. Designed for a perfect fit.";
-    const modal = document.getElementById('product-modal');
-    if (modal) {
-        modal.style.display = 'flex';
-    }
-};
-window.closeModal = () => {
-    const modal = document.getElementById('product-modal');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-};
-
-// --- 3. RENDER PRODUCTS WITH PAGINATION ---
+// --- 2. THE DRAWING: RENDER PRODUCTS (Page by Page) ---
 function renderProducts(products) {
     const productGrid = document.querySelector('.product-grid');
     if (!productGrid) return;
     productGrid.innerHTML = '';
 
+    // Calculate which 8 items to show for the current page
     const startIndex = (currentPage - 1) * itemsPerPage;
     const paginatedItems = products.slice(startIndex, startIndex + itemsPerPage);
 
@@ -127,12 +91,12 @@ function renderProducts(products) {
             <img src="${product.image_url}" alt="${product.title}">
             <h3>${product.title}</h3>
             <p>$${product.price}</p>
-            <button class="add-to-bag-btn" data-id="${product.id}">ADD TO BAG</button>
+            <button class="add-to-bag-btn" onclick="window.addToBag('${product.title}', ${product.price}, '${product.image_url}')">ADD TO BAG</button>
         `;
         productGrid.appendChild(productCard);
     });
 
-    renderPaginationControls(products.length);
+    renderPaginationControls(products.length); // Update the 1, 2, 3 buttons
 }
 
 // --- 4. PAGINATION BUTTONS (1, 2, 3...) ---
@@ -280,3 +244,5 @@ document.querySelectorAll('a[href="#shop"]').forEach(link => {
         }
     });
 });
+// This starts the whole process
+fetchAtelierProducts();
