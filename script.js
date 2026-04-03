@@ -134,35 +134,48 @@ function renderProducts(products) {
     const productGrid = document.querySelector('.product-grid');
     if (!productGrid) return;
     
-    productGrid.innerHTML = '';
+    productGrid.innerHTML = ''; // Clear the grid
 
-    // Calculate which items to show (e.g., items 1 to 8)
+    // 1. Slice for pagination (Items 1-8)
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const paginatedItems = products.slice(startIndex, endIndex);
 
-    // Draw the items for THIS page
-    paginatedItems.forEach(product => {
-        // ... KEEP YOUR OLD CARD CREATION CODE HERE ...
-        // (The part with the Add to Bag buttons)
+    // 2. Loop and Draw (MAKE SURE THIS PART IS INCLUDED)
+        paginatedItems.forEach(product => {
+        const productCard = document.createElement('div');
+        productCard.className = 'product-card';
+        productCard.innerHTML = `
+            <img src="${product.image_url}" alt="${product.title}">
+            <h3>${product.title}</h3>
+            <p>$${product.price}</p>
+            <button onclick="addToBag('${product.id}')">ADD TO BAG</button>
+        `;
+        productGrid.appendChild(productCard);
     });
 
-    // Create the 1, 2, 3, 4 buttons at the bottom
+    // 3. Create the 1, 2, 3 buttons
     renderPaginationButtons(products.length);
 }
+
 document.getElementById('back-to-shop').addEventListener('click', (e) => {
     e.preventDefault();
     
-    // 1. Hide the Checkout Section
+        // 1. Hide the Checkout Section
     const checkoutSection = document.getElementById('checkout-section');
-    if (checkoutSection) checkoutSection.style.display = 'none';
+    if (checkoutSection) {
+        checkoutSection.style.display = 'none';
+    }
 
-    // 2. Show the Shop Page (Header + Products)
+    // 2. Show the Shop Page (Title + Products)
     const shopPage = document.getElementById('shop-page');
-    if (shopPage) shopPage.style.display = 'block';
+    if (shopPage) {
+        shopPage.style.display = 'block';
+    }
 
-    // 3. Scroll back to top so they see the logo
-    window.scrollTo(0, 0);
+    // 3. Scroll to the very top so they see the logo/hero
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
 });
 const shippingForm = document.getElementById('shipping-form');
 
