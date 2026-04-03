@@ -115,28 +115,45 @@ window.closeModal = () => {
 
 
 
-fetchAtelierProducts();
-// This connects your "PROCEED TO CHECKOUT" button
-document.addEventListener('click', (e) => {
-    // Check if the clicked element is your checkout button
-    if (e.target.classList.contains('checkout-btn')) {
-        console.log("Checkout initiated");
-        
-        // 1. Hide the cart panel
-        window.closeCart(); 
+let currentPage = 1;
+const itemsPerPage = 16; // Number of items per page
 
-        // 2. Hide the product grid/main shop
-        const shopPage = document.getElementById('shop-page');
-        if (shopPage) shopPage.style.display = 'none';
+function renderProducts(products) {
+    const productGrid = document.querySelector('.product-grid');
+    productGrid.innerHTML = '';
 
-        // 3. Show the checkout section we created earlier
-        const checkoutSection = document.getElementById('checkout-section');
-        if (checkoutSection) {
-            checkoutSection.style.display = 'block';
-            window.scrollTo(0, 0); // Jump to top for the form
-        }
+    // 1. Calculate which items to show for the current page
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedItems = products.slice(startIndex, endIndex);
+
+    // 2. Draw the products
+    paginatedItems.forEach(product => {
+        // ... your existing card creation code ...
+    });
+
+    // 3. Draw the Page Numbers at the bottom
+    renderPaginationButtons(products.length);
+}
+
+function renderPaginationButtons(totalItems) {
+    const paginationContainer = document.getElementById('pagination-controls');
+    paginationContainer.innerHTML = '';
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+    for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.innerText = i;
+        btn.className = (i === currentPage) ? 'page-btn active' : 'page-btn';
+        btn.onclick = () => {
+            currentPage = i;
+            renderProducts(allProducts);
+            window.scrollTo({ top: document.getElementById('shop-page').offsetTop, behavior: 'smooth' });
+        };
+        paginationContainer.appendChild(btn);
     }
-});
+}
+
 document.getElementById('back-to-shop').addEventListener('click', (e) => {
     e.preventDefault();
     
