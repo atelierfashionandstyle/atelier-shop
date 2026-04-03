@@ -4,7 +4,9 @@ function startLoading() {
   setTimeout(() => { bar.style.width = '0%'; }, 1000); // Hide after load
 }
 import { supabase } from './supabaseClient.js';
-let allProducts = []; // This must be at the top of the file
+let allProducts = [];
+let currentPage = 1;
+const itemsPerPage = 16; // This must be at the top of the file
 // // --- 1. CART LOGIC ---
 let cart = [];
 
@@ -115,45 +117,39 @@ window.closeModal = () => {
 
 
 
-let currentPage = 1;
-const itemsPerPage = 16; // Number of items per page
+async function fetchAtelierProducts() {
+    const { data, error } = await supabase
+        .from('products')
+        .select('*');
 
+    if (error) {
+        console.error('Error fetching:', error);
+        return;
+    }
+
+    allProducts = data; // 1. Save all 44 items to memory
+    renderProducts(allProducts); // 2. Tell the helper to draw Page 1
+}
 function renderProducts(products) {
     const productGrid = document.querySelector('.product-grid');
+    if (!productGrid) return;
+    
     productGrid.innerHTML = '';
 
-    // 1. Calculate which items to show for the current page
+    // Calculate which items to show (e.g., items 1 to 8)
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const paginatedItems = products.slice(startIndex, endIndex);
 
-    // 2. Draw the products
+    // Draw the items for THIS page
     paginatedItems.forEach(product => {
-        // ... your existing card creation code ...
+        // ... KEEP YOUR OLD CARD CREATION CODE HERE ...
+        // (The part with the Add to Bag buttons)
     });
 
-    // 3. Draw the Page Numbers at the bottom
+    // Create the 1, 2, 3, 4 buttons at the bottom
     renderPaginationButtons(products.length);
 }
-
-function renderPaginationButtons(totalItems) {
-    const paginationContainer = document.getElementById('pagination-controls');
-    paginationContainer.innerHTML = '';
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-    for (let i = 1; i <= totalPages; i++) {
-        const btn = document.createElement('button');
-        btn.innerText = i;
-        btn.className = (i === currentPage) ? 'page-btn active' : 'page-btn';
-        btn.onclick = () => {
-            currentPage = i;
-            renderProducts(allProducts);
-            window.scrollTo({ top: document.getElementById('shop-page').offsetTop, behavior: 'smooth' });
-        };
-        paginationContainer.appendChild(btn);
-    }
-}
-
 document.getElementById('back-to-shop').addEventListener('click', (e) => {
     e.preventDefault();
     
