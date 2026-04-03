@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATELIER | Luxury Fashion</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+    <!-- Other content above... -->
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+    <script src="https://cdn.jsdelivr.net"></script>
+    <script type="module" src="script.js"></script>
+
+<body>
+    <!-- 1. Header & Navigation -->
+    <header>
+    <!-- RESTORE THE SIGNATURE -->
+    <div class="logo">ATELIER</div>
+
+    <nav class="nav-links">
+        <a href="#shop-page" onclick="event.preventDefault(); document.getElementById('shop-page').scrollIntoView({behavior: 'smooth'})">SHOP</a>
+        <a href="#about-page" onclick="event.preventDefault(); document.getElementById('about-page').scrollIntoView({behavior: 'smooth'})">ABOUT</a>
+        <!-- FIX THE LINK: Make sure onclick matches your JS function -->
+        <a href="#" class="bag-link" onclick="window.openCart(); return false;">
+    BAG (<span id="bag-count">0</span>)
+</a>
+
+    </nav>
+</header>
+
+    <!-- 2. Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+    <h1>NEW SEASON</h1>
+    <p>Refined essentials for a modern silhouette.</p>
+    <!-- We'll style this button specifically -->
+    <button class="hero-btn" onclick="document.getElementById('shop-page').scrollIntoView({behavior: 'smooth'})">
+        SHOP COLLECTION
+    </button>
+</div>
+
+    </section>
+
+    <!-- Move the H2 inside the DIV like this -->
+<div id="shop-page">
+    <h2>Featured Collection</h2>
+    <div class="product-grid"></div>
+</div>
+
+<div id="cart-panel" class="cart-sidebar">
+    <div class="cart-header">
+        <h2>YOUR BAG</h2>
+        <span class="close-bag" onclick="closeCart()">&times;</span>
+    </div>
+
+    <!-- This section will now scroll independently -->
+    <div id="cart-items"></div>
+
+    <div class="cart-footer">
+        <p>Total: <span id="cart-total">$0.00</span></p>
+        <button class="checkout-btn">PROCEED TO CHECKOUT</button>
+    </div>
+</div>
+    </div>
+    <div id="product-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <div class="modal-body">
+            <div class="modal-image">
+                <img id="modal-img" src="" alt="">
+            </div>
+            <div class="modal-info">
+                <h2 id="modal-title"></h2>
+                <p id="modal-price"></p>
+                <p id="modal-description"></p>
+                <button id="modal-add-btn">Add to Bag</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="checkout-container">
+    <button id="back-to-shop" class="back-btn">← RETURN TO SHOP</button>
+    <h2>SHIPPING INFORMATION</h2>
+    
+    <form id="shipping-form" class="checkout-stack">
+        <input type="text" name="full_name" placeholder="Full Name" required>
+        <input type="email" name="email" placeholder="Email Address" required>
+        <input type="tel" name="phone" placeholder="Phone (e.g. +234...)" required>
+        
+        <select name="country" class="checkout-select" style="color-scheme: dark;">
+    <option value="" disabled selected>Select Country</option>
+    <option value="Nigeria">Nigeria 🇳🇬</option>
+    <option value="United Kingdom">United Kingdom 🇬🇧</option>
+    <option value="United States">United States 🇺🇸</option>
+    <option value="Ghana">Ghana 🇬🇭</option>
+    <option value="Canada">Canada 🇨🇦</option>
+    <option value="France">France 🇫🇷</option>
+    <option value="South Africa">South Africa 🇿🇦</option>
+    <option value="UAE">United Arab Emirates 🇦🇪</option>
+    </select>
+
+        <input type="text" name="address" placeholder="Street Address" required>
+        
+        <!-- Keep these three small ones together on one line -->
+        <div class="triple-grid">
+            <input type="text" name="city" placeholder="City" required>
+            <input type="text" name="state" placeholder="State" required>
+            <input type="text" name="zip" placeholder="Zip">
+        </div>
+
+        <button type="submit" class="checkout-btn-final">CONTINUE TO PAYMENT</button>
+    </form>
+</div>
+</section>
+   <script type="module" src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,424 @@
+/* Core Styling */
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+body { background: #000; color: #fff; line-height: 1.6; }
+
+/* Navigation */
+header { display: flex; justify-content: space-between; padding: 30px 5%; position: fixed; width: 100%; z-index: 1000; }
+.logo { letter-spacing: 8px; font-weight: bold; font-size: 24px; text-transform: uppercase; }
+nav a, .cart-icon { color: #fff; text-decoration: none; margin-left: 30px; cursor: pointer; text-transform: uppercase; font-size: 12px; letter-spacing: 2px; }
+
+.hero {
+    position: relative;
+    width: 100%;
+    height: 100vh; /* This forces it to take up the whole screen height */
+    background-image: url('images/fashion.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Ensure the text sits ON TOP of the image */
+.hero-content {
+    position: relative; /* Required to sit above the dark overlay */
+    z-index: 2;
+    text-align: center;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px; /* This creates clean spacing between text and button */
+}
+
+.hero-content h1 {
+    font-size: 80px; /* Big and bold */
+    letter-spacing: 15px;
+    margin-bottom: 10px;
+}
+
+/* This is the part that brings it down */
+.hero-btn {
+    margin-top: 40px; /* Adjust this to move it further down */
+    padding: 15px 40px;
+    background: #fff;
+    color: #000;
+    border: 1px solid #fff;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: 0.3s ease-all;
+}
+
+.hero-btn:hover {
+    background: transparent;
+    color: #fff;
+}
+
+/* Product Grid */
+.featured-products { padding: 100px 5%; }
+/* This makes the products sit in a row, not one giant block */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* Forces exactly 4 in a row */
+    gap: 20px;
+    padding: 40px 2%;
+    background-color: #000;
+}
+
+/* 2. The Card: Compact and professional */
+.product-card {
+    background: #111; /* Dark grey card like your photo */
+    padding: 10px;
+    border-radius: 4px;
+    text-align: left;
+}
+
+/* 3. The Image: Smaller square-ish container */
+.image-container {
+    width: 100%;
+    height: 220px; /* Fixed height so they don't get too big */
+    overflow: hidden;
+    margin-bottom: 10px;
+    background-color: #000;
+}
+
+.product-card img {
+    width: 100%;
+    height: 220px; /* Match the container height */
+    object-fit: contain; /* THE SECRET: Shows the WHOLE image inside the box */
+    background-color: #0f0f0f; /* Subtle dark grey so white-background photos look premium */
+    transition: transform 0.5s ease;
+}
+
+/* 3. The Hover: Keep the zoom effect but keep it contained */
+.product-card:hover img {
+    transform: scale(1.03);
+}
+
+/* 4. The Text: Give the name and price room so they don't overlap */
+.product-card h3 {
+    font-size: 11px; /* Smaller text like the luxury style */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 5px 0;
+    color: #fff;
+}
+
+.price {
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #fff;
+}
+
+/* Put size and button on the same line or stacked neatly */
+.size-selector {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.product-size-select {
+    background: #fff;
+    color: #000;
+    border: none;
+    padding: 4px;
+    font-size: 10px;
+}
+
+.add-to-bag-btn {
+    background: #fff;
+    color: #000;
+    border: none;
+    padding: 5px 10px;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+.add-to-bag-btn:hover {
+    background: #cccccc; /* Subtle hover effect */
+}
+
+/* Sidebar hidden off-screen to the right */
+.cart-sidebar {
+    position: fixed; /* Fixes it to the screen */
+    top: 0;
+    right: -400px; /* Hides it off-screen initially */
+    width: 400px;
+    height: 100vh;
+    background-color: #111; /* Luxury black */
+    color: white;
+    z-index: 1000; /* Ensures it stays on top of products */
+    transition: right 0.3s ease-in-out; /* Smooth slide effect */
+    padding: 30px;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column; /* Stacks header, items, and footer vertically */
+    height: 100vh; /* Takes full height of screen */
+    overflow: hidden; /* Prevents the whole sidebar from moving */
+}
+#cart-items {
+    flex: 1; /* This takes up all available space between header and footer */
+    overflow-y: auto; /* Adds a scrollbar only when items are too many */
+    padding-right: 10px; /* Space for the scrollbar */
+}
+
+/* Optional: Make the scrollbar thin and clean for ATELIER */
+#cart-items::-webkit-scrollbar {
+    width: 4px;
+}
+#cart-items::-webkit-scrollbar-thumb {
+    background: #333;
+}
+    /* Style the small 'x' next to items in the bag */
+.cart-item button {
+    color: #ffffff; /* Stark white */
+    opacity: 0.6; /* Slightly faded until hover */
+    font-size: 1.2rem;
+    transition: opacity 0.2s;
+}
+
+.cart-item button:hover {
+    opacity: 1; /* Brightens when you want to delete */
+}
+
+
+/* This class is added by JavaScript to show the bag */
+.cart-sidebar.active {
+    right: 0;
+}
+
+.product-card {
+    background: #1a1a1a; /* Dark luxury gray */
+    padding: 20px;
+    border: 1px solid #333;
+    border-radius: 4px;
+}
+
+.product-card h3 {
+    color: #fff;
+    margin: 10px 0 5px;
+}
+.close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: transparent;
+    border: none;
+    color: #888; /* Grey instead of white/red */
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+/* Container for the Bag Header */
+.cart-header {
+    display: flex;
+    justify-content: space-between; /* Pushes Title left, X right */
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+/* Style the Close Button specifically */
+.close-bag {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 30px;
+    color: white;
+    cursor: pointer;
+    line-height: 1; /* Keeps the X centered */
+    z-index: 1001;
+    transition: opacity 0.2s ease;
+}
+.close-bag:hover {
+    opacity: 0.6;
+}
+.close-cart-btn:hover {
+    color: #888; /* Subtle hover effect */
+}
+/* Style the checkout button at the bottom of the bag */
+.checkout-btn {
+    width: 100%;
+    background-color: #ffffff; /* Stark white */
+    color: #000000; /* Deep black text */
+    padding: 13px;
+    border: none;
+    font-weight: 700; /* Extra bold */
+    letter-spacing: 2px;
+    cursor: pointer;
+    margin-top: 20px;
+    text-transform: uppercase;
+    transition: background-color 0.3s ease;
+}
+
+.checkout-btn:hover {
+    background-color: #cccccc; /* Subtle grey hover */
+}
+
+/* Add a bit of space around the Total */
+.cart-footer {
+    border-top: 1px solid #333;
+    padding-top: 20px;
+    margin-top: 20px;
+}
+
+.cart-footer p {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+/* 1. Hide the modal by default */
+/* 1. Center the modal and dim the background */
+/* Centering the pop-up */
+.modal {
+    display: none; 
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.95);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+.close-modal {
+    position: absolute;
+    top: 20px;
+    right: 20px; /* Moves it from left to right */
+    font-size: 30px;
+    color: white;
+    cursor: pointer;
+    z-index: 1000; /* Keeps it on top of the text/image */
+}
+.close-modal:hover {
+    opacity: 0.7;
+}
+/* The Box */
+.modal-content {
+    background: #111;
+    display: flex;
+    width: 90%;
+    max-width: 1000px;
+    height: 80vh;
+    position: relative; /* THIS IS THE ANCHOR */
+    border: 1px solid #333;
+    border-radius: 8px;
+    overflow: hidden;
+}
+/* This puts the image on the left and text on the right */
+.modal-body {
+    display: flex; 
+    flex-direction: row; 
+    width: 100%;
+    height: 100%;
+}
+
+.modal-image {
+    flex: 1; /* Takes up 50% width */
+    background: #000;
+}
+
+.modal-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Keeps image from stretching */
+}
+
+.modal-info {
+    flex: 1; /* Takes up 50% width */
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: white;
+}
+.modal-info h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+#loader-bar {
+  position: fixed;
+  top: 0; left: 0;
+  height: 3px;
+  background: white; /* Contrast against your dark theme */
+  width: 0%;
+  transition: width 0.4s ease;
+  z-index: 9999;
+}
+.back-btn {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 12px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    margin-bottom: 30px;
+    transition: 0.3s;
+}
+.back-btn:hover { color: #fff; }
+/* Container centered and clean */
+.checkout-container {
+    max-width: 550px;
+    margin: 80px auto;
+    padding: 20px;
+    text-align: center;
+    color: #fff;
+}
+
+.checkout-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* Uniform spacing */
+    margin-top: 30px;
+}
+
+/* Force all inputs to be Black Background with White Text */
+.checkout-stack input, 
+.checkout-select {
+    width: 100%;
+    height: 50px;
+    background: #000 !important; /* Removes that blue/grey tint */
+    border: 1px solid #333;
+    padding: 0 15px;
+    color: #fff !important;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    border-radius: 0; /* Sharp corners for luxury feel */
+}
+
+/* The Bottom Three Fields */
+.triple-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr; /* City gets more space */
+    gap: 10px;
+}
+
+/* Hover effect */
+.checkout-stack input:focus, 
+.checkout-select:focus {
+    border-color: #fff;
+}
+
+/* The Button */
+.checkout-btn-final {
+    height: 55px;
+    background: #fff;
+    color: #000;
+    border: none;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-top: 15px;
+}
+.checkout-btn-final:hover {
+    background: #cccccc;
+}
