@@ -110,13 +110,6 @@ window.closeModal = () => {
         modal.style.display = 'none';
     }
 };
-async function fetchAtelierProducts() {
-    const { data, error } = await supabase.from('products').select('*');
-    if (error) return console.error('Error:', error);
-    
-    allProducts = data;
-    renderProducts(allProducts);
-}
 
 // --- 3. RENDER PRODUCTS WITH PAGINATION ---
 function renderProducts(products) {
