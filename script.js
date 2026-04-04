@@ -80,31 +80,6 @@ function renderProducts(products) {
     if (!productGrid) return;
     productGrid.innerHTML = '';
 
-    // Calculate which 8 items to show for the current page
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const paginatedItems = products.slice(startIndex, startIndex + itemsPerPage);
-
-    paginatedItems.forEach(product => {
-        const productCard = document.createElement('div');
-        productCard.className = 'product-card';
-        productCard.innerHTML = `
-            <img src="${product.image_url}" alt="${product.title}">
-            <h3>${product.title}</h3>
-            <p>$${product.price}</p>
-            <button class="add-to-bag-btn" onclick="window.addToBag('${product.title}', ${product.price}, '${product.image_url}')">ADD TO BAG</button>
-        `;
-        productGrid.appendChild(productCard);
-    });
-
-    renderPaginationControls(products.length); // Update the 1, 2, 3 buttons
-}
-
-// --- 4. PAGINATION BUTTONS (1, 2, 3...) ---
-function renderProducts(products) {
-    const productGrid = document.querySelector('.product-grid');
-    if (!productGrid) return;
-    productGrid.innerHTML = '';
-
     // 1. Pagination Calculation
     const startIndex = (currentPage - 1) * itemsPerPage;
     const paginatedItems = products.slice(startIndex, startIndex + itemsPerPage);
@@ -124,6 +99,7 @@ function renderProducts(products) {
                 <option value="41">41</option>
                 <option value="42" selected>42</option>
                 <option value="43">43</option>
+                <option value="44">44</option>
                 <option value="45">45</option>
             `;
         } else if (category.includes('tee') || category.includes('shirt') || category.includes('clothing')) {
@@ -164,6 +140,25 @@ function renderProducts(products) {
     renderPaginationControls(products.length);
 }
 
+// --- 4. PAGINATION BUTTONS (1, 2, 3...) ---
+function renderPaginationControls(totalItems) {
+    const container = document.getElementById('pagination-controls');
+    if (!container) return;
+    container.innerHTML = '';
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+    for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.innerText = i;
+        btn.className = (i === currentPage) ? 'page-btn active' : 'page-btn';
+        btn.onclick = () => {
+            currentPage = i;
+            renderProducts(allProducts);
+            document.getElementById('shop-page').scrollIntoView({ behavior: 'smooth' });
+        };
+        container.appendChild(btn);
+    }
+}
 
 // --- 5. CHECKOUT TOGGLE LOGIC ---
 // This hides the shop and shows the form instantly
