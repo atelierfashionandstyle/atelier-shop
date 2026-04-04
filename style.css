@@ -448,3 +448,37 @@ nav a, .cart-icon { color: #fff; text-decoration: none; margin-left: 30px; curso
 .checkout-btn-final:hover {
     background: #cccccc;
 }
+/* Fixes the image size and alignment */
+.product-image-wrapper {
+    width: 100%;
+    height: 350px; /* Adjust height to match your brand style */
+    overflow: hidden;
+    background: #111;
+    cursor: pointer;
+}
+
+.main-prod-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* This makes the model fit perfectly without stretching */
+    transition: transform 0.5s ease;
+}
+
+.main-prod-img:hover {
+    transform: scale(1.05); /* Luxury zoom effect */
+}
+
+/* Style the size dropdown to match Atelier Black/White */
+.atelier-size-select {
+    width: 100%;
+    background: #000;
+    color: #fff;
+    border: 1px solid #333;
+    padding: 8px;
+    margin-bottom: 10px;
+    font-family: inherit;
+}
+.atelier-size-select option {
+    background: #000;
+    color: #fff;
+}
