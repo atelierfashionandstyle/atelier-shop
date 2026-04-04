@@ -6,20 +6,29 @@ const itemsPerPage = 16;
 // // --- 1. CART LOGIC ---
 let cart = [];
 
-window.addToBag = (name, price, img, id) => {
-    // Get the size from the dropdown menu
-    const sizeElement = document.getElementById(`size-${id}`);
-    const selectedSize = sizeElement ? sizeElement.value : 'N/A';
+window.addToBag = function(id, title, price, imageUrl, selectedSize) {
+    console.log("Adding to bag:", title, "Size:", selectedSize);
 
-    // Add item to the cart array
-    cart.push({ 
-        name: name, 
-        price: parseFloat(price), // Ensures price is a number, not text
-        img: img, 
-        size: selectedSize 
-    });
+    // 1. Create a clean product object from the data sent by the button
+    const productToAdd = {
+        id: id,
+        title: title,
+        price: parseFloat(price), // Ensures it's a number, not $NaN
+        image_url: imageUrl,
+        size: selectedSize || 'N/A',
+        quantity: 1
+    };
 
-    updateCartUI();
+    // 2. Add to your existing cart array
+    cart.push(productToAdd);
+
+    // 3. Save to LocalStorage so it doesn't disappear on refresh
+    localStorage.setItem('cart', JSON.stringify(cart));
+
+    // 4. Update the sidebar UI instantly
+    if (typeof updateCartUI === 'function') {
+        updateCartUI();
+    }
 };
 function updateCartUI() {
     const container = document.getElementById('cart-items');
