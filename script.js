@@ -139,6 +139,31 @@ function renderProducts(products) {
     // 5. Update the 1, 2, 3... buttons
     renderPaginationControls(products.length);
 }
+// ATELIER QUICK VIEW LOGIC:
+window.openQuickView = function(title, description, imageUrl, price) {
+    console.log("Opening Quick View for:", title);
+    
+    // 1. Find your Modal/QuickView elements in the HTML
+    const modal = document.getElementById('quick-view-modal');
+    if (!modal) {
+        console.error("Quick View Modal not found in HTML!");
+        return;
+    }
+
+    // 2. Fill the Modal with the actual product data
+    document.getElementById('qv-title').innerText = title;
+    document.getElementById('qv-description').innerText = description;
+    document.getElementById('qv-image').src = imageUrl;
+    document.getElementById('qv-price').innerText = `$${price}`;
+
+    // 3. Show the Modal
+    modal.style.display = 'flex';
+};
+
+// Function to close the modal
+window.closeQuickView = function() {
+    document.getElementById('quick-view-modal').style.display = 'none';
+};
 
 // --- 4. PAGINATION BUTTONS (1, 2, 3...) ---
 function renderPaginationControls(totalItems) {
