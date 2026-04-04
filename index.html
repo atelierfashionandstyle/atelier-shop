@@ -59,7 +59,7 @@
     <div id="cart-items"></div>
 
     <div class="cart-footer">
-        <p>Total: <span id="cart-total">$0.00</span></p>
+        <p>Total: <span id="cart-total">#0.00</span></p>
         <button class="checkout-btn">PROCEED TO CHECKOUT</button>
     </div>
 </div>
@@ -81,8 +81,10 @@
     </div>
 </div>
 <div class="checkout-container">
+    <section id="checkout-section" class="checkout-container" style="display: none;">
     <button id="back-to-shop" class="back-btn">← RETURN TO SHOP</button>
     <h2>SHIPPING INFORMATION</h2>
+    
     
     <form id="shipping-form" class="checkout-stack">
         <input type="text" name="full_name" placeholder="Full Name" required>
@@ -112,6 +114,22 @@
 
         <button type="submit" class="checkout-btn-final">CONTINUE TO PAYMENT</button>
     </form>
+</div>
+<!-- The missing Quick View window -->
+<div id="quick-view-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close-modal" onclick="window.closeQuickView()">&times;</span>
+        <div class="modal-grid">
+            <div class="modal-left">
+                <img id="qv-image" src="" alt="Product Image">
+            </div>
+            <div class="modal-right">
+                <h2 id="qv-title">Product Title</h2>
+                <p id="qv-price" class="price">$0.00</p>
+                <p id="qv-description">Description goes here...</p>
+            </div>
+        </div>
+    </div>
 </div>
 </section>
    <script type="module" src="script.js"></script>
