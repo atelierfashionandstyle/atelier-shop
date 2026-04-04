@@ -80,6 +80,26 @@
         </div>
     </div>
 </div>
+<!-- Quick View Modal -->
+<div id="quick-view-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeQuickView()">&times;</span>
+        
+        <div class="modal-grid">
+            <div class="modal-left">
+                <img id="qv-image" src="" alt="Product Image">
+            </div>
+            <div class="modal-right">
+                <h2 id="qv-title">Product Title</h2>
+                <p id="qv-price" class="price">$0.00</p>
+                <p id="qv-description">Description goes here...</p>
+                
+                <!-- This will be automatically filled by the script -->
+                <div id="qv-actions"></div>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="checkout-container">
     <section id="checkout-section" class="checkout-container" style="display: none;">
     <button id="back-to-shop" class="back-btn">← RETURN TO SHOP</button>
@@ -114,22 +134,6 @@
 
         <button type="submit" class="checkout-btn-final">CONTINUE TO PAYMENT</button>
     </form>
-</div>
-<!-- The missing Quick View window -->
-<div id="quick-view-modal" class="modal" style="display: none;">
-    <div class="modal-content">
-        <span class="close-modal" onclick="window.closeQuickView()">&times;</span>
-        <div class="modal-grid">
-            <div class="modal-left">
-                <img id="qv-image" src="" alt="Product Image">
-            </div>
-            <div class="modal-right">
-                <h2 id="qv-title">Product Title</h2>
-                <p id="qv-price" class="price">$0.00</p>
-                <p id="qv-description">Description goes here...</p>
-            </div>
-        </div>
-    </div>
 </div>
 </section>
    <script type="module" src="script.js"></script>
