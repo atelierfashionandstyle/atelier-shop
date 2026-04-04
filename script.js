@@ -7,29 +7,23 @@ const itemsPerPage = 16;
 let cart = [];
 
 window.addToBag = function(id, title, price, imageUrl, selectedSize) {
-    console.log("Adding to bag:", title, "Size:", selectedSize);
-
-    // 1. Create a clean product object from the data sent by the button
-    const productToAdd = {
+    // 1. Capture the data directly from the button click
+    const itemToAdd = {
         id: id,
-        title: title,
-        price: parseFloat(price), // Ensures it's a number, not $NaN
-        image_url: imageUrl,
-        size: selectedSize || 'N/A',
+        title: title, // This gets the actual title from Supabase
+        price: parseFloat(price),
+        image_url: imageUrl, // This gets the full https link
+        size: selectedSize,
         quantity: 1
     };
 
-    // 2. Add to your existing cart array
-    cart.push(productToAdd);
-
-    // 3. Save to LocalStorage so it doesn't disappear on refresh
+    // 2. Add to your cart array and update UI
+    cart.push(itemToAdd);
     localStorage.setItem('cart', JSON.stringify(cart));
-
-    // 4. Update the sidebar UI instantly
-    if (typeof updateCartUI === 'function') {
-        updateCartUI();
-    }
+    updateCartUI();
+    openCart();
 };
+
 function updateCartUI() {
     const container = document.getElementById('cart-items');
     const totalEl = document.getElementById('cart-total');
@@ -137,7 +131,7 @@ function renderProducts(products) {
                 <h3>${product.title}</h3>
                 <p class="price">$${product.price}</p>
                 ${sizeHTML}
-                <button class="add-to-bag-btn" onclick="window.addToBag('${product.id}', '${product.title}', ${product.price}, '${product.image_url}', document.getElementById('size-select-${product.id}')?.value || 'N/A')">
+                <button class="add-to-bag-btn" onclick="window.addToBag('${product.id}', '${product.title}', ${product.price}, '${product.image_url}', document.getElementById('size-select-${product.id}').value)">
                     ADD TO BAG
                 </button>
             </div>
