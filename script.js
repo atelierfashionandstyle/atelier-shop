@@ -17,13 +17,8 @@ window.addToBag = function(id, title, price, imageUrl, selectedSize) {
         quantity: 1
     };
 
-    // 2. Add to your cart array and update UI
-    cart.push(itemToAdd);
-    localStorage.setItem('cart', JSON.stringify(cart));
     updateCartUI();
-    openCart();
 };
-
 function updateCartUI() {
     const container = document.getElementById('cart-items');
     const totalEl = document.getElementById('cart-total');
@@ -131,7 +126,7 @@ function renderProducts(products) {
                 <h3>${product.title}</h3>
                 <p class="price">$${product.price}</p>
                 ${sizeHTML}
-                <button class="add-to-bag-btn" onclick="window.addToBag('${product.id}', '${product.title}', ${product.price}, '${product.image_url}', document.getElementById('size-select-${product.id}').value)">
+                <button class="add-to-bag-btn" onclick="window.addToBag('${product.id}', '${product.title}', ${product.price}, '${product.image_url}', document.getElementById('size-select-${product.id}')?.value || 'N/A')">
                     ADD TO BAG
                 </button>
             </div>
