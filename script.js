@@ -100,24 +100,70 @@ function renderProducts(products) {
 }
 
 // --- 4. PAGINATION BUTTONS (1, 2, 3...) ---
-function renderPaginationControls(totalItems) {
-    const container = document.getElementById('pagination-controls');
-    if (!container) return;
-    container.innerHTML = '';
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
+function renderProducts(products) {
+    const productGrid = document.querySelector('.product-grid');
+    if (!productGrid) return;
+    productGrid.innerHTML = '';
 
-    for (let i = 1; i <= totalPages; i++) {
-        const btn = document.createElement('button');
-        btn.innerText = i;
-        btn.className = (i === currentPage) ? 'page-btn active' : 'page-btn';
-        btn.onclick = () => {
-            currentPage = i;
-            renderProducts(allProducts);
-            document.getElementById('shop-page').scrollIntoView({ behavior: 'smooth' });
-        };
-        container.appendChild(btn);
-    }
+    // 1. Pagination Calculation
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const paginatedItems = products.slice(startIndex, startIndex + itemsPerPage);
+
+    // 2. Loop through the 8 items for this page
+    paginatedItems.forEach(product => {
+        const productCard = document.createElement('div');
+        productCard.className = 'product-card';
+
+        // 3. SMART SIZE LOGIC: Check category from Supabase
+        let sizeOptions = '';
+        const category = (product.category || '').toLowerCase();
+
+        if (category.includes('slide') || category.includes('footwear') || category.includes('shoe')) {
+            sizeOptions = `
+                <option value="40">40</option>
+                <option value="41">41</option>
+                <option value="42" selected>42</option>
+                <option value="43">43</option>
+                <option value="45">45</option>
+            `;
+        } else if (category.includes('tee') || category.includes('shirt') || category.includes('clothing')) {
+            sizeOptions = `
+                <option value="S">S</option>
+                <option value="M" selected>M</option>
+                <option value="L">L</option>
+                <option value="XL">XL</option>
+                <option value="XXL">XXL</option>
+            `;
+        }
+
+        // Only create the dropdown if sizes are needed
+        const sizeHTML = sizeOptions ? `
+            <select id="size-select-${product.id}" class="atelier-size-select">
+                ${sizeOptions}
+            </select>
+        ` : '<div style="height: 42px;"></div>'; // Spacer for items with no size
+
+        // 4. DRAW THE CARD (Restoring Image Click and Description)
+        productCard.innerHTML = `
+            <div class="product-image-wrapper" onclick="window.openQuickView('${product.title}', '${product.description || 'Luxury Atelier Essential'}', '${product.image_url}', ${product.price})">
+                <img src="${product.image_url}" alt="${product.title}" class="main-prod-img">
+            </div>
+            <div class="product-info">
+                <h3>${product.title}</h3>
+                <p class="price">$${product.price}</p>
+                ${sizeHTML}
+                <button class="add-to-bag-btn" onclick="window.addToBag('${product.id}', '${product.title}', ${product.price}, '${product.image_url}', document.getElementById('size-select-${product.id}')?.value || 'N/A')">
+                    ADD TO BAG
+                </button>
+            </div>
+        `;
+        productGrid.appendChild(productCard);
+    });
+
+    // 5. Update the 1, 2, 3... buttons
+    renderPaginationControls(products.length);
 }
+
 
 // --- 5. CHECKOUT TOGGLE LOGIC ---
 // This hides the shop and shows the form instantly
