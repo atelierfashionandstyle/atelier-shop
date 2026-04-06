@@ -540,7 +540,7 @@ nav a, .cart-icon { color: #fff; text-decoration: none; margin-left: 30px; curso
 }
 
 .input-search::placeholder {
-    color: #000000; /* Black placeholder text */
+    color: #ffffff; /* Black placeholder text */
     font-weight: 300;
 }
 
