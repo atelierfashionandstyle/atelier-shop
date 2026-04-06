@@ -126,9 +126,7 @@ function renderProducts(products) {
                 <h3>${product.title}</h3>
                 <p class="price">$${product.price}</p>
                 ${sizeHTML}
-                <button class="add-to-bag-btn" onclick="window.addToBag('${product.id}', '${product.title}', ${product.price}, '${product.image_url}', document.getElementById('size-select-${product.id}')?.value || 'N/A')">
-                    ADD TO BAG
-                </button>
+                <button class="add-to-bag-btn" onclick="window.addToBag('${product.id}','${product.title}','${product.price}','${product.image_url}',document.getElementById('size-${product.id}')?.value)">ADD TO BAG</button>
             </div>
         `;
         productGrid.appendChild(productCard);
