@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ATELIER | Luxury Fashion</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
     <!-- Other content above... -->
     <script src="https://js.paystack.co/v1/inline.js"></script>
@@ -19,18 +20,25 @@
 
     <nav class="nav-links">
         <a href="#shop-page" onclick="event.preventDefault(); document.getElementById('shop-page').scrollIntoView({behavior: 'smooth'})">SHOP</a>
-        <a href="#about-page" onclick="event.preventDefault(); document.getElementById('about-page').scrollIntoView({behavior: 'smooth'})">ABOUT</a>
+        <a href="#" onclick="scrollToAbout(); return false;">ABOUT</a>
         <!-- FIX THE LINK: Make sure onclick matches your JS function -->
         <a href="#" class="bag-link" onclick="window.openCart(); return false;">
     BAG (<span id="bag-count">0</span>)
 </a>
-
     </nav>
 </header>
 
     <!-- 2. Hero Section -->
     <section class="hero">
         <div class="hero-content">
+            <div class="search-box">
+    <button class="btn-search"><i class="fas fa-search"></i></button>
+    <input type="text" 
+           id="product-search" 
+           class="input-search" 
+           placeholder="SEARCH THE COLLECTION..." 
+           onkeyup="filterProducts()">
+</div>
     <h1>NEW SEASON</h1>
     <p>Refined essentials for a modern silhouette.</p>
     <!-- We'll style this button specifically -->
@@ -48,7 +56,6 @@
     <div id="pagination-controls"></div>
 
 </div>
-
 <div id="cart-panel" class="cart-sidebar">
     <div class="cart-header">
         <h2>YOUR BAG</h2>
@@ -61,23 +68,6 @@
     <div class="cart-footer">
         <p>Total: <span id="cart-total">#0.00</span></p>
         <button class="checkout-btn">PROCEED TO CHECKOUT</button>
-    </div>
-</div>
-    </div>
-    <div id="product-modal" class="modal">
-    <div class="modal-content">
-        <span class="close-modal" onclick="closeModal()">&times;</span>
-        <div class="modal-body">
-            <div class="modal-image">
-                <img id="modal-img" src="" alt="">
-            </div>
-            <div class="modal-info">
-                <h2 id="modal-title"></h2>
-                <p id="modal-price"></p>
-                <p id="modal-description"></p>
-                <button id="modal-add-btn">Add to Bag</button>
-            </div>
-        </div>
     </div>
 </div>
 <!-- Quick View Modal -->
@@ -102,7 +92,9 @@
 </div>
 <div class="checkout-container">
     <section id="checkout-section" class="checkout-container" style="display: none;">
-    <button id="back-to-shop" class="back-btn">← RETURN TO SHOP</button>
+    <button type="button" class="back-to-shop-btn" onclick="window.backToShop()">
+    &larr; RETURN TO SHOP
+</button>
     <h2>SHIPPING INFORMATION</h2>
     
     
@@ -135,6 +127,51 @@
         <button type="submit" class="checkout-btn-final">CONTINUE TO PAYMENT</button>
     </form>
 </div>
+<footer id="about-us-section" class="main-footer">
+    <div class="footer-container">
+        <div class="footer-col">
+            <h3>ATELIER</h3>
+            <p>Refined essentials for a modern silhouette. High-quality craftsmanship delivered to your doorstep.</p>
+            <div style="display: flex; align-items: center; gap: 10px;">
+  <span>Follow us on </span>
+  <a href="https://www.facebook.com/share/1cLRNCTaiA/?mibextid=wwXIfr">                                                     
+    <i class="fab fa-facebook"></i>
+  </a>
+  <a href="https://www.instagram.com/atelierfashionandstyle?igsh=YjVqcWVvcmwwdWox&utm_source=qr">
+    <i class="fab fa-instagram"></i>
+  </a>
+</div>
+        </div>
+
+        <div class="footer-col">
+            <h4>CUSTOMER CARE</h4>
+            <ul>
+                <li><a href="#" onclick="window.backToShop()">Shop All</a></li>
+                <li><a href="#" onclick="showAbout()">About Us</a></li>
+                <li><a href="#">Shipping Policy</a></li>
+                <li><a href="#">Return & Exchanges</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-col">
+            <h4>CONTACT US</h4>
+            <p>Email: <a href="mailto:Support@atelier.com">Support@atelier.com</a>
+            <p>Phone: <a href="tel:+2348138116238">+234 813 811 6238</a>
+            <p>Lagos, Nigeria</p>
+        </div>
+
+        <div class="footer-col">
+            <h4>WE ACCEPT</h4>
+            <div class="payment-methods">
+                <p style="font-size: 12px; color: #888;">Secure payments via</p>
+                <img src="https://paystack.com/assets/img/login/paystack-logo.png" alt="Paystack" style="width: 120px; filter: grayscale(100%);">
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2026 ATELIER STORE. All Rights Reserved.</p>
+    </div>
+</footer>
 </section>
    <script type="module" src="script.js"></script>
 </body>
