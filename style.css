@@ -444,6 +444,78 @@ nav a, .cart-icon { color: #fff; text-decoration: none; margin-left: 30px; curso
 .checkout-btn-final:hover {
     background: #cccccc;
 }
+.checkout-input {
+    background-color: #000;
+    color: #fff;
+    border: 1px solid #444;
+    padding: 10px;
+    width: 100%;
+    appearance: none; /* Removes default styling */
+    -webkit-appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg%20xmlns="http://www.w3.org/2000/svg"%20width="292.4"%20height="292.4"><path%20fill="%23FFFFFF"%20d="M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.4-12.8z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px top 50%;
+    background-size: 12px auto;
+}
+/* Container for the summary values */
+/* Update your existing selector */
+.shipping-summary {
+    display: none; /* Hidden by default */
+    margin-top: 60px; /* This creates the gap you need */
+    padding: 20px 5%;
+    border-top: 1px solid #333;
+    width: 100%;
+}
+
+.summary-line {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    color: #fff;
+}
+
+.total-bold {
+    font-weight: bold;
+    font-size: 1.4rem;
+    border-top: 1px solid #444;
+    padding-top: 15px;
+}
+.tracking-section {
+    padding: 40px 5%;
+    background-color: #050505; /* Slightly different black to separate sections */
+}
+
+.tracking-input-wrapper {
+    display: flex;
+    gap: 0; /* Joins the input and button */
+    max-width: 500px;
+    margin-top: 15px;
+}
+
+#tracking-number {
+    flex-grow: 1;
+    background: #111;
+    border: 1px solid #444;
+    color: #fff;
+    padding: 12px;
+    outline: none;
+}
+
+#track-btn {
+    background-color: #fff;
+    color: #000;
+    border: none;
+    padding: 0 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease; /* Smooth hover effect */
+}
+
+/* The Hover Effect */
+#track-btn:hover {
+    background-color: #cccccc; /* Subtle grey on hover */
+    letter-spacing: 1px; /* Slight "powerful" expansion */
+}
 .main-footer {
     background-color: #000;
     color: #fff;
@@ -534,7 +606,7 @@ nav a, .cart-icon { color: #fff; text-decoration: none; margin-left: 30px; curso
     border-bottom: 2px solid #e0e0e0; /* Light gray base line */
     background-color: transparent;
     transition: all .5s ease-in-out;
-    color: #000;
+    color: #fff;
     font-family: 'Inter', sans-serif;
     text-transform: uppercase;
 }
@@ -559,5 +631,5 @@ nav a, .cart-icon { color: #fff; text-decoration: none; margin-left: 30px; curso
     outline: none;
     cursor: pointer;
     background-color: transparent;
-    color: #000;
+    color: #888; /* Subtle gray for the search icon */
 }

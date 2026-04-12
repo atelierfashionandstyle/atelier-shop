@@ -1,5 +1,28 @@
 
 import { supabase } from './supabaseClient.js';
+// This goes in your Main Atelier Page API (e.g., /api/webhook)
+export default async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).end();
+
+  const { record, type } = req.body; // 'record' is the new product data from Supabase
+
+  try {
+    // Logic to update the Main Page's local state or cache
+    console.log(`New product received: ${record.title}`);
+    
+    // Eco-Friendly Revalidation: Only update the page that changed
+    // await res.revalidate(`/products/${record.id}`); 
+    
+    return res.status(200).json({ message: 'Sync Successful' });
+  } catch (err) {
+    return res.status(500).send('Error revalidating');
+  }
+}
+// Fetch only active products for the store
+const { data, error } = await supabase
+  .from('products')
+  .select('*')
+  .eq('status', 'active'); // This filters out 'pending' or 'deleted' items
 let allProducts = []; 
 let currentPage = 1;
 const itemsPerPage = 16; 
@@ -220,6 +243,17 @@ function renderPaginationControls(totalItems) {
 // --- 5. CHECKOUT & NAVIGATION LOGIC ---
 
 // A. PROCEED TO CHECKOUT (From Bag to Shipping)
+function showCheckoutSummary() {
+    const checkoutSection = document.getElementById('checkout-section');
+    const summarySection = document.querySelector('.shipping-summary');
+
+    if (checkoutSection && checkoutSection.offsetParent !== null) {
+        summarySection.style.display = 'block';
+        updateOrderSummaryInstant();
+    } else {
+        summarySection.style.display = 'none';
+    }
+}
 document.addEventListener('click', (e) => {
     if (e.target.classList.contains('checkout-btn')) {
         e.preventDefault(); // Stops the page from jumping
@@ -242,126 +276,269 @@ document.addEventListener('click', (e) => {
         // Show Checkout and jump directly to it
         const checkoutSection = document.getElementById('checkout-section');
         if (checkoutSection) {
-            checkoutSection.style.display = 'block';
-            checkoutSection.scrollIntoView({ behavior: 'auto', block: 'start' });
-        }
+    checkoutSection.style.display = 'block';
+    checkoutSection.scrollIntoView({ behavior: 'smooth' });
+    
+    // Call it here!
+  document.addEventListener("DOMContentLoaded", () => {
+    const stateSelect = document.getElementById('state');
+
+    stateSelect.addEventListener('change', function() {
+        updateOrderSummaryInstant();
+    });
+});
+}// 2. Calculate Subtotal from cart
+let subtotal = cart.reduce((sum, item) => {
+    return sum + (Number(item.price) * (item.quantity || 1));
+}, 0);
+// Function to update the UI with a professional delay
+function updateOrderSummaryInstant() {
+    const stateDropdown = document.getElementById('state');
+    const statusText = document.getElementById('shipping-status');
+    const destinationState = stateDropdown.value;
+    const subtotalEl = document.getElementById('display-subtotal');
+    subtotalEl.textContent = subtotal.toLocaleString();
+
+    if (!destinationState) return;
+
+    // Simulate a brief "live" check (500ms)
+    setTimeout(() => {
+        // 1. Calculate subtotal
+        let subtotal = cart.reduce((sum, item) => {
+            return sum + (Number(item.price) * (item.quantity || 1));
+        }, 0);
+
+        // 2. Run the calculation logic
+        const shippingFee = calculateSmallItemShipping("Lagos", destinationState);
+        const totalAmount = subtotal + shippingFee;
+
+        // 3. Update the UI
+        document.getElementById('display-subtotal').textContent = subtotal.toLocaleString();
+        document.getElementById('display-shipping').innerText = shippingFee.toLocaleString();
+        document.getElementById('display-total').innerText = totalAmount.toLocaleString();
+        
+
+    }, 500); 
+}
+
+// Event Listener
+document.getElementById('state').addEventListener('change', updateOrderSummaryInstant);
+// 3. Define Shipping Fee and Calculate Final Total
+const calculateSmallItemShipping = (origin, destination) => {
+  // Current 2025 Jumia-style rates for packages <2kg
+  const rates = {
+    "lagos-lagos": 1400,
+    "lagos-abuja": 2000,
+    "lagos-port harcourt": 2500,
+    "lagos-ibadan": 1700,
+    "lagos-kano": 3000,
+    "lagos-enugu": 2500,
+    "lagos-ogun": 1800,
+    
+  };
+document.getElementById('state').addEventListener('change', function() {
+    const displayShipping = document.getElementById('display-shipping');
+    const displayTotal = document.getElementById('display-total');
+    const selectedState = this.value;
+
+    // 1. Show "Calculating" immediately
+    displayShipping.innerText = "Calculating...";
+    displayTotal.innerText = "---";
+
+    // 2. Add a tiny delay for that "Live" feel
+    setTimeout(() => {
+        // Use your existing function
+        const fee = calculateSmallItemShipping("Lagos", selectedState);
+        
+        // Calculate Subtotal (Ensure 'cart' is defined globally)
+        let subtotal = cart.reduce((sum, item) => sum + (Number(item.price) * item.quantity), 0);
+        
+        const finalTotal = subtotal + fee;
+
+        // 3. Update the UI
+        displayShipping.innerText = `₦${fee.toLocaleString()}`;
+        displayTotal.innerText = `₦${finalTotal.toLocaleString()}`;
+        
+        // Save for Paystack later
+        window.calculatedTotal = finalTotal;
+        window.calculatedShippingFee = fee;
+        window.calculatedSubtotal = subtotal;
+        }, 100);
+});
+  const key = `${origin.toLowerCase()}-${destination.toLowerCase()}`;
+  
+  // Default to a higher interstate rate if the route isn't listed
+  const baseRate = rates[key] || 3000; 
+
+  // Jumia adds a 7.5% VAT to the base shipping fee
+  const vat = baseRate * 0.075;
+  return baseRate + vat;
+};
+
+const shippingFee = calculateSmallItemShipping("Lagos", "Abuja");
+const totalAmount = subtotal + shippingFee;
+
+// 4. Stop if the bag is empty (comparing subtotal here is safer)
+if (subtotal <= 0) {
+    alert("Your bag is empty. Please add items before checking out.");
+    return;
+}
     }
 });
-
 // B. BACK TO SHOP (From Shipping back to Store)
 window.backToShop = function() {
     // 1. Hide the checkout form
     const checkoutSection = document.getElementById('checkout-section');
     if (checkoutSection) checkoutSection.style.display = 'none';
 
-    // 2. Bring back the Brand Identity (Hero) and Products
+    // 2. Restore hero and shop page
     const hero = document.querySelector('.hero');
     const shopPage = document.getElementById('shop-page');
+    const aboutPage = document.getElementById('about-page');
     
-    if (hero) hero.style.display = 'flex'; // Restores your fashion background
+    if (hero) hero.style.display = 'flex';
     if (shopPage) shopPage.style.display = 'block';
+    if (aboutPage) aboutPage.style.display = 'none';
 
-    // 3. Smoothly slide back to the top
+    // 3. Scroll back to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-// --- 6. STOP THE PAGE REFRESH (Critical) ---
-document.getElementById('shipping-form').addEventListener('submit', (e) => {
-    e.preventDefault(); 
-    // Your Paystack logic goes here...
-});
-const shippingForm = document.getElementById('shipping-form');
+document.addEventListener("DOMContentLoaded", () => {
 
-if (shippingForm) {
+    const shippingForm = document.getElementById('shipping-form');
+
+    if (!shippingForm) return;
+
     shippingForm.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // 1. Collect customer info directly from the form
-        const email = shippingForm.email.value;
-        const name = shippingForm.full_name.value;
-        const phone = shippingForm.phone.value;
+        // ✅ SAFE DATA COLLECTION
+        const email = shippingForm.querySelector('[name="email"]').value.trim();
+        const name = shippingForm.querySelector('[name="full_name"]').value.trim();
+        const phone = shippingForm.querySelector('[name="phone"]').value.trim();
+        const state = document.getElementById('state').value;
+        const street = shippingForm.querySelector('[name="street_address"]').value.trim();
+        const city = shippingForm.querySelector('[name="city"]').value.trim();
 
-        // 2. Calculate actual total (Ensure 'cart' is your global array name)
-        // If 'cart' is empty, it returns 0
-        const totalAmount = cart.reduce((sum, item) => {
-            return sum + (Number(item.price) * (item.quantity || 1));
-        }, 0);
+        // ✅ CALCULATIONS
+        const subtotal = cart.reduce((sum, item) => 
+            sum + (Number(item.price) * (item.quantity || 1)), 0
+        );
 
-        // 3. Stop if the bag is empty
-        if (totalAmount <= 0) {
-            alert("Your bag is empty. Please add items before checking out.");
-            return;
-        }
+        const shippingFee = calculateSmallItemShipping("Lagos", state);
+        const totalAmount = subtotal + shippingFee;
 
-        console.log("Processing payment for:", name, "Total:", totalAmount);
+        const commissionFee = totalAmount * 0.10;
+        const netPayout = totalAmount - commissionFee - shippingFee;
 
-         // 4. Initialize Paystack with the collected info and total amount
+        // ✅ PAYSTACK
+        let handler = PaystackPop.setup({
+            key: 'pk_test_f530e65d4cebf50a588673f69d1512b7cae51e02',
+            email: email,
+            amount: Math.round(totalAmount * 100),
+            currency: 'NGN',
 
-let handler = PaystackPop.setup({
-  key: 'pk_test_f530e65d4cebf50a588673f69d1512b7cae51e02',
-  email: email,
-  amount: totalAmount * 100,
-  currency: 'NGN',
-    
-            ref: 'ATL-' + Math.floor((Math.random() * 1000000000) + 1),
             callback: function(response) {
-    // 1. Show the success alert
-    alert('Payment Successful! Reference: ' + response.reference);
 
-    // 2. Prepare the customer data to save
-    const customerData = {
-        name: shippingForm.full_name.value,
-        email: email,
-        total: totalAmount,
-        items: cart // This is your array of bag items
-    };
+                const reference = response.reference;
 
-    // 3. Run the function that talks to Supabase
-    saveOrderToSupabase(response.reference, customerData);
-},
-
-            onClose: function() {
-                alert('Checkout cancelled.');
+                // ✅ FIXED CUSTOMER DATA
+                const customerData = {
+                    id: reference,
+                    email: email,
+                    name: name,
+                    phone: phone,
+                    total_amount: totalAmount,
+                    status: 'Paid',
+                    seller_id: '00000000-0000-0000-0000-000000000001',
+                    tracking_number: reference,
+                    commission_fee: commissionFee,
+                    shipping_fee_seller: shippingFee,
+                    net_payout: netPayout,
+                    shipping_region: state,
+                    address: `${street}, ${city}, ${state}`,
+                    items: JSON.stringify(cart)
+                };
+                
+                console.log(`Processing payment for: ${customerData.customer_name}, Total: ${totalAmount}`);
+                // ✅ FIXED CALL
+                saveOrderToSupabase(reference, customerData);
             }
-            
         });
 
         handler.openIframe();
     });
-}
-async function saveOrderToSupabase(reference, customerData) {
+
+});
+async function saveOrderToSupabase(customerData) {
     const { data, error } = await supabase
-.from('orders')
-.insert([
-    { 
-        status: 'paid',
-        payment_ref: reference,
-        customer_name: customerData.name,
-        email: customerData.email,
-        amount: customerData.total,
-        items: cart.map(item => ({
-            name: item.name,
-            size: item.size,
-            image: item.img,
-            price: item.price,
-            quantity: item.quantity || 1
-        }))
-    }
-]);
+        .from('orders')
+        .insert([
+            {
+                id: customerData.id,
+                customer_email: customerData.email,
+                customer_name: customerData.name,
+                customer_phone: customerData.phone,
+                total_amount: customerData.total_amount,
+                commission_fee: customerData.commission_fee,
+                shipping_fee_seller: customerData.shipping_fee_seller,
+                net_payout: customerData.net_payout,
+                status: 'Paid',
+                seller_id: customerData.seller_id,
+                tracking_number: customerData.tracking_number,
+                shipping_region: customerData.shipping_region,
+                address: customerData.address,
+                items: customerData.items
+            }
+        ]);
 
     if (error) {
-        console.error('Database Error:', error);
-    } else {
-        alert('Atelier Order Confirmed! We are processing your shipment.');
-        // Clear the cart and refresh to show the home page again
-        localStorage.removeItem('cart');
-        window.location.reload(); 
+        console.error("Supabase Error:", error.message);
+        return; // STOP if DB fails
     }
+
+    console.log("Order Recorded Successfully.");
+
+    // SEND EMAIL ONLY AFTER SUCCESS
+    sendAtelierEmail(
+        customerData.tracking_number,
+        customerData.email,
+        customerData.total_amount
+    );
+}
+function sendAtelierEmail(ref, email, amount) {
+    if (!email) {
+        console.error("No email provided. Cannot send email.");
+        return;
+    }
+
+    console.log("Database confirmed. Syncing EmailJS...");
+    console.log("EMAIL BEING SENT:", email);
+
+    const templateParams = {
+        to_email: email,
+        tracking_number: ref,
+        total_amount: `₦${amount}`,
+        track_link: `https://atelier-shop-psi.vercel.app/track-order.html?id=${ref}`
+    };
+
+    emailjs.send('service_zi3z4lm', 'template_9lhj8aj', templateParams)
+        .then(() => {
+            alert("Atelier Order Confirmed! Email Sent.");
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        })
+        .catch(err => {
+            console.log("EmailJS Error:", err);
+        });
 }
 // ATELIER NAVIGATION FIX:
 // This ensures that clicking "SHOP" at the top always shows the products
 document.querySelectorAll('a[href="#shop"]').forEach(link => {
-    link.addEventListener('click', (e) => {
+    link.addEventListener('click', (_e) => {
         const shopPage = document.getElementById('shop-page') || document.getElementById('shop');
         const checkoutSection = document.getElementById('checkout-section');
         
@@ -406,7 +583,7 @@ window.backToShop = function() {
     if (originalBackToShop) originalBackToShop();
 };
 // Function to handle the "ABOUT" link click
-window.scrollToAbout = function(e) {
+window.scrollToAbout = function(_e) {
     // 1. First, make sure the shop and hero are visible
     window.backToShop(); 
     
@@ -440,3 +617,89 @@ window.filterProducts = function() {
         input.style.borderBottomColor = "#000";
     }
 };
+
+    // ATELIER STORE - script.js
+
+async function fetchTrackingStatus() {
+    const trackingId = document.getElementById('tracking-id-input').value;
+    const resultDiv = document.getElementById('tracking-result');
+
+    // 1. Fetch live data from Supabase
+    const { data, error } = await supabase
+        .from('orders')
+        .select('id, status, updated_at')
+        .eq('tracking_number', trackingId)
+        .single();
+
+    if (error || !data) {
+        alert("Tracking number not found. Please check and try again.");
+        return;
+    }
+
+    // 2. Map Status to Progress Bar %
+    const statusMap = {
+        'pending': 25,
+        'ready_to_ship': 50,
+        'shipped': 75,
+        'delivered': 100
+    };
+
+    // 3. Update the UI
+    resultDiv.style.display = 'block';
+    document.getElementById('current-status').innerText = data.status.toUpperCase();
+    document.getElementById('display-order-id').innerText = data.id;
+    document.getElementById('last-updated').innerText = new Date(data.updated_at).toLocaleString();
+    document.getElementById('progress-fill').style.width = `${statusMap[data.status]}%`;
+    window.onload = function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const autoId = urlParams.get('id');
+    
+    if (autoId) {
+        document.getElementById('tracking-id-input').value = autoId;
+        fetchTrackingStatus(); // This runs the search immediately
+    }
+};
+}    // ATELIER LOGISTICS GATEWAY - script.js
+async function handleCourierScan(orderId) {
+
+    const { data, error: fetchError } = await supabase
+        .from('orders')
+        .select('customer_email')
+        .eq('id', orderId)
+        .single();
+
+    if (fetchError) {
+        console.error("Fetch Error:", fetchError.message);
+        return;
+    }
+
+    const customerEmail = data.customer_email;
+
+    const { error } = await supabase
+        .from('orders')
+        .update({ status: 'shipped' })
+        .eq('id', orderId);
+
+    if (error) {
+        console.error("Update Error:", error.message);
+        return;
+    }
+
+    sendShippedEmail(orderId, customerEmail);
+
+    // 2. Send Email
+    const templateParams = {
+    to_email: email,
+    tracking_number: ref,
+    total_amount: `₦${amount}`,
+    track_link: `https://atelier-shop-psi.vercel.app/track-order.html?id=${ref}`
+};
+
+    emailjs.send('service_zi3z4lm', 'template_bgqmsan', templateParams)
+        .then(() => {
+            alert("Status Updated & Buyer Notified!");
+        })
+        .catch(err => {
+            console.error("EmailJS Error:", err);
+        });
+}

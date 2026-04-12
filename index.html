@@ -11,7 +11,13 @@
     <script src="https://js.paystack.co/v1/inline.js"></script>
     <script src="https://cdn.jsdelivr.net"></script>
     <script type="module" src="script.js"></script>
-
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script type="text/javascript">
+   (function(){
+      // Replace with the key from EmailJS -> Account -> Public Key
+      emailjs.init("0pSpit0Eoff3xV_O9"); 
+   })();
+</script>
 <body>
     <!-- 1. Header & Navigation -->
     <header>
@@ -120,12 +126,50 @@
         <!-- Keep these three small ones together on one line -->
         <div class="triple-grid">
             <input type="text" name="city" placeholder="City" required>
-            <input type="text" name="state" placeholder="State" required>
+            <div class="form-group">
+    <select id="state" name="state" class="checkout-input" required>
+        <option value="" disabled selected>Select State</option>
+        <option value="Lagos">Lagos</option>
+        <option value="Abuja">Abuja</option>
+        <option value="Ogun">Ogun</option>
+        <option value="Port Harcourt">Port Harcourt</option>
+        <option value="Ibadan">Ibadan</option>
+        <option value="Kano">Kano</option>
+        <option value="Enugu">Enugu</option>
+    </select>
+</div>
             <input type="text" name="zip" placeholder="Zip">
         </div>
-
-        <button type="submit" class="checkout-btn-final">CONTINUE TO PAYMENT</button>
+<button type="submit" class="checkout-btn-final">CONTINUE TO PAYMENT</button>
     </form>
+<div class="shipping-summary" id="shipping-summary-section">
+    </div>
+    <div style="margin-top: 25px;"><span>Subtotal:</span>
+        <span>₦<span id="display-subtotal">0</span></span></div>
+        <span>Shipping Fee (incl. 7.5% VAT):</span>
+        <span>₦<span id="display-shipping">0</span></span>
+    <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2rem; margin-top: 10px;">
+        <span>Total:</span>
+        <span>₦<span id="display-total">0</span></span>
+    </div>
+</div>
+<section class="tracking-section">
+    <h3>Track Your Atelier Order</h3>
+    <div class="tracking-input-wrapper">
+        <input type="text" id="tracking-number" placeholder="Enter Tracking Number (e.g. ATL-123)">
+        <button id="track-btn">Track Package</button>
+    </div>
+</section>
+
+    <div id="tracking-result" style="display: none; margin-top: 30px;">
+        <h3 id="status-badge">Status: <span id="current-status"></span></h3>
+        <p><strong>Order ID:</strong> <span id="display-order-id"></span></p>
+        <p><strong>Last Updated:</strong> <span id="last-updated"></span></p>
+        
+        <div class="progress-bar-container" style="background: #eee; height: 10px; width: 100%; border-radius: 5px;">
+            <div id="progress-fill" style="background: #4caf50; height: 100%; width: 0%; border-radius: 5px; transition: 0.5s;"></div>
+        </div>
+    </div>
 </div>
 <footer id="about-us-section" class="main-footer">
     <div class="footer-container">
@@ -133,6 +177,7 @@
             <h3>ATELIER</h3>
             <p>Refined essentials for a modern silhouette. High-quality craftsmanship delivered to your doorstep.</p>
             <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="social-links"></div>
   <span>Follow us on </span>
   <a href="https://www.facebook.com/share/1cLRNCTaiA/?mibextid=wwXIfr">                                                     
     <i class="fab fa-facebook"></i>

@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../../seller center"
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "atelier-store"
+	}
+}
