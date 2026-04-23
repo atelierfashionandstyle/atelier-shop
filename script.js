@@ -4,7 +4,7 @@ import { supabase } from './supabaseClient.js';
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { record, type } = req.body; // 'record' is the new product data from Supabase
+  const { record } = req.body; // 'record' is the new product data from Supabase
 
   try {
     // Logic to update the Main Page's local state or cache
@@ -81,7 +81,7 @@ function updateCartUI() {
     // 3. Render the Sidebar Items
     if (cart.length === 0) {
         container.innerHTML = '<p style="text-align:center; padding:20px;">Your bag is empty.</p>';
-        if (totalEl) totalEl.innerText = "$0.00";
+        if (totalEl) totalEl.innerText = "₦00.00";
         return;
     }
 
@@ -91,7 +91,7 @@ function updateCartUI() {
             <div style="flex-grow:1;">
                 <p style="margin:0; font-weight:bold; font-size:14px;">${item.title}</p>
                 <p style="margin:0; font-size:12px; color:#666;">Size: ${item.size} | Qty: ${item.quantity}</p>
-                <p style="margin:5px 0 0 0; font-weight:bold;">$${(item.price * item.quantity).toFixed(2)}</p>
+                <p style="margin:5px 0 0 0; font-weight:bold;">₦${(item.price * item.quantity).toFixed(2)}</p>
             </div>
             <button onclick="removeFromCart('${item.cartId}')" style="color:red; background:none; border:none; cursor:pointer; font-size:18px;">&times;</button>
         </div>
@@ -99,7 +99,7 @@ function updateCartUI() {
 
     // 4. Update the Total Price
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    if (totalEl) totalEl.innerText = `$${total.toFixed(2)}`;
+    if (totalEl) totalEl.innerText = `₦${total.toFixed(2)}`;
 }
 
 // 3. REMOVE FROM CART
@@ -111,7 +111,6 @@ window.openCart = () => {
     const cartPanel = document.getElementById('cart-panel');
     if (cartPanel) {
         cartPanel.classList.add('active');
-        console.log("Bag opened");
     } else {
         console.error("Could not find cart-panel ID");
     }
@@ -182,7 +181,7 @@ paginatedItems.forEach(product => {
         </div>
         <div class="product-info">
             <h3>${product.title}</h3>
-            <p class="price">$${product.price}</p>
+            <p class="price">₦${product.price}</p>
             ${sizeHTML}
             <button class="add-to-bag-btn" onclick="const s = document.getElementById('size-select-${product.id}'); window.addToBag('${product.id}', '${escapedTitle}', ${product.price}, '${product.image_url}', s ? s.value : 'N/A')">
                 ADD TO BAG
@@ -210,7 +209,7 @@ window.openQuickView = function(title, description, imageUrl, price) {
     document.getElementById('qv-title').innerText = title;
     document.getElementById('qv-description').innerText = description;
     document.getElementById('qv-image').src = imageUrl;
-    document.getElementById('qv-price').innerText = `$${price}`;
+    document.getElementById('qv-price').innerText = `₦${price}`;
 
     // 3. Show the Modal
     modal.style.display = 'flex';
@@ -240,301 +239,239 @@ function renderPaginationControls(totalItems) {
         container.appendChild(btn);
     }
 }
-// --- 5. CHECKOUT & NAVIGATION LOGIC ---
-
-// A. PROCEED TO CHECKOUT (From Bag to Shipping)
-function showCheckoutSummary() {
-    const checkoutSection = document.getElementById('checkout-section');
-    const summarySection = document.querySelector('.shipping-summary');
-
-    if (checkoutSection && checkoutSection.offsetParent !== null) {
-        summarySection.style.display = 'block';
-        updateOrderSummaryInstant();
-    } else {
-        summarySection.style.display = 'none';
-    }
-}
+// --- 4. CHECKOUT NAVIGATION ---
 document.addEventListener('click', (e) => {
     if (e.target.classList.contains('checkout-btn')) {
-        e.preventDefault(); // Stops the page from jumping
+        e.preventDefault();
 
-        // Hide everything that isn't the checkout form
-        const sectionsToHide = ['shop-page', 'about-page'];
-        sectionsToHide.forEach(id => {
+        // 4a. Check if bag is empty
+        const subtotalCheck = cart.reduce((sum, item) => sum + (Number(item.price) * (item.quantity || 1)), 0);
+        if (subtotalCheck <= 0) {
+            alert("Your bag is empty. Please add items before checking out.");
+            return;
+        }
+
+        // 4b. Visibility logic
+        ['shop-page', 'about-page'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.style.display = 'none';
         });
-
         const hero = document.querySelector('.hero');
         if (hero) hero.style.display = 'none';
 
-        // Close the Bag sidebar
-        if (typeof window.closeCart === 'function') {
-            window.closeCart();
-        }
+        if (typeof window.closeCart === 'function') window.closeCart();
 
-        // Show Checkout and jump directly to it
         const checkoutSection = document.getElementById('checkout-section');
         if (checkoutSection) {
-    checkoutSection.style.display = 'block';
-    checkoutSection.scrollIntoView({ behavior: 'smooth' });
-    
-    // Call it here!
-  document.addEventListener("DOMContentLoaded", () => {
-    const stateSelect = document.getElementById('state');
-
-    stateSelect.addEventListener('change', function() {
-        updateOrderSummaryInstant();
-    });
+            checkoutSection.style.display = 'block';
+            checkoutSection.scrollIntoView({ behavior: 'smooth' });
+            updateOrderSummaryInstant();
+        }
+    }
 });
-}// 2. Calculate Subtotal from cart
-let subtotal = cart.reduce((sum, item) => {
-    return sum + (Number(item.price) * (item.quantity || 1));
-}, 0);
-// Function to update the UI with a professional delay
+// --- UPDATE ORDER SUMMARY ---
 function updateOrderSummaryInstant() {
     const stateDropdown = document.getElementById('state');
-    const statusText = document.getElementById('shipping-status');
-    const destinationState = stateDropdown.value;
     const subtotalEl = document.getElementById('display-subtotal');
-    subtotalEl.textContent = subtotal.toLocaleString();
+    const shippingEl = document.getElementById('display-shipping');
+    const totalEl = document.getElementById('display-total');
+
+    if (!stateDropdown || !subtotalEl || !shippingEl || !totalEl) return;
+
+    const destinationState = stateDropdown.value;
+
+    let subtotal = cart.reduce((sum, item) => {
+        return sum + (Number(item.price) * (item.quantity || 1));
+    }, 0);
+
+    subtotalEl.textContent = `₦${subtotal.toLocaleString()}`;
 
     if (!destinationState) return;
 
-    // Simulate a brief "live" check (500ms)
-    setTimeout(() => {
-        // 1. Calculate subtotal
-        let subtotal = cart.reduce((sum, item) => {
-            return sum + (Number(item.price) * (item.quantity || 1));
-        }, 0);
+    const shippingFee = calculateSmallItemShipping("Lagos", destinationState);
+    const totalAmount = subtotal + shippingFee;
 
-        // 2. Run the calculation logic
-        const shippingFee = calculateSmallItemShipping("Lagos", destinationState);
-        const totalAmount = subtotal + shippingFee;
+    shippingEl.textContent = `₦${shippingFee.toLocaleString()}`;
+    totalEl.textContent = `₦${totalAmount.toLocaleString()}`;
 
-        // 3. Update the UI
-        document.getElementById('display-subtotal').textContent = subtotal.toLocaleString();
-        document.getElementById('display-shipping').innerText = shippingFee.toLocaleString();
-        document.getElementById('display-total').innerText = totalAmount.toLocaleString();
-        
-
-    }, 500); 
+    // Store globally for payment
+    window.calculatedSubtotal = subtotal;
+    window.calculatedShippingFee = shippingFee;
+    window.calculatedTotal = totalAmount;
 }
 
-// Event Listener
-document.getElementById('state').addEventListener('change', updateOrderSummaryInstant);
-// 3. Define Shipping Fee and Calculate Final Total
+
+// --- SHIPPING CALCULATION ---
 const calculateSmallItemShipping = (origin, destination) => {
-  // Current 2025 Jumia-style rates for packages <2kg
-  const rates = {
-    "lagos-lagos": 1400,
-    "lagos-abuja": 2000,
-    "lagos-port harcourt": 2500,
-    "lagos-ibadan": 1700,
-    "lagos-kano": 3000,
-    "lagos-enugu": 2500,
-    "lagos-ogun": 1800,
-    
-  };
-document.getElementById('state').addEventListener('change', function() {
-    const displayShipping = document.getElementById('display-shipping');
-    const displayTotal = document.getElementById('display-total');
-    const selectedState = this.value;
+    const rates = {
+        "lagos-lagos": 1400,
+        "lagos-abuja": 2000,
+        "lagos-port harcourt": 2500,
+        "lagos-ibadan": 1700,
+        "lagos-kano": 3000,
+        "lagos-enugu": 2500,
+        "lagos-ogun": 1800,
+    };
 
-    // 1. Show "Calculating" immediately
-    displayShipping.innerText = "Calculating...";
-    displayTotal.innerText = "---";
+    const key = `${origin.toLowerCase()}-${destination.toLowerCase()}`;
+    const baseRate = rates[key] || 3000;
+    const vat = baseRate * 0.075;
 
-    // 2. Add a tiny delay for that "Live" feel
-    setTimeout(() => {
-        // Use your existing function
-        const fee = calculateSmallItemShipping("Lagos", selectedState);
-        
-        // Calculate Subtotal (Ensure 'cart' is defined globally)
-        let subtotal = cart.reduce((sum, item) => sum + (Number(item.price) * item.quantity), 0);
-        
-        const finalTotal = subtotal + fee;
-
-        // 3. Update the UI
-        displayShipping.innerText = `₦${fee.toLocaleString()}`;
-        displayTotal.innerText = `₦${finalTotal.toLocaleString()}`;
-        
-        // Save for Paystack later
-        window.calculatedTotal = finalTotal;
-        window.calculatedShippingFee = fee;
-        window.calculatedSubtotal = subtotal;
-        }, 100);
-});
-  const key = `${origin.toLowerCase()}-${destination.toLowerCase()}`;
-  
-  // Default to a higher interstate rate if the route isn't listed
-  const baseRate = rates[key] || 3000; 
-
-  // Jumia adds a 7.5% VAT to the base shipping fee
-  const vat = baseRate * 0.075;
-  return baseRate + vat;
+    return baseRate + vat;
 };
+// Update summary when state changes
+document.getElementById('state')?.addEventListener('change', updateOrderSummaryInstant);
 
-const shippingFee = calculateSmallItemShipping("Lagos", "Abuja");
-const totalAmount = subtotal + shippingFee;
+// --- 5. MAIN PAYMENT LOGIC ---
+document.addEventListener("click", function(e) {
+    // Check if the clicked element is our payment button
+    if (e.target && e.target.id === "payBtn") {
+        e.preventDefault();
+        console.log("Atelier: Payment Sequence Initiated");
 
-// 4. Stop if the bag is empty (comparing subtotal here is safer)
-if (subtotal <= 0) {
-    alert("Your bag is empty. Please add items before checking out.");
-    return;
-}
+        const shippingForm = document.getElementById('shipping-form');
+        const formData = new FormData(shippingForm);
+
+        // Validation
+        const email = formData.get('email');
+        const total = window.calculatedTotal || 0;
+
+        if (!email || total <= 0) {
+            alert("Please complete shipping details and select a state.");
+            return;
+        }
+
+        // Force launch Paystack
+        try {
+            const handler = PaystackPop.setup({
+                key: 'pk_test_f530e65d4cebf50a588673f69d1512b7cae51e02',
+                email: email,
+                amount: Math.round(total * 100),
+                currency: 'NGN',
+                callback: function(response) {
+                     console.log("Payment Success:", response.reference);
+                     // Construct data for Supabase
+                     const orderData = {
+                     id: response.reference,
+                     email: email,
+                     name: formData.get('full_name'),
+                     phone: formData.get('phone'),
+                     total_amount: total,
+                     address: `${formData.get('street_address')}, ${formData.get('city')}`,
+                     shipping_region: document.getElementById('state').value, // Must match a 'region_name' in DB
+                     seller_id: '00000000-0000-0000-0000-000000000001',
+                     items: typeof cart !== 'undefined' ? JSON.stringify(cart) : "[]"
+                    };
+                     saveOrderToSupabase(orderData);
+                },
+                onClose: function() {
+                    alert("Checkout closed.");
+                }
+            });
+            handler.openIframe();
+        } catch (err) {
+            console.error("Paystack Library Error:", err);
+        }
     }
 });
-// B. BACK TO SHOP (From Shipping back to Store)
-window.backToShop = function() {
-    // 1. Hide the checkout form
-    const checkoutSection = document.getElementById('checkout-section');
-    if (checkoutSection) checkoutSection.style.display = 'none';
+// --- 6. SAVE ORDER TO SUPABASE ---
+async function saveOrderToSupabase(orderData) {
+    console.log("Atelier: Initiating database sync for Order:", orderData.id);
 
-    // 2. Restore hero and shop page
-    const hero = document.querySelector('.hero');
-    const shopPage = document.getElementById('shop-page');
-    const aboutPage = document.getElementById('about-page');
-    
-    if (hero) hero.style.display = 'flex';
-    if (shopPage) shopPage.style.display = 'block';
-    if (aboutPage) aboutPage.style.display = 'none';
+    try {
+        const { data, error } = await supabase
+            .from('orders')
+            .insert([
+                {
+                    id: orderData.id,                  // Paystack Reference
+                    customer_email: orderData.email,
+                    customer_name: orderData.name,
+                    customer_phone: orderData.phone,
+                    total_amount: orderData.total_amount,
+                    status: 'Paid',                    // Auto-set to Paid after Paystack success
+                    seller_id: orderData.seller_id,
+                    commission_fee: orderData.commission_fee,
+                    shipping_fee_seller: orderData.shipping_fee_seller,
+                    net_payout: orderData.net_payout,
+                    tracking_number: orderData.id,     // Synced to Reference
+                    shipping_region: orderData.shipping_region,
+                    address: orderData.address,
+                    items: orderData.items             // JSON stringified cart
+                }
+            ]);
 
-    // 3. Scroll back to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-};
+        if (error) throw error;
 
-document.addEventListener("DOMContentLoaded", () => {
+        console.log("Atelier: Database sync successful!");
 
-    const shippingForm = document.getElementById('shipping-form');
-
-    if (!shippingForm) return;
-
-    shippingForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        // ✅ SAFE DATA COLLECTION
-        const email = shippingForm.querySelector('[name="email"]').value.trim();
-        const name = shippingForm.querySelector('[name="full_name"]').value.trim();
-        const phone = shippingForm.querySelector('[name="phone"]').value.trim();
-        const state = document.getElementById('state').value;
-        const street = shippingForm.querySelector('[name="street_address"]').value.trim();
-        const city = shippingForm.querySelector('[name="city"]').value.trim();
-
-        // ✅ CALCULATIONS
-        const subtotal = cart.reduce((sum, item) => 
-            sum + (Number(item.price) * (item.quantity || 1)), 0
+        // Trigger the Email confirmation ONLY after DB success
+        sendAtelierEmail(
+            orderData.id, 
+            orderData.email, 
+            orderData.total_amount
         );
 
-        const shippingFee = calculateSmallItemShipping("Lagos", state);
-        const totalAmount = subtotal + shippingFee;
-
-        const commissionFee = totalAmount * 0.10;
-        const netPayout = totalAmount - commissionFee - shippingFee;
-
-        // ✅ PAYSTACK
-        let handler = PaystackPop.setup({
-            key: 'pk_test_f530e65d4cebf50a588673f69d1512b7cae51e02',
-            email: email,
-            amount: Math.round(totalAmount * 100),
-            currency: 'NGN',
-
-            callback: function(response) {
-
-                const reference = response.reference;
-
-                // ✅ FIXED CUSTOMER DATA
-                const customerData = {
-                    id: reference,
-                    email: email,
-                    name: name,
-                    phone: phone,
-                    total_amount: totalAmount,
-                    status: 'Paid',
-                    seller_id: '00000000-0000-0000-0000-000000000001',
-                    tracking_number: reference,
-                    commission_fee: commissionFee,
-                    shipping_fee_seller: shippingFee,
-                    net_payout: netPayout,
-                    shipping_region: state,
-                    address: `${street}, ${city}, ${state}`,
-                    items: JSON.stringify(cart)
-                };
-                
-                console.log(`Processing payment for: ${customerData.customer_name}, Total: ${totalAmount}`);
-                // ✅ FIXED CALL
-                saveOrderToSupabase(reference, customerData);
-            }
-        });
-
-        handler.openIframe();
-    });
-
-});
-async function saveOrderToSupabase(customerData) {
-    const { data, error } = await supabase
-        .from('orders')
-        .insert([
-            {
-                id: customerData.id,
-                customer_email: customerData.email,
-                customer_name: customerData.name,
-                customer_phone: customerData.phone,
-                total_amount: customerData.total_amount,
-                commission_fee: customerData.commission_fee,
-                shipping_fee_seller: customerData.shipping_fee_seller,
-                net_payout: customerData.net_payout,
-                status: 'Paid',
-                seller_id: customerData.seller_id,
-                tracking_number: customerData.tracking_number,
-                shipping_region: customerData.shipping_region,
-                address: customerData.address,
-                items: customerData.items
-            }
-        ]);
-
-    if (error) {
-        console.error("Supabase Error:", error.message);
-        return; // STOP if DB fails
+    } catch (err) {
+        console.error("Atelier Critical Error:", err.message);
+        alert("Payment verified, but database sync failed. Please save your Tracking ID: " + orderData.id);
+        
+        // Fail-safe: Redirect to home even if DB fails so user isn't stuck
+        setTimeout(() => { window.location.href = "index.html"; }, 5000);
     }
-
-    console.log("Order Recorded Successfully.");
-
-    // SEND EMAIL ONLY AFTER SUCCESS
-    sendAtelierEmail(
-        customerData.tracking_number,
-        customerData.email,
-        customerData.total_amount
-    );
 }
-function sendAtelierEmail(ref, email, amount) {
-    if (!email) {
-        console.error("No email provided. Cannot send email.");
+
+// --- 7. EMAIL CONFIRMATION ---
+function sendAtelierEmail(ref, customerEmail, amount) {
+    if (!customerEmail) {
+        console.error("Atelier Error: No recipient email found.");
         return;
     }
 
-    console.log("Database confirmed. Syncing EmailJS...");
-    console.log("EMAIL BEING SENT:", email);
+    // Ensure initialization is fresh
+    emailjs.init("0pSpit0Eoff3xV_O9"); 
 
     const templateParams = {
-        to_email: email,
-        tracking_number: ref,
-        total_amount: `₦${amount}`,
+        to_email: customerEmail, 
+        order_id: ref,           
+        total_amount: `₦${Number(amount).toLocaleString()}`,
         track_link: `https://atelier-shop-psi.vercel.app/track-order.html?id=${ref}`
     };
 
-    emailjs.send('service_zi3z4lm', 'template_9lhj8aj', templateParams)
-        .then(() => {
-            alert("Atelier Order Confirmed! Email Sent.");
+    console.log("Atelier: Attempting email dispatch...", templateParams);
 
-            setTimeout(() => {
-                window.location.reload();
-            }, 1500);
+    emailjs.send('service_zi3z4lm', 'template_9lhj8aj', templateParams)
+        .then((res) => {
+            console.log("Atelier: Email SUCCESS", res.status, res.text);
+            alert("Order Confirmed! Check your inbox.");
+            window.location.href = "index.html"; 
         })
         .catch(err => {
-            console.log("EmailJS Error:", err);
+            // This is where your "Email service busy" alert comes from
+            console.error("Atelier Email Detailed Error:", err);
+            
+            // Helpful alert for debugging
+            alert(`Order Saved! Ref: ${ref}. Email failed: ${err.text || 'Check console'}`);
+            
+            window.location.href = "index.html";
         });
 }
+// B. BACK TO SHOP (From Shipping back to Store)
+window.backToShop = function() {
+    // 1. Hide Checkout
+    const checkoutSection = document.getElementById('checkout-section');
+    if (checkoutSection) checkoutSection.style.display = 'none';
+
+    // 2. Show Shop and Hero
+    const shopPage = document.getElementById('shop-page');
+    const hero = document.querySelector('.hero');
+    
+    if (shopPage) shopPage.style.display = 'block';
+    if (hero) hero.style.display = 'flex';
+
+    // 3. Reset Scroll to top so the header looks right
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
 // ATELIER NAVIGATION FIX:
 // This ensures that clicking "SHOP" at the top always shows the products
 document.querySelectorAll('a[href="#shop"]').forEach(link => {
@@ -620,86 +557,3 @@ window.filterProducts = function() {
 
     // ATELIER STORE - script.js
 
-async function fetchTrackingStatus() {
-    const trackingId = document.getElementById('tracking-id-input').value;
-    const resultDiv = document.getElementById('tracking-result');
-
-    // 1. Fetch live data from Supabase
-    const { data, error } = await supabase
-        .from('orders')
-        .select('id, status, updated_at')
-        .eq('tracking_number', trackingId)
-        .single();
-
-    if (error || !data) {
-        alert("Tracking number not found. Please check and try again.");
-        return;
-    }
-
-    // 2. Map Status to Progress Bar %
-    const statusMap = {
-        'pending': 25,
-        'ready_to_ship': 50,
-        'shipped': 75,
-        'delivered': 100
-    };
-
-    // 3. Update the UI
-    resultDiv.style.display = 'block';
-    document.getElementById('current-status').innerText = data.status.toUpperCase();
-    document.getElementById('display-order-id').innerText = data.id;
-    document.getElementById('last-updated').innerText = new Date(data.updated_at).toLocaleString();
-    document.getElementById('progress-fill').style.width = `${statusMap[data.status]}%`;
-    window.onload = function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const autoId = urlParams.get('id');
-    
-    if (autoId) {
-        document.getElementById('tracking-id-input').value = autoId;
-        fetchTrackingStatus(); // This runs the search immediately
-    }
-};
-}    // ATELIER LOGISTICS GATEWAY - script.js
-async function handleCourierScan(orderId) {
-
-    const { data, error: fetchError } = await supabase
-        .from('orders')
-        .select('customer_email')
-        .eq('id', orderId)
-        .single();
-
-    if (fetchError) {
-        console.error("Fetch Error:", fetchError.message);
-        return;
-    }
-
-    const customerEmail = data.customer_email;
-
-    const { error } = await supabase
-        .from('orders')
-        .update({ status: 'shipped' })
-        .eq('id', orderId);
-
-    if (error) {
-        console.error("Update Error:", error.message);
-        return;
-    }
-
-    sendShippedEmail(orderId, customerEmail);
-
-    // 2. Send Email
-    const templateParams = {
-    to_email: email,
-    tracking_number: ref,
-    total_amount: `₦${amount}`,
-    track_link: `https://atelier-shop-psi.vercel.app/track-order.html?id=${ref}`
-};
-
-    emailjs.send('service_zi3z4lm', 'template_bgqmsan', templateParams)
-        .then(() => {
-            alert("Status Updated & Buyer Notified!");
-        })
-        .catch(err => {
-            console.error("EmailJS Error:", err);
-        });
-}

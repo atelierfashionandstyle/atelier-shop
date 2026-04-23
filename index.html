@@ -8,16 +8,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
     <!-- Other content above... -->
-    <script src="https://js.paystack.co/v1/inline.js"></script>
-    <script src="https://cdn.jsdelivr.net"></script>
-    <script type="module" src="script.js"></script>
+<script src="https://js.paystack.co/v1/inline.js"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
 <script type="text/javascript">
    (function(){
-      // Replace with the key from EmailJS -> Account -> Public Key
-      emailjs.init("0pSpit0Eoff3xV_O9"); 
+      emailjs.init("0pSpit0eoff3xv_09");
    })();
 </script>
+
+<script type="module" src="script.js"></script>
 <body>
     <!-- 1. Header & Navigation -->
     <header>
@@ -53,7 +53,7 @@
     </button>
 </div>
 
-    </section>
+   </section>
 
     <!-- Move the H2 inside the DIV like this -->
 <div id="shop-page">
@@ -72,7 +72,7 @@
     <div id="cart-items"></div>
 
     <div class="cart-footer">
-        <p>Total: <span id="cart-total">#0.00</span></p>
+        <p>Total: <span id="cart-total">₦00.00</span></p>
         <button class="checkout-btn">PROCEED TO CHECKOUT</button>
     </div>
 </div>
@@ -87,7 +87,8 @@
             </div>
             <div class="modal-right">
                 <h2 id="qv-title">Product Title</h2>
-                <p id="qv-price" class="price">$0.00</p>
+                <p id="qv-price" class="price">>₦00.00</p>
+                .00
                 <p id="qv-description">Description goes here...</p>
                 
                 <!-- This will be automatically filled by the script -->
@@ -97,61 +98,59 @@
     </div>
 </div>
 <div class="checkout-container">
-    <section id="checkout-section" class="checkout-container" style="display: none;">
+<section id="checkout-section" class="checkout-container" style="display: none;">
     <button type="button" class="back-to-shop-btn" onclick="window.backToShop()">
     &larr; RETURN TO SHOP
 </button>
-    <h2>SHIPPING INFORMATION</h2>
+<h2>SHIPPING INFORMATION</h2>
+
+<form id="shipping-form" class="checkout-stack">
+    <input type="text" name="full_name" placeholder="Full Name" required>
+    <input type="email" name="email" placeholder="Email Address" required>
+    <input type="tel" name="phone" placeholder="Phone (e.g. +234...)" required>
     
-    
-    <form id="shipping-form" class="checkout-stack">
-        <input type="text" name="full_name" placeholder="Full Name" required>
-        <input type="email" name="email" placeholder="Email Address" required>
-        <input type="tel" name="phone" placeholder="Phone (e.g. +234...)" required>
-        
-        <select name="country" class="checkout-select" style="color-scheme: dark;">
-    <option value="" disabled selected>Select Country</option>
-    <option value="Nigeria">Nigeria 🇳🇬</option>
-    <option value="United Kingdom">United Kingdom 🇬🇧</option>
-    <option value="United States">United States 🇺🇸</option>
-    <option value="Ghana">Ghana 🇬🇭</option>
-    <option value="Canada">Canada 🇨🇦</option>
-    <option value="France">France 🇫🇷</option>
-    <option value="South Africa">South Africa 🇿🇦</option>
-    <option value="UAE">United Arab Emirates 🇦🇪</option>
+    <select name="country" class="checkout-select" style="color-scheme: dark;">
+        <option value="Nigeria" selected>Nigeria 🇳🇬</option>
+        <option value="United Kingdom">United Kingdom 🇬🇧</option>
+        <option value="United States">United States 🇺🇸</option>
     </select>
 
-        <input type="text" name="address" placeholder="Street Address" required>
-        
-        <!-- Keep these three small ones together on one line -->
-        <div class="triple-grid">
-            <input type="text" name="city" placeholder="City" required>
-            <div class="form-group">
-    <select id="state" name="state" class="checkout-input" required>
-        <option value="" disabled selected>Select State</option>
-        <option value="Lagos">Lagos</option>
-        <option value="Abuja">Abuja</option>
-        <option value="Ogun">Ogun</option>
-        <option value="Port Harcourt">Port Harcourt</option>
-        <option value="Ibadan">Ibadan</option>
-        <option value="Kano">Kano</option>
-        <option value="Enugu">Enugu</option>
-    </select>
-</div>
-            <input type="text" name="zip" placeholder="Zip">
-        </div>
-<button type="submit" class="checkout-btn-final">CONTINUE TO PAYMENT</button>
-    </form>
-<div class="shipping-summary" id="shipping-summary-section">
+    <input type="text" name="street_address" placeholder="Street Address" required>
+
+    <div class="triple-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+        <input type="text" name="city" placeholder="City" required>
+        <select id="state" name="state" class="checkout-input" required>
+            <option value="" disabled selected>Select State</option>
+            <option value="Lagos">Lagos</option>
+            <option value="Abuja">Abuja</option>
+            <option value="Ogun">Ogun</option>
+            <option value="Port Harcourt">Port Harcourt</option>
+            <option value="Ibadan">Ibadan</option>
+            <option value="Kano">Kano</option>
+            <option value="Enugu">Enugu</option>
+        </select>
+        <input type="text" name="zip" placeholder="Zip">
     </div>
-    <div style="margin-top: 25px;"><span>Subtotal:</span>
-        <span>₦<span id="display-subtotal">0</span></span></div>
-        <span>Shipping Fee (incl. 7.5% VAT):</span>
+
+    <button type="button" id="payBtn" class="checkout-btn">Continue Payment</button>
+</form>
+
+<div class="order-summary-display" style="margin-top: 25px; border-top: 1px solid #000; padding-top: 15px;">
+    <div style="display: flex; justify-content: space-between;">
+        <span>Subtotal:</span>
+        <span>₦<span id="display-subtotal">0</span></span>
+    </div>
+    <div style="display: flex; justify-content: space-between;">
+        <span>Shipping (incl. 7.5% VAT):</span>
         <span>₦<span id="display-shipping">0</span></span>
+    </div>
     <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2rem; margin-top: 10px;">
         <span>Total:</span>
         <span>₦<span id="display-total">0</span></span>
     </div>
+</div>
+</section>
+   </div>
 </div>
 <section class="tracking-section">
     <h3>Track Your Atelier Order</h3>
@@ -218,6 +217,7 @@
     </div>
 </footer>
 </section>
-   <script type="module" src="script.js"></script>
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script type="module" src="script.js"></script>
 </body>
 </html>
