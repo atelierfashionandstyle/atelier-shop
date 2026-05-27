@@ -8,6 +8,7 @@
 		}
 	],
 	"settings": {
-		"liveServer.settings.multiRootWorkspaceName": "seller center"
+		"liveServer.settings.multiRootWorkspaceName": "atelier-store",
+		"workbench.editor.enablePreviewFromCodeNavigation": true
 	}
 }

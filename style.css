@@ -60,239 +60,350 @@ nav a, .cart-icon { color: #fff; text-decoration: none; margin-left: 30px; curso
     color: #fff;
 }
 
-/* Product Grid */
-.featured-products { padding: 100px 5%; }
-/* This makes the products sit in a row, not one giant block */
+/* =========================================================================
+   1. GLOBAL SYSTEM UTILITIES & LOADING BARS
+   ========================================================================= */
+#loader-bar {
+    position: fixed;
+    top: 0; 
+    left: 0;
+    height: 3px;
+    background: #ffffff; /* High contrast white against dark background theme */
+    width: 0%;
+    transition: width 0.4s ease;
+    z-index: 9999;
+}
+
+/* =========================================================================
+   2. MAIN COLLECTION GRID & HIGH-PERFORMANCE CARDS
+   ========================================================================= */
+.featured-products { 
+    padding: 100px 5%; 
+    background-color: #000000;
+}
+
+/* Optimized dynamic display grid layout grid */
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* Forces exactly 4 in a row */
+    grid-template-columns: repeat(2, 1fr); /* Mobile-first optimized twin columns layout */
     gap: 20px;
     padding: 40px 2%;
-    background-color: #000;
+    background-color: #000000;
 }
 
-/* 2. The Card: Compact and professional */
-.product-card {
-    background: #111; /* Dark grey card like your photo */
-    padding: 10px;
-    border-radius: 4px;
-    text-align: left;
+@media (min-width: 768px) {
+    .product-grid {
+        grid-template-columns: repeat(4, 1fr); /* Seamlessly expands to 4 sharp items on desktop arrays */
+    }
 }
 
-/* 3. The Image: Smaller square-ish container */
-.image-container {
+/* Consolidated Minimalist Luxury Product Card Architecture */
+.atelier-product-card, .product-card {
+    background: #0f0f0f; /* Refined dark luxury tone */
+    padding: 16px;
+    border: 1px solid #1a1a1a;
+    border-radius: 0px; /* Sharp modern corners matching your minimal layout aesthetic */
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.atelier-product-card:hover, .product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(255, 255, 255, 0.03);
+    border-color: #333333;
+}
+
+/* Square Image Viewport Frame Box */
+.product-image-wrapper, .image-container {
+    position: relative;
     width: 100%;
-    height: 220px; /* Fixed height so they don't get too big */
+    padding-top: 125%; /* Golden portrait fashion ratio (4:5 presentation alignment) */
     overflow: hidden;
-    margin-bottom: 10px;
-    background-color: #000;
+    background-color: #050505;
+    cursor: pointer;
 }
 
-.product-card img {
+.product-image-wrapper img, .product-card img, .main-prod-img {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 220px; /* Match the container height */
-    object-fit: contain; /* THE SECRET: Shows the WHOLE image inside the box */
-    background-color: #0f0f0f; /* Subtle dark grey so white-background photos look premium */
-    transition: transform 0.5s ease;
+    height: 100%;
+    object-fit: cover; /* Tailor-fitted to showcase clean luxury profile crops without stretching */
+    transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* 3. The Hover: Keep the zoom effect but keep it contained */
+.atelier-product-card:hover .product-image-wrapper img,
 .product-card:hover img {
-    transform: scale(1.03);
+    transform: scale(1.04);
 }
 
-/* 4. The Text: Give the name and price room so they don't overlap */
-.product-card h3 {
-    font-size: 11px; /* Smaller text like the luxury style */
+/* High Conversion Urgency Pill Tag */
+.luxury-stock-badge {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    background-color: #ffffff;
+    color: #000000;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    padding: 5px 10px;
+    text-transform: uppercase;
+    z-index: 2;
+}
+
+/* Typography Content Alignment Wrappers */
+.product-info-wrapper, .product-info {
+    padding-top: 14px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.product-brand-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin: 0 0 4px 0;
+    color: #888888;
+}
+
+.product-info h3, .product-item-name {
+    font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 1px;
-    margin: 5px 0;
-    color: #fff;
+    font-weight: 400;
+    margin: 0 0 8px 0;
+    color: #ffffff;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    height: 34px;
 }
 
-.price {
-    font-size: 13px;
-    font-weight: bold;
-    margin-bottom: 10px;
-    color: #fff;
+/* Elegant Contrast Alternative to Jumia Split Pricing */
+.luxury-price-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
 }
 
-/* Put size and button on the same line or stacked neatly */
+.current-price, .price {
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+}
+
+.original-strike-price {
+    font-size: 11px;
+    font-weight: 400;
+    color: #555555;
+    text-decoration: line-through;
+}
+
+.percentage-pill {
+    background-color: #1c110a;
+    color: #d67d3e; /* High-end contrast color format instead of loud retail orange codes */
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+}
+
+/* Sizing Controls Selector Panels */
 .size-selector {
     display: flex;
     gap: 5px;
     align-items: center;
+    margin-bottom: 12px;
 }
 
-.product-size-select {
-    background: #fff;
-    color: #000;
-    border: none;
-    padding: 4px;
-    font-size: 10px;
+.size-select-spacer {
+    height: 42px;
 }
 
-.add-to-bag-btn {
-    background: #fff;
-    color: #000;
-    border: none;
-    padding: 5px 10px;
-    font-size: 10px;
-    font-weight: bold;
-    cursor: pointer;
+.atelier-size-select, .product-size-select {
+    width: 100%;
+    height: 42px;
+    background: #000000;
+    color: #ffffff;
+    border: 1px solid #222222;
+    font-size: 11px;
+    padding: 0 10px;
+    margin-bottom: 12px;
+    outline: none;
+    border-radius: 0;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* Persistent Direct Action Conversion Triggers */
+.luxury-add-trigger, .add-to-bag-btn {
+    width: 100%;
+    height: 45px;
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
     text-transform: uppercase;
+    cursor: pointer;
+    margin-top: auto; /* Securely pins click elements linearly across multi-row cards */
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.add-to-bag-btn:hover {
-    background: #cccccc; /* Subtle hover effect */
+.luxury-add-trigger:hover, .add-to-bag-btn:hover {
+    background-color: #000000;
+    color: #ffffff;
+    border-color: #ffffff;
 }
+
+/* =========================================================================
+   LUXURY MINIMAL PAGINATION GRAPHICS BLOCK
+   ========================================================================= */
 #pagination-controls {
     display: flex;
     justify-content: center;
-    gap: 15px;
-    margin: 50px 0;
+    align-items: center;
+    gap: 8px;
+    margin: 40px 0;
 }
 
 .page-btn {
-    background: none;
-    border: 1px solid #333;
-    color: #fff;
-    padding: 10px 18px;
-    cursor: pointer;
+    background-color: #000000;
+    color: #ffffff;
+    border: 1px solid #333333;
+    padding: 10px 16px;
+    font-size: 14px;
     font-family: inherit;
-    transition: 0.3s;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    min-width: 44px;
+}
+
+.page-btn:hover {
+    background-color: #ffffff;
+    color: #000000;
+    border-color: #ffffff;
 }
 
 .page-btn.active {
-    background: #fff;
-    color: #000;
-    border-color: #fff;
+    background-color: #ffffff;
+    color: #000000;
+    border-color: #ffffff;
+    font-weight: bold;
+    pointer-events: none;
 }
 
-.page-btn:hover:not(.active) {
-    border-color: #fff;
+.page-btn.disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+    background-color: #000000;
+    color: #ffffff;
+    border-color: #222222;
 }
 
-/* Sidebar hidden off-screen to the right */
+.arrow-btn {
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* =========================================================================
+   4. LUXURY CART SLIDE-OUT DRAWER SYSTEM
+   ========================================================================= */
 .cart-sidebar {
-    position: fixed; /* Fixes it to the screen */
+    position: fixed;
     top: 0;
-    right: -400px; /* Hides it off-screen initially */
+    right: -400px; /* Securely hides tray window array maps off-canvas default state */
     width: 400px;
     height: 100vh;
-    background-color: #111; /* Luxury black */
-    color: white;
-    z-index: 1000; /* Ensures it stays on top of products */
-    transition: right 0.3s ease-in-out; /* Smooth slide effect */
+    background-color: #0b0b0b;
+    color: #ffffff;
+    z-index: 1000;
     padding: 30px;
-    box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.8);
     display: flex;
-    flex-direction: column; /* Stacks header, items, and footer vertically */
-    height: 100vh; /* Takes full height of screen */
-    overflow: hidden; /* Prevents the whole sidebar from moving */
-}
-#cart-items {
-    flex: 1; /* This takes up all available space between header and footer */
-    overflow-y: auto; /* Adds a scrollbar only when items are too many */
-    padding-right: 10px; /* Space for the scrollbar */
+    flex-direction: column;
+    overflow: hidden;
+    transition: right 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* Optional: Make the scrollbar thin and clean for ATELIER */
+.cart-sidebar.active {
+    right: 0; /* Sliding transition handler */
+}
+
+@media (max-width: 480px) {
+    .cart-sidebar {
+        width: 100%;
+        right: -100%;
+    }
+}
+
+.cart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    position: relative;
+}
+
+#cart-items {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+/* Clean Custom Scrollbar Parameters for Cart Items List Frame */
 #cart-items::-webkit-scrollbar {
     width: 4px;
 }
 #cart-items::-webkit-scrollbar-thumb {
-    background: #333;
+    background: #222222;
 }
-    /* Style the small 'x' next to items in the bag */
+
 .cart-item button {
-    color: #ffffff; /* Stark white */
-    opacity: 0.6; /* Slightly faded until hover */
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    opacity: 0.5;
     font-size: 1.2rem;
+    cursor: pointer;
     transition: opacity 0.2s;
 }
 
 .cart-item button:hover {
-    opacity: 1; /* Brightens when you want to delete */
+    opacity: 1;
 }
 
-
-/* This class is added by JavaScript to show the bag */
-.cart-sidebar.active {
-    right: 0;
-}
-
-.product-card {
-    background: #1a1a1a; /* Dark luxury gray */
-    padding: 20px;
-    border: 1px solid #333;
-    border-radius: 4px;
-}
-
-.product-card h3 {
-    color: #fff;
-    margin: 10px 0 5px;
-}
-.close-btn {
-    position: absolute;
-    top: 20px;
-    right: 20px;
+/* Cart Action Controls & Triggers */
+.close-btn, .close-bag {
     background: transparent;
     border: none;
-    color: #888; /* Grey instead of white/red */
-    font-size: 1.5rem;
+    color: #888888;
+    font-size: 28px;
     cursor: pointer;
-    transition: color 0.3s;
+    transition: color 0.2s ease, opacity 0.2s;
+    line-height: 1;
 }
 
-/* Container for the Bag Header */
-.cart-header {
-    display: flex;
-    justify-content: space-between; /* Pushes Title left, X right */
-    align-items: center;
-    margin-bottom: 30px;
+.close-btn:hover, .close-bag:hover, .close-cart-btn:hover {
+    color: #ffffff;
+    opacity: 1;
 }
 
-/* Style the Close Button specifically */
-.close-bag {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    font-size: 30px;
-    color: white;
-    cursor: pointer;
-    line-height: 1; /* Keeps the X centered */
-    z-index: 1001;
-    transition: opacity 0.2s ease;
-}
-.close-bag:hover {
-    opacity: 0.6;
-}
-.close-cart-btn:hover {
-    color: #888; /* Subtle hover effect */
-}
-/* Style the checkout button at the bottom of the bag */
-.checkout-btn {
-    width: 100%;
-    background-color: #ffffff; /* Stark white */
-    color: #000000; /* Deep black text */
-    padding: 13px;
-    border: none;
-    font-weight: 700; /* Extra bold */
-    letter-spacing: 2px;
-    cursor: pointer;
-    margin-top: 20px;
-    text-transform: uppercase;
-    transition: background-color 0.3s ease;
-}
-
-.checkout-btn:hover {
-    background-color: #cccccc; /* Subtle grey hover */
-}
-
-/* Add a bit of space around the Total */
 .cart-footer {
-    border-top: 1px solid #333;
+    border-top: 1px solid #1a1a1a;
     padding-top: 20px;
     margin-top: 20px;
 }
@@ -300,162 +411,263 @@ nav a, .cart-icon { color: #fff; text-decoration: none; margin-left: 30px; curso
 .cart-footer p {
     display: flex;
     justify-content: space-between;
-    font-size: 1.1rem;
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
     font-weight: bold;
+    margin-bottom: 15px;
 }
-/* 1. Hide the modal by default */
-/* 1. Center the modal and dim the background */
-/* Centering the pop-up */
+
+.checkout-btn {
+    width: 100%;
+    background-color: #ffffff;
+    color: #000000;
+    padding: 16px;
+    border: none;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background-color 0.2s ease;
+}
+
+.checkout-btn:hover {
+    background-color: #cccccc;
+}
+
+/* =========================================================================
+   5. PREMIUM MODAL QUICK VIEW OVERLAY CORE
+   ========================================================================= */
 .modal {
-    display: none; /* Hidden by default */
+    display: none; /* Controlled asynchronously via script window triggers */
     position: fixed;
-    z-index: 1000;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    background-color: rgba(0, 0, 0, 0.9); /* Dark luxury overlay */
+    z-index: 1100;
+    left: 0; 
+    top: 0;
+    width: 100%; 
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.95);
     align-items: center;
     justify-content: center;
+    padding: 20px;
 }
-.close-modal {
-    position: absolute;
-    top: 20px;
-    right: 20px; /* Moves it from left to right */
-    font-size: 30px;
-    color: white;
-    cursor: pointer;
-    z-index: 1000; /* Keeps it on top of the text/image */
-}
-.close-modal:hover {
-    opacity: 0.7;
-}
-/* The Box */
+
 .modal-content {
-    background: #000;
-    border: 1px solid #333;
+    background: #000000;
+    border: 1px solid #1a1a1a;
     padding: 40px;
-    width: 80%;
+    width: 100%;
     max-width: 900px;
     position: relative;
-    color: #fff;
+    color: #ffffff;
 }
-/* This puts the image on the left and text on the right */
+
 .modal-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
+    grid-template-columns: 1fr;
+    gap: 30px;
+}
+
+@media (min-width: 768px) {
+    .modal-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+    }
 }
 
 #qv-image {
     width: 100%;
     height: auto;
     object-fit: cover;
+    background-color: #050505;
 }
 
-#qv-description {
+/* Dynamic Carousel Thumbnail Row Layouts */
+.quickview-thumbnails-container {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+}
+
+.qv-thumbnail-item {
+    width: 50px;
+    height: 65px;
+    object-fit: cover;
+    border: 1px solid #222222;
+    cursor: pointer;
+    transition: opacity 0.2s, border-color 0.2s;
+}
+
+.qv-thumbnail-item:hover {
+    opacity: 0.8;
+    border-color: #ffffff;
+}
+
+/* Quick View Text Fields Structuring */
+#qv-title {
+    font-size: 18px;
+    letter-spacing: 2px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #ffffff;
+}
+
+#qv-price {
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.qv-story-text, #qv-description {
+    font-size: 13px;
     line-height: 1.6;
-    color: #ccc;
+    color: #b5b5b5;
     margin-top: 20px;
 }
-#loader-bar {
-  position: fixed;
-  top: 0; left: 0;
-  height: 3px;
-  background: white; /* Contrast against your dark theme */
-  width: 0%;
-  transition: width 0.4s ease;
-  z-index: 9999;
+
+.qv-highlights-box {
+    margin-top: 20px;
+    border-top: 1px solid #1a1a1a;
+    padding-top: 15px;
 }
+
+.qv-highlights-header {
+    font-size: 10px;
+    letter-spacing: 2px;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 10px;
+    color: #ffffff;
+}
+
+.qv-highlights-list {
+    padding-left: 15px;
+    margin: 0;
+    font-size: 12px;
+    color: #b5b5b5;
+    line-height: 1.6;
+}
+
+.close-modal {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 32px;
+    color: #888888;
+    cursor: pointer;
+    z-index: 1005;
+    transition: color 0.2s ease;
+}
+
+.close-modal:hover {
+    color: #ffffff;
+}
+
+/* =========================================================================
+   6. CHECKOUT SUITE SYSTEM VIEW LAYOUTS
+   ========================================================================= */
+#checkout-section {
+    padding-top: 60px;
+    background-color: #000000;
+    min-height: 100vh;
+}
+
 .back-to-shop-btn {
-    background: #000;      /* Black background */
-    color: #fff;           /* White text */
-    border: none;
+    background: #000000;
+    color: #ffffff;
+    border: 1px solid #222222;
     padding: 12px 24px;
     font-size: 11px;
     letter-spacing: 2px;
     text-transform: uppercase;
     cursor: pointer;
     margin-bottom: 20px;
-    transition: opacity 0.3s ease;
+    transition: all 0.2s ease;
 }
 
 .back-to-shop-btn:hover {
-    opacity: 0.8;
+    background-color: #ffffff;
+    color: #000000;
 }
 
-/* Ensure the checkout section starts clean at the top */
-#checkout-section {
-    padding-top: 60px;
-}
 .checkout-container {
     max-width: 550px;
-    margin: 80px auto;
+    margin: 40px auto;
     padding: 20px;
     text-align: center;
-    color: #fff;
+    color: #ffffff;
 }
 
 .checkout-stack {
     display: flex;
     flex-direction: column;
-    gap: 12px; /* Uniform spacing */
+    gap: 14px;
     margin-top: 30px;
 }
 
-/* Force all inputs to be Black Background with White Text */
+/* Sharp, Flat Luxury Input Parameters (Removes Gray Overlays) */
 .checkout-stack input, 
-.checkout-select {
+.checkout-select,
+.checkout-input {
     width: 100%;
-    height: 50px;
-    background: #000 !important; /* Removes that blue/grey tint */
-    border: 1px solid #333;
+    height: 52px;
+    background: #000000 !important;
+    border: 1px solid #222222;
     padding: 0 15px;
-    color: #fff !important;
+    color: #ffffff !important;
     font-family: inherit;
     font-size: 13px;
     outline: none;
-    border-radius: 0; /* Sharp corners for luxury feel */
+    border-radius: 0px; /* Sharp modern edges */
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
 }
 
-/* The Bottom Three Fields */
+/* Custom Vector Arrow Layout for Selection Boxes */
+.checkout-select, .checkout-input {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="292.4" height="292.4"><path fill="%23FFFFFF" d="M287 69.4a17.6 17.6 0 0 0-13-5.4H18.4c-5 0-9.3 1.8-12.9 5.4A17.6 17.6 0 0 0 0 82.2c0 5 1.8 9.3 5.4 12.9l128 127.9c3.6 3.6 7.8 5.4 12.8 5.4s9.2-1.8 12.8-5.4L287 95c3.5-3.5 5.4-7.8 5.4-12.8 0-5-1.9-9.2-5.4-12.8z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 15px top 50%;
+    background-size: 10px auto;
+    padding-right: 40px;
+}
+
+.checkout-stack input:focus, 
+.checkout-select:focus,
+.checkout-input:focus {
+    border-color: #ffffff;
+}
+
+/* Uniform Grid for Zip/City Splits */
 .triple-grid {
     display: grid;
-    grid-template-columns: 1.5fr 1fr 1fr; /* City gets more space */
+    grid-template-columns: 1.4fr 0.8fr 0.8fr; /* Responsive localized geometric allocation layouts */
     gap: 10px;
 }
 
-/* Hover effect */
-.checkout-stack input:focus, 
-.checkout-select:focus {
-    border-color: #fff;
-}
-
-/* The Button */
+/* Primary Form Checkout Direct Execution Control Button */
 .checkout-btn-final {
+    width: 100%;
     height: 55px;
-    background: #fff;
-    color: #000;
-    border: none;
-    font-weight: 600;
+    background: #ffffff;
+    color: #000000;
+    border: 1px solid #ffffff;
+    font-weight: 700;
     letter-spacing: 2px;
     text-transform: uppercase;
     cursor: pointer;
     margin-top: 15px;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
+
 .checkout-btn-final:hover {
-    background: #cccccc;
-}
-.checkout-input {
-    background-color: #000;
-    color: #fff;
-    border: 1px solid #444;
-    padding: 10px;
-    width: 100%;
-    appearance: none; /* Removes default styling */
-    -webkit-appearance: none;
-    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg%20xmlns="http://www.w3.org/2000/svg"%20width="292.4"%20height="292.4"><path%20fill="%23FFFFFF"%20d="M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.4-12.8z"/></svg>');
-    background-repeat: no-repeat;
-    background-position: right 10px top 50%;
-    background-size: 12px auto;
+    background: #000000;
+    color: #ffffff;
+    border-color: #ffffff;
 }
 /* Container for the summary values */
 /* Update your existing selector */

@@ -13,8 +13,24 @@
 
 <script type="text/javascript">
    (function(){
-      emailjs.init("0pSpit0eoff3xv_09");
+      emailjs.init("0pSpit0Eoff3xV_O9");
    })();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+    (function() {
+        // FIXED THE SUBDOMAIN SPELLING KEY MATCH
+        const SUPABASE_URL = "https://ittsskhqkcbeuwuasjxf.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0dHNza2hxa2NiZXV3dWFzanhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMzkyMzYsImV4cCI6MjA4ODgxNTIzNn0.PD82j5owKbIMZS2YchFqrqQPyppbFNYkE12PhD-Wibw"; 
+        
+        if (typeof supabase !== 'undefined') {
+            window.supabaseClientInstance = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log("Atelier System Core: Global Supabase instance mounted successfully.");
+        } else {
+            console.error("Atelier Critical Error: Supabase CDN was not available on lifecycle load.");
+        }
+    })();
 </script>
 
 <script type="module" src="script.js"></script>
@@ -58,9 +74,11 @@
     <!-- Move the H2 inside the DIV like this -->
 <div id="shop-page">
     <h2>Featured Collection</h2>
+    
     <div class="product-grid"></div>
+    
     <div id="pagination-controls"></div>
-
+</div>
 </div>
 <div id="cart-panel" class="cart-sidebar">
     <div class="cart-header">
@@ -87,7 +105,7 @@
             </div>
             <div class="modal-right">
                 <h2 id="qv-title">Product Title</h2>
-                <p id="qv-price" class="price">>₦00.00</p>
+                <p id="qv-price" class="price">>₦00</p>
                 .00
                 <p id="qv-description">Description goes here...</p>
                 
@@ -106,7 +124,7 @@
 
 <form id="shipping-form" class="checkout-stack">
     <input type="text" name="full_name" placeholder="Full Name" required>
-    <input type="email" name="email" placeholder="Email Address" required>
+    <input type="email" name="email_address" placeholder="Email Address" required>
     <input type="tel" name="phone" placeholder="Phone (e.g. +234...)" required>
     
     <select name="country" class="checkout-select" style="color-scheme: dark;">
@@ -132,7 +150,7 @@
         <input type="text" name="zip" placeholder="Zip">
     </div>
 
-    <button type="button" id="payBtn" class="checkout-btn">Continue Payment</button>
+    <button type="button" id="pay-btn" class="checkout-btn">CONTINUE PAYMENT</button>
 </form>
 
 <div class="order-summary-display" style="margin-top: 25px; border-top: 1px solid #000; padding-top: 15px;">
@@ -206,10 +224,10 @@
 
         <div class="footer-col">
             <h4>WE ACCEPT</h4>
-            <div class="payment-methods">
-                <p style="font-size: 12px; color: #888;">Secure payments via</p>
-                <img src="https://paystack.com/assets/img/logo.svg" alt="Paystack" style="width: 120px; filter: grayscale(100%);">
-            </div>
+            <div class="secured-paystack-branding" style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #666;">
+    <i class="fa-solid fa-lock" style="font-size: 9px; color: #fff;"></i> 
+    Secured by <span style="color: #fff; font-weight: 700;">paystack</span>
+</div>
         </div>
     </div>
     <div class="footer-bottom">
