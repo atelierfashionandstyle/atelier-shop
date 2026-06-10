@@ -44,14 +44,15 @@ async function fetchAtelierProducts() {
         renderProducts(allProducts);
     } else {
         console.warn("Atelier System Core: Supabase table loaded empty. Generating design fallback frame.");
-        // Internal structured fallback array so your page never layout-collapses
+        // Internal fallback structure matches updated production structural rules
         allProducts = [{
             id: "fallback_01",
-            name: "ATELIER LUXURY OVERCOAT",
-            base_price: 125000,
+            title: "ATELIER LUXURY OVERCOAT",
+            valuation_price: 125000,
             category: "clothing",
             images: ["fashion.jpg.jpg"],
-            limited_stock: true,
+            status: "active",
+            stock: 5,
             description: "STORY:\nCrafted for elite silhouettes.\n\nHIGHLIGHTS:\nPremium Custom Cotton\nHandmade in Lagos"
         }];
         renderProducts(allProducts);
@@ -59,14 +60,24 @@ async function fetchAtelierProducts() {
 }
 
 // =========================================================================
-// --- 3. CORE PRODUCT RENDERING ENGINE ---
+// --- 3. UNIFIED HIGH-CONTRAST PRODUCT RENDERING ENGINE (MOBILE OPTIMIZED) ---
 // =========================================================================
 function renderProducts(products) {
     const productGrid = document.querySelector('.product-grid');
     if (!productGrid) return;
+    
+    // Inject responsive, high-contrast layout rules immediately
+    productGrid.style.cssText = `
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 30px 20px;
+        width: 100%;
+        box-sizing: border-box;
+    `;
     productGrid.innerHTML = '';
 
-    const totalItemsCount = products.length;
+    const activeShowroomProducts = products.filter(p => p.status !== 'hidden');
+    const totalItemsCount = activeShowroomProducts.length;
     const totalPages = Math.ceil(totalItemsCount / itemsPerPage);
     
     if (currentPage > totalPages && totalPages > 0) {
@@ -75,26 +86,60 @@ function renderProducts(products) {
     
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const paginatedItems = products.slice(startIndex, endIndex);
+    const paginatedItems = activeShowroomProducts.slice(startIndex, endIndex);
 
-    paginatedItems.forEach(product => {
-        const productCard = document.createElement('div');
-        productCard.className = 'atelier-product-card'; 
-        productCard.setAttribute('data-product-id', product.id); // Fixed missing lookup link layer
+    const editorialAdvertPool = [
+        {
+            subtitle: 'BESPOKE SERVICE',
+            title: 'THE COUTURE ATELIER',
+            text: 'Private measurements and hand-tailored curation for elite silhouettes. Available by direct salon booking only.',
+            actionText: 'SCHEDULE CONSULTATION'
+        },
+        {
+            subtitle: 'PRODUCTION LEGACY',
+            title: 'HANDMADE IN LAGOS',
+            text: 'Every garment passes through rigorous structural validation, utilizing custom textiles and global finishing standards.',
+            actionText: 'EXPLORE OUR STORY'
+        }
+    ];
 
-        const productTitle = product.name || product.title || "ATELIER Piece";
-        const productPrice = product.base_price || product.price || 0;
+    let advertIndex = 0;
+
+    paginatedItems.forEach((product, loopIndex) => {
         
+        // Dynamic Editorial Billboard Trigger
+        if (loopIndex > 0 && loopIndex % 4 === 0) {
+            const adData = editorialAdvertPool[advertIndex % editorialAdvertPool.length];
+            advertIndex++;
+
+            const adCard = document.createElement('div');
+            adCard.className = 'atelier-product-card atelier-editorial-billboard';
+            adCard.style.cssText = "background:#000; color:#fff; padding:30px 20px; display:flex; flex-direction:column; justify-content:space-between; border:1px solid #222; min-height:400px; box-sizing:border-box; text-align:center;";
+            adCard.innerHTML = `
+                <div style="margin: auto 0; display: flex; flex-direction: column; gap: 15px;">
+                    <span style="font-size: 9px; letter-spacing: 3px; color: #888; text-transform: uppercase; font-weight: bold;">${adData.subtitle}</span>
+                    <h2 style="font-size: 18px; font-weight: 300; letter-spacing: 4px; text-transform: uppercase; margin: 0; line-height: 1.3; color:#fff;">${adData.title}</h2>
+                    <div style="width: 30px; height: 1px; background: #fff; margin: 5px auto;"></div>
+                    <p style="font-size: 11px; font-weight: 300; line-height: 1.6; color: #ccc; max-width: 240px; margin: 0 auto;">${adData.text}</p>
+                </div>
+                <button type="button" onclick="openBespokeModal()" style="width:100%; background:#fff; color:#000; padding:12px; border:none; font-size:10px; font-weight:bold; letter-spacing:2px; cursor:pointer; text-transform:uppercase;">${adData.actionText}</button>
+            `;
+            productGrid.appendChild(adCard);
+        }
+
+        const productTitle = product.title || product.name || "ATELIER PIECE";
+        const productPrice = product.price || 0; 
+        const rawDescription = product.description || '';
         const originalPrice = product.original_price || Math.round(productPrice * 1.35); 
         const discountPercentage = Math.round(((originalPrice - productPrice) / originalPrice) * 100);
 
         let imageArray = [];
         if (Array.isArray(product.images) && product.images.length > 0) {
             imageArray = product.images;
-        } else if (product.image_url) {
-            imageArray = [product.image_url];
+        } else if (typeof product.images === 'string' && product.images.trim() !== '') {
+            try { imageArray = JSON.parse(product.images); } catch(e) { imageArray = [product.images]; }
         } else {
-            imageArray = ['https://via.placeholder.com/600x800?text=ATELIER'];
+            imageArray = ['fashion.jpg.jpg'];
         }
         
         const mainImageUrl = imageArray[0];
@@ -104,43 +149,54 @@ function renderProducts(products) {
         const category = (product.category || '').toLowerCase();
 
         if (category.includes('slide') || category.includes('footwear') || category.includes('shoe')) {
-            sizeOptions = `
-                <option value="40">40</option>
-                <option value="41">41</option>
-                <option value="42" selected>42</option>
-                <option value="43">43</option>
-                <option value="44">44</option>
-                <option value="45">45</option>`;
-        } else if (category.includes('tee') || category.includes('shirt') || category.includes('clothing') || category.includes('suit')) {
-            sizeOptions = `
-                <option value="S">S</option>
-                <option value="M" selected>M</option>
-                <option value="L">L</option>
-                <option value="XL">XL</option>
-                <option value="XXL">XXL</option>`;
+            sizeOptions = `<option value="40">40</option><option value="41">41</option><option value="42" selected>42</option><option value="43">43</option><option value="44">44</option><option value="45">45</option>`;
+        } else {
+            sizeOptions = `<option value="S">S</option><option value="M" selected>M</option><option value="L">L</option><option value="XL">XL</option><option value="XXL">XXL</option>`;
         }
 
-        const sizeHTML = sizeOptions ? `
-            <select id="size-select-${product.id}" class="atelier-size-select">
+        const sizeHTML = `
+            <select id="size-select-${product.id}" class="atelier-size-select" style="background:#000; color:#fff; border:1px solid #333; padding:10px; font-size:11px; width:100%; margin-top:5px; text-transform:uppercase; height:38px; -webkit-appearance:none;">
                 ${sizeOptions}
-            </select>` 
-            : '<div class="size-select-spacer"></div>';
+            </select>`;
+
+        const isSoldOut = product.status === 'sold-out' || (product.stock !== undefined && product.stock <= 0);
+        
+        const actionButtonHTML = isSoldOut 
+            ? `<button type="button" class="luxury-add-trigger" disabled style="background:#222; color:#555; border:1px solid #222; width:100%; padding:12px; font-size:10px; font-weight:bold; letter-spacing:2px; text-transform:uppercase; margin-top:8px; cursor:not-allowed;">ARCHIVE</button>`
+            : `<button type="button" class="luxury-add-trigger" style="width:100%; background:#fff; color:#000; border:1px solid #fff; padding:12px; font-size:10px; font-weight:bold; letter-spacing:2px; text-transform:uppercase; margin-top:8px; cursor:pointer;">ADD TO BAG</button>`;
+
+        // --- CLEAN NO-STRETCH BADGE SYSTEM ---
+        let premiumLabelHTML = '';
+        if (isSoldOut) {
+            premiumLabelHTML = '<span style="position:absolute; top:12px; left:12px; background:#000; color:#fff; border:1px solid #fff; font-size:9px; padding:4px 8px; font-weight:bold; letter-spacing:1px; z-index:10; max-height:20px; line-height:10px; display:inline-block; text-transform:uppercase;">ARCHIVE</span>';
+        } else if (product.stock <= 2) {
+            premiumLabelHTML = '<span style="position:absolute; top:12px; left:12px; background:#fff; color:#000; font-size:9px; padding:4px 8px; font-weight:bold; letter-spacing:1px; z-index:10; max-height:20px; line-height:10px; display:inline-block; text-transform:uppercase;">LIMITED</span>';
+        } else {
+            premiumLabelHTML = '<span style="position:absolute; top:12px; left:12px; background:#fff; color:#000; font-size:9px; padding:4px 8px; font-weight:bold; letter-spacing:1px; z-index:10; max-height:20px; line-height:10px; display:inline-block; text-transform:uppercase;">SPECIAL RELEASE</span>';
+        }
+
+        const productCard = document.createElement('div');
+        productCard.className = 'atelier-product-card'; 
+        productCard.setAttribute('data-product-id', product.id); 
 
         productCard.innerHTML = `
-            <div class="product-image-wrapper">
-                <img src="${mainImageUrl}" alt="${productTitle}" class="product-main-img">
-                ${product.limited_stock ? '<span class="luxury-stock-badge">LIMITED PIECES</span>' : ''}
+            <div class="product-image-wrapper" style="position:relative; overflow:hidden; aspect-ratio:3/4; background:#111; cursor:pointer;">
+                <img src="${mainImageUrl}" alt="${productTitle}" class="product-main-img" style="width:100%; height:100%; object-fit:cover; transition: opacity 0.4s ease;" onerror="this.src='fashion.jpg.jpg'">
+                ${premiumLabelHTML}
             </div>
-            <div class="product-info-wrapper">
-                <h3 class="product-brand-title">ATELIER</h3>
-                <p class="product-item-name">${productTitle}</p>
-                <div class="luxury-price-row">
-                    <span class="current-price">₦${Number(productPrice).toLocaleString()}</span>
-                    <span class="original-strike-price">₦${Number(originalPrice).toLocaleString()}</span>
-                    <span class="percentage-pill">-${discountPercentage}%</span>
+            <div class="product-info-wrapper" style="padding:12px 0 0 0; display:flex; flex-direction:column; gap:4px;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                    <h4 style="margin:0; font-size:9px; letter-spacing:2px; color:#666; text-transform:uppercase;">ATELIER</h4>
+                    ${discountPercentage > 0 && !isSoldOut ? `<span style="font-size: 8px; font-weight: bold; color:#c9a054;">VALUE DEV (-${discountPercentage}%)</span>` : ''}
+                </div>
+                <h3 class="product-item-name" style="margin:0; font-size:13px; font-weight:400; letter-spacing:1px; color:#ffffff; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${productTitle}</h3>
+                
+                <div class="luxury-price-row" style="display:flex; align-items:center; gap:8px; margin: 2px 0;">
+                    <span class="current-price" style="font-size:13px; font-weight:700; font-family:monospace; color:#ffffff;">₦${Number(productPrice).toLocaleString()}</span>
+                    ${discountPercentage > 0 && !isSoldOut ? `<span style="font-size:11px; font-family:monospace; color:#555555; text-decoration:line-through;">₦${Number(originalPrice).toLocaleString()}</span>` : ''}
                 </div>
                 ${sizeHTML}
-                <button type="button" class="luxury-add-trigger">ADD TO BAG</button>
+                ${actionButtonHTML}
             </div>
         `;
 
@@ -150,29 +206,29 @@ function renderProducts(products) {
             productCard.addEventListener('mouseleave', () => { imageEl.src = mainImageUrl; });
         }
 
-        const imageWrapper = productCard.querySelector('.product-image-wrapper');
-        imageWrapper.addEventListener('click', () => {
-            window.openQuickView(productTitle, product.description || '', imageArray, productPrice);
+        productCard.querySelector('.product-image-wrapper').addEventListener('click', () => {
+            window.openQuickView(productTitle, rawDescription, imageArray, productPrice);
         });
 
-        const bagBtn = productCard.querySelector('.luxury-add-trigger');
-        bagBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); 
-            const sizeSelect = productCard.querySelector(`#size-select-${product.id}`);
-            const selectedSize = sizeSelect ? sizeSelect.value : 'M';
-            window.addToBag(product.id, productTitle, productPrice, mainImageUrl, selectedSize);
-        });
+        if (!isSoldOut) {
+            productCard.querySelector('.luxury-add-trigger').addEventListener('click', (e) => {
+                e.stopPropagation(); 
+                const selectedSize = productCard.querySelector(`#size-select-${product.id}`).value;
+                window.addToBag(product.id, productTitle, productPrice, mainImageUrl, selectedSize);
+            });
+        }
 
         productGrid.appendChild(productCard);
     });
 
-    renderPaginationControls(products.length);
+    // Fire restored control builder
+    renderPaginationControls(activeShowroomProducts.length);
 }
 
 // =========================================================================
 // --- 4. ATELIER PREMIUM QUICK VIEW INTERFACE LOGIC ---
 // =========================================================================
-window.openQuickView = function(title, mixedDescription, images, price) {
+window.openQuickView = function(title, mixedDescription, images, price, isBespoke = false) {
     const modal = document.getElementById('quick-view-modal');
     if (!modal) return console.error("Quick View Modal structure missing from DOM!");
 
@@ -180,38 +236,69 @@ window.openQuickView = function(title, mixedDescription, images, price) {
     let storyText = mixedDescription || "";
     let highlightsText = "";
 
-    if (storyText.includes("STORY:\n") && storyText.includes("\n\nHIGHLIGHTS:\n")) {
+    // Safely parse custom break segments
+    if (storyText.includes("--- ATELIER SPECIFICATIONS ---")) {
+        const parts = storyText.split("--- ATELIER SPECIFICATIONS ---");
+        storyText = parts[0].replace("STORY:\n", "").trim();
+        highlightsText = parts[1] || "";
+    } else if (storyText.includes("STORY:\n") && storyText.includes("\n\nHIGHLIGHTS:\n")) {
         const parts = storyText.split("\n\nHIGHLIGHTS:\n");
         storyText = parts[0].replace("STORY:\n", "");
         highlightsText = parts[1] || "";
-    } else {
-        storyText = storyText.replace(/\n/g, '<br>');
     }
 
     const titleEl = document.getElementById('qv-title');
-    if (titleEl) titleEl.textContent = title.toUpperCase();
+    if (titleEl) {
+        titleEl.textContent = title.toUpperCase();
+        titleEl.style.color = "#ffffff";
+    }
 
     const priceEl = document.getElementById('qv-price');
-    if (priceEl) priceEl.innerHTML = `₦${Number(price).toLocaleString()}`;
+    if (priceEl) {
+        priceEl.style.color = "#ffffff";
+        priceEl.style.fontWeight = "700";
+        priceEl.style.fontFamily = "monospace";
+        // If it's a bespoke service, hide standard numbers and show luxury callout
+        priceEl.innerHTML = isBespoke ? `PRICE UPON REQUEST` : `₦${Number(price).toLocaleString()}`;
+    }
     
     const descContainer = document.getElementById('qv-description');
     if (descContainer) {
         let highlightsHTML = '';
         if (highlightsText.trim()) {
-            const bulletLines = highlightsText.split('\n').filter(l => l.trim() !== "");
+            const bulletLines = highlightsText.split('\n')
+                .map(l => l.trim())
+                .filter(l => l !== "" && l !== "-");
+            
             highlightsHTML = `
-                <div class="qv-highlights-box">
-                    <span class="qv-highlights-header">HIGHLIGHTS</span>
-                    <ul class="qv-highlights-list">
-                    <button type="button" class="luxury-add-trigger">ADD TO BAG</button>
-                        ${bulletLines.map(line => `<li>${line}</li>`).join('')}
+                <div class="qv-highlights-box" style="margin-top: 20px; padding-top: 15px; border-top: 1px dashed #333;">
+                    <span class="qv-highlights-header" style="font-size: 10px; font-weight: bold; letter-spacing: 2px; color: #ffffff; display: block; margin-bottom: 8px;">HIGHLIGHTS</span>
+                    <ul class="qv-highlights-list" style="margin: 0; padding-left: 15px; font-size: 11px; color: #cccccc; line-height: 1.8;">
+                        ${bulletLines.map(line => `<li>${line.startsWith('-') ? line.substring(1).trim() : line}</li>`).join('')}
                     </ul>
-                    
                 </div>`;
         }
+
+        // Add premium direct inquiry block inside the description space if bespoke is triggered
+        let bespokeContactHTML = '';
+        if (isBespoke) {
+            bespokeContactHTML = `
+                <div class="qv-bespoke-contact-box" style="margin-top: 25px; padding: 15px; border: 1px solid #333; background: #050505; text-align: center;">
+                    <span style="font-size: 10px; font-weight: bold; letter-spacing: 3px; color: #c9a054; display: block; margin-bottom: 5px;">PRIVATE SELECTION</span>
+                    <p style="font-size: 11px; color: #aaa; margin: 0 0 12px 0; line-height: 1.5;">This silhouette requires hand-tailored curation and direct atelier arrangements.</p>
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        <a href="mailto:concierge@atelier.com" style="color: #fff; font-size: 11px; text-decoration: none; font-family: monospace; letter-spacing: 1px;">📧 concierge@atelier.com</a>
+                        <a href="https://wa.me/234XXXXXXXXXX" target="_blank" style="color: #c9a054; font-size: 11px; text-decoration: none; font-family: monospace; letter-spacing: 1px;">💬 WhatsApp Atelier Salon</a>
+                    </div>
+                </div>`;
+        }
+
         descContainer.innerHTML = `
-            <div class="qv-story-text">${storyText}</div>
+            <div class="qv-story-text" style="font-size:12px; color:#cccccc; line-height:1.6; margin-bottom:15px; letter-spacing:0.3px;">
+                ${storyText.replace(/\n/g, '<br>')}
+            </div>
             ${highlightsHTML}
+            ${bespokeContactHTML}
         `;
     }
 
@@ -236,6 +323,7 @@ window.openQuickView = function(title, mixedDescription, images, price) {
                 thumbImg.src = imgUrl;
                 thumbImg.alt = "Preview Thumbnail";
                 thumbImg.className = "qv-thumbnail-item";
+                thumbImg.style.cssText = "width:50px; height:65px; object-fit:cover; margin-right:8px; cursor:pointer; border:1px solid #333;";
                 thumbImg.addEventListener('mouseover', () => {
                     if (mainImgEl) mainImgEl.src = imgUrl;
                 });
@@ -243,6 +331,18 @@ window.openQuickView = function(title, mixedDescription, images, price) {
             });
         }
     }
+
+    // Dynamic button controller logic based on product tier type
+    const actionArea = document.querySelector('.quickview-action-container') || document.getElementById('qv-action-area');
+    if (actionArea) {
+        if (isBespoke) {
+    actionArea.innerHTML = `<button type="button" onclick="window.closeQuickView(); openBespokeModal();" style="width:100%; background:#fff; color:#000; border:none; padding:14px; font-size:10px; font-weight:bold; letter-spacing:3px; text-transform:uppercase; cursor:pointer;">REQUEST PRIVATE BOOKING</button>`;
+        } else {
+            // Standard bag initialization layout rules
+            actionArea.innerHTML = `<button type="button" class="qv-add-to-bag-btn" style="width:100%; background:#fff; color:#000; border:none; padding:14px; font-size:10px; font-weight:bold; letter-spacing:3px; text-transform:uppercase; cursor:pointer;">ADD TO BAG</button>`;
+        }
+    }
+
     modal.style.display = 'flex';
 };
 
@@ -250,20 +350,79 @@ window.closeQuickView = function() {
     const modal = document.getElementById('quick-view-modal');
     if (modal) modal.style.display = 'none';
 };
+// =========================================================================
+// --- AUTOMATED BOUTIQUE COUTURE INTAKE PIPELINE ---
+// =========================================================================
+function handleBespokeSubmission(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    const data = {
+        tier: formData.get('couture_tier'),
+        name: formData.get('client_name'),
+        instagram: formData.get('client_instagram'),
+        email: formData.get('client_email'),
+        location: formData.get('client_location'),
+        height: formData.get('client_height'),
+        size: formData.get('client_size'),
+        footwear: formData.get('client_footwear'),
+        brief: formData.get('client_brief')
+    };
 
+    // 1. DYNAMIC CONCIERGE WHATSAPP STRING BUILDER
+    const whatsappText = `Hello ATELIER Salon Concierge,\n\n` +
+                         `I would like to reserve a Private Measurement Consultation.\n\n` +
+                         `• PROFILE: ${data.name.toUpperCase()} (${data.instagram})\n` +
+                         `• SERVICE: Bespoke ${data.tier}\n` +
+                         `• REGION: ${data.location}\n` +
+                         `• METRICS: Sizing ${data.size} | Footwear ${data.footwear} | Height ${data.height}\n\n` +
+                         `• BRIEF CONFIGURATION:\n"${data.brief}"`;
+
+    const encodedMessage = encodeURIComponent(whatsappText);
+    
+    // REPLACE WITH YOUR ACTUAL REGISTERED NIGERIAN WHATSAPP BUSINESS PHONE NUMBER
+    const atelierWhatsAppNumber = "08138116238"; 
+    const whatsappRedirectUrl = `https://wa.me/${atelierWhatsAppNumber}?text=${encodedMessage}`;
+
+    // 2. BACKGROUND EMAILJS BACKUP TRANSMISSION
+    if (typeof emailjs !== 'undefined') {
+        emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", {
+            from_name: data.name,
+            client_email: data.email,
+            instagram_handle: data.instagram,
+            tier_requested: data.tier,
+            location: data.location,
+            client_metrics: `Size: ${data.size}, Shoe: ${data.footwear}, Height: ${data.height}`,
+            design_brief: data.brief
+        })
+        .then(() => {
+            console.log("Atelier design ledger securely synced to office database.");
+        })
+        .catch((error) => {
+            console.error("EmailJS background notice queue delayed:", error);
+        });
+    }
+
+    // 3. EXECUTE VIP HANDOFF
+    form.reset();
+    window.open(whatsappRedirectUrl, '_blank');
+}
 // =========================================================================
 // --- 5. PREMIUM CATALOG INTERFACE NAVIGATION ENGINE ---
 // =========================================================================
 function renderPaginationControls(totalItems) {
+    // Target the specific static pagination wrapper present in your HTML markup
     const container = document.getElementById('pagination-controls');
-    if (!container) return;
+    if (!container) return console.error("Pagination controls container (#pagination-controls) missing from DOM!");
+    
     container.innerHTML = '';
     
     const totalPages = Math.ceil(totalItems / itemsPerPage);
-    if (totalPages <= 1) return; // Hidden completely if everything fits beautifully on one screen
+    if (totalPages <= 1) return; // Completely hide controls if everything fits beautifully on one screen
 
     // --- Dynamic Slider Constraints ---
-    // Sets how many page numbers show up around the active window viewport frame
     let maxVisibleButtons = 3; 
     let startPage = Math.max(1, currentPage - 1);
     let endPage = Math.min(totalPages, startPage + maxVisibleButtons - 1);
@@ -278,12 +437,20 @@ function renderPaginationControls(totalItems) {
         const btn = document.createElement('button');
         btn.innerHTML = label;
         btn.className = `page-btn ${additionalClass}`.trim();
+        
+        // Inline luxury styles for consistency across light/dark responsive views
+        btn.style.cssText = "background:#000; color:#fff; border:1px solid #333; padding:10px 15px; font-size:10px; font-weight:bold; cursor:pointer; text-transform:uppercase; font-family:monospace; min-width:40px;";
+        
         if (isDisabled) {
             btn.disabled = true;
+            btn.style.color = '#333';
+            btn.style.borderColor = '#111';
+            btn.style.cursor = 'not-allowed';
             btn.classList.add('disabled');
         } else {
             btn.addEventListener('click', () => {
                 currentPage = targetPage;
+                // Synchronized with your global database data array variable
                 renderProducts(allProducts);
                 scrollToShopHeader();
             });
@@ -303,6 +470,13 @@ function renderPaginationControls(totalItems) {
         numBtn.innerText = i;
         numBtn.className = (i === currentPage) ? 'page-btn active' : 'page-btn';
         
+        // Dynamic numbering styles
+        if (i === currentPage) {
+            numBtn.style.cssText = "background:#fff; color:#000; border:1px solid #fff; padding:10px 15px; font-size:10px; font-weight:bold; font-family:monospace; min-width:40px; cursor:default;";
+        } else {
+            numBtn.style.cssText = "background:#000; color:#fff; border:1px solid #333; padding:10px 15px; font-size:10px; font-weight:bold; font-family:monospace; min-width:40px; cursor:pointer;";
+        }
+        
         numBtn.addEventListener('click', () => {
             currentPage = i;
             renderProducts(allProducts);
@@ -318,11 +492,13 @@ function renderPaginationControls(totalItems) {
     container.appendChild(createNavButton('&#10093;&#10093;', totalPages, currentPage === totalPages, 'arrow-btn last-page'));
 }
 
-// Microsecond Viewport Anchor Handler
+// Viewport Anchor Handler
 function scrollToShopHeader() {
     const targetShopPage = document.getElementById('shop-page');
     if (targetShopPage) {
         targetShopPage.scrollIntoView({ behavior: 'smooth' });
+    } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 }
 

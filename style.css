@@ -73,7 +73,95 @@ nav a, .cart-icon { color: #fff; text-decoration: none; margin-left: 30px; curso
     transition: width 0.4s ease;
     z-index: 9999;
 }
+/* =========================================================================
+   ATELIER EDITORIAL GAP ARCHITECTURE
+   ========================================================================= */
+.atelier-editorial-gap-layer {
+    width: 100%;
+    background: #ffffff;
+    border-top: 1px solid #000000;
+    border-bottom: 2px solid #000000;
+    padding: 60px 0 30px 0; /* Creates luxury padding padding around elements */
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
 
+/* Staggered Heading Elements */
+.gap-brand-statement {
+    padding: 0 4%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: left;
+}
+
+.gap-edition-tag {
+    font-size: 9px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    color: #666666;
+    text-transform: uppercase;
+}
+
+.gap-main-headline {
+    font-size: 18px;
+    font-weight: 300;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    margin: 0;
+    color: #000000;
+}
+
+/* Infinite Kinetic Ribbon Container */
+.gap-marquee-wrapper {
+    width: 100%;
+    background: #000000;
+    color: #ffffff;
+    padding: 14px 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    border-style: 1px solid #000000;
+}
+
+.gap-marquee-inner {
+    display: flex;
+    white-space: nowrap;
+    gap: 40px;
+    animation: luxuryInfiniteScroll 35s linear infinite;
+}
+
+.gap-marquee-inner span {
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+
+/* Infinite Glide Animation Rules */
+@keyframes luxuryInfiniteScroll {
+    0% {
+        transform: translate3d(0, 0, 0);
+    }
+    100% {
+        transform: translate3d(-50%, 0, 0);
+    }
+}
+
+/* Responsive Scaling Pinpoint */
+@media (max-width: 768px) {
+    .atelier-editorial-gap-layer {
+        padding: 40px 0 20px 0;
+    }
+    .gap-main-headline {
+        font-size: 14px;
+        letter-spacing: 3px;
+    }
+}
 /* =========================================================================
    2. MAIN COLLECTION GRID & HIGH-PERFORMANCE CARDS
    ========================================================================= */
@@ -82,21 +170,22 @@ nav a, .cart-icon { color: #fff; text-decoration: none; margin-left: 30px; curso
     background-color: #000000;
 }
 
-/* Optimized dynamic display grid layout grid */
+/* --- EXTRA PRODUCTION SPACING RESOLUTION --- */
+.product-grid-section {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 80px 4% 120px 4%; /* Generous luxury breathing room layout cushion */
+    box-sizing: border-box;
+    clear: both;
+}
+
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Mobile-first optimized twin columns layout */
-    gap: 20px;
-    padding: 40px 2%;
-    background-color: #000000;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 40px 30px; /* Balances structural vertical and horizontal separation rows */
+    width: 100%;
 }
-
-@media (min-width: 768px) {
-    .product-grid {
-        grid-template-columns: repeat(4, 1fr); /* Seamlessly expands to 4 sharp items on desktop arrays */
-    }
-}
-
 /* Consolidated Minimalist Luxury Product Card Architecture */
 .atelier-product-card, .product-card {
     background: #0f0f0f; /* Refined dark luxury tone */
@@ -481,28 +570,29 @@ nav a, .cart-icon { color: #fff; text-decoration: none; margin-left: 30px; curso
     object-fit: cover;
     background-color: #050505;
 }
-
-/* Dynamic Carousel Thumbnail Row Layouts */
+/* Quick View Multiple Images Thumbnail Row Styles */
 .quickview-thumbnails-container {
     display: flex;
     gap: 10px;
     margin-top: 15px;
+    justify-content: flex-start;
     overflow-x: auto;
     padding-bottom: 5px;
 }
 
 .qv-thumbnail-item {
-    width: 50px;
-    height: 65px;
+    width: 60px;
+    height: 75px;
     object-fit: cover;
-    border: 1px solid #222222;
+    border: 1px solid #e5e5e5;
     cursor: pointer;
-    transition: opacity 0.2s, border-color 0.2s;
+    transition: border-color 0.2s ease, opacity 0.2s ease;
+    background: #fcfcfc;
 }
 
 .qv-thumbnail-item:hover {
-    opacity: 0.8;
-    border-color: #ffffff;
+    border-color: #000000; /* Sharp, high-contrast focus lines */
+    opacity: 0.9;
 }
 
 /* Quick View Text Fields Structuring */

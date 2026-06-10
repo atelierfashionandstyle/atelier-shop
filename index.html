@@ -9,8 +9,7 @@
 </head>
     <!-- Other content above... -->
 <script src="https://js.paystack.co/v1/inline.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" async></script>
 <script type="text/javascript">
    (function(){
       emailjs.init("0pSpit0Eoff3xV_O9");
@@ -70,7 +69,27 @@
 </div>
 
    </section>
+<div class="atelier-editorial-gap-layer">
+    
+    <div class="gap-brand-statement">
+        <span class="gap-edition-tag">COLLECTION N°02</span>
+        <h2 class="gap-main-headline">THE SHOWROOM DIRECTORY</h2>
+    </div>
 
+    <div class="gap-marquee-wrapper">
+        <div class="gap-marquee-inner">
+            <span>• BESPOKE COMMISSIONS OPEN </span>
+            <span>• RIGOROUS STRUCTURAL VALIDATION </span>
+            <span>• PREMIUM WEIGHT TEXTILES </span>
+            <span>• SHIPPED FROM LAGOS GLOBALITY </span>
+            <span>• BESPOKE COMMISSIONS OPEN </span>
+            <span>• RIGOROUS STRUCTURAL VALIDATION </span>
+            <span>• PREMIUM WEIGHT TEXTILES </span>
+            <span>• SHIPPED FROM LAGOS GLOBALITY </span>
+        </div>
+    </div>
+
+</div>
     <!-- Move the H2 inside the DIV like this -->
 <div id="shop-page">
     <h2>Featured Collection</h2>
@@ -94,8 +113,95 @@
         <button class="checkout-btn">PROCEED TO CHECKOUT</button>
     </div>
 </div>
-<!-- Quick View Modal -->
 <div id="quick-view-modal" class="modal">
+    <!-- =========================================================================
+     --- ATELIER PRIVATE COUTURE RESERVATION MODAL SLIDER ---
+     ========================================================================= -->
+<div id="bespoke-intake-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.98); z-index:99999; justify-content:center; align-items:center; padding:20px; box-sizing:border-box; overflow-y:auto;">
+    <div style="position:relative; width:100%; max-width:650px; background:#000000; border:1px solid #1a1a1a; padding:40px 30px; box-sizing:border-box; margin:auto;">
+        
+        <!-- CLOSE COMPONENT -->
+        <button type="button" onclick="closeBespokeModal()" style="position:absolute; top:20px; right:20px; background:none; border:none; color:#ffffff; font-size:20px; cursor:pointer; font-family:monospace; line-height:1;">&times;</button>
+
+        <div style="text-align:center; margin-bottom:35px; display:flex; flex-direction:column; gap:8px;">
+            <span style="font-size:9px; letter-spacing:5px; color:#c9a054; font-weight:bold; text-transform:uppercase;">PRIVATE SALON</span>
+            <h2 style="font-size:20px; font-weight:300; letter-spacing:5px; margin:0; text-transform:uppercase; color:#fff;">BESPOKE INTAKE</h2>
+            <div style="width:30px; height:1px; background:#fff; margin:5px auto;"></div>
+            <p style="font-size:11px; color:#888; max-width:420px; margin:0 auto; line-height:1.6; letter-spacing:0.5px;">
+                Execute an intentional silhouette commissioning profile. The design house pre-compiles your metrics for immediate validation.
+            </p>
+        </div>
+
+        <form id="atelier-intake-form" onsubmit="handleBespokeSubmission(event)" style="display:flex; flex-direction:column; gap:20px;">
+            
+            <!-- COUTURE SELECTION MAP -->
+            <div>
+                <label style="font-size:9px; letter-spacing:2px; color:#666; display:block; margin-bottom:8px; text-transform:uppercase; font-weight:bold;">1. SELECT SILHOUETTE PREFERENCE</label>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <label style="display:flex; align-items:center; gap:12px; background:#050505; border:1px solid #222; padding:12px; cursor:pointer; font-size:11px; letter-spacing:1px; color:#fff;">
+                        <input type="radio" name="couture_tier" value="Bridal & Evening Wear Curation" checked style="accent-color:#c9a054;">
+                        <span>COUTURE BRIDAL & EVENING WEAR CURATION</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:12px; background:#050505; border:1px solid #222; padding:12px; cursor:pointer; font-size:11px; letter-spacing:1px; color:#fff;">
+                        <input type="radio" name="couture_tier" value="Seasonal Wardrobe & Tailoring" style="accent-color:#c9a054;">
+                        <span>THE SEASONAL SILHOUETTE WARDROBE (SUITS / ELITE CASUAL)</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- IDENTITY FIELDS -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                <div>
+                    <label style="font-size:9px; letter-spacing:2px; color:#666; display:block; margin-bottom:5px; text-transform:uppercase;">FULL NAME</label>
+                    <input type="text" name="client_name" required style="width:100%; background:#000; color:#fff; border:1px solid #222; padding:10px; font-size:12px; box-sizing:border-box; letter-spacing:0.5px;">
+                </div>
+                <div>
+                    <label style="font-size:9px; letter-spacing:2px; color:#666; display:block; margin-bottom:5px; text-transform:uppercase;">INSTAGRAM HANDLE</label>
+                    <input type="text" name="client_instagram" placeholder="@username" required style="width:100%; background:#000; color:#fff; border:1px solid #222; padding:10px; font-size:12px; box-sizing:border-box; letter-spacing:0.5px;">
+                </div>
+            </div>
+
+            <!-- CONTACT MATRIX -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                <div>
+                    <label style="font-size:9px; letter-spacing:2px; color:#666; display:block; margin-bottom:5px; text-transform:uppercase;">EMAIL ADDRESS</label>
+                    <input type="email" name="client_email" required style="width:100%; background:#000; color:#fff; border:1px solid #222; padding:10px; font-size:12px; box-sizing:border-box; letter-spacing:0.5px;">
+                </div>
+                <div>
+                    <label style="font-size:9px; letter-spacing:2px; color:#666; display:block; margin-bottom:5px; text-transform:uppercase;">LOCATION / CITY</label>
+                    <input type="text" name="client_location" placeholder="e.g. Lagos, Nigeria" required style="width:100%; background:#000; color:#fff; border:1px solid #222; padding:10px; font-size:12px; box-sizing:border-box; letter-spacing:0.5px;">
+                </div>
+            </div>
+
+            <!-- MEASUREMENT SPECIFICATIONS -->
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+                <div>
+                    <label style="font-size:9px; letter-spacing:1px; color:#666; display:block; margin-bottom:5px; text-transform:uppercase; text-align:center;">HEIGHT</label>
+                    <input type="text" name="client_height" required style="width:100%; background:#000; color:#fff; border:1px solid #222; padding:10px; font-size:11px; box-sizing:border-box; text-align:center;">
+                </div>
+                <div>
+                    <label style="font-size:9px; letter-spacing:1px; color:#666; display:block; margin-bottom:5px; text-transform:uppercase; text-align:center;">APPAREL SIZE</label>
+                    <input type="text" name="client_size" placeholder="M / UK 12" required style="width:100%; background:#000; color:#fff; border:1px solid #222; padding:10px; font-size:11px; box-sizing:border-box; text-align:center;">
+                </div>
+                <div>
+                    <label style="font-size:9px; letter-spacing:1px; color:#666; display:block; margin-bottom:5px; text-transform:uppercase; text-align:center;">SHOE SIZE</label>
+                    <input type="text" name="client_footwear" placeholder="42 / 43" required style="width:100%; background:#000; color:#fff; border:1px solid #222; padding:10px; font-size:11px; box-sizing:border-box; text-align:center;">
+                </div>
+            </div>
+
+            <!-- CORE STYLE BRIEF -->
+            <div>
+                <label style="font-size:9px; letter-spacing:2px; color:#666; display:block; margin-bottom:5px; text-transform:uppercase;">THE DESIGN BLUEPRINT BRIEF</label>
+                <textarea name="client_brief" rows="3" placeholder="Detail your custom silhouette expectations..." required style="width:100%; background:#000; color:#fff; border:1px solid #222; padding:10px; font-size:11px; box-sizing:border-box; line-height:1.5; resize:none; font-family:sans-serif;"></textarea>
+            </div>
+
+            <!-- PROCESSING CTA -->
+            <button type="submit" style="width:100%; background:#ffffff; color:#000000; border:none; padding:14px; font-size:10px; font-weight:bold; letter-spacing:2px; text-transform:uppercase; cursor:pointer; margin-top:5px;">
+                SUBMIT LEDGER & INITIATE CONCIERGE CHAT
+            </button>
+        </form>
+    </div>
+</div>
     <div class="modal-content">
         <span class="close-modal" onclick="closeQuickView()">&times;</span>
         
@@ -105,11 +211,11 @@
             </div>
             <div class="modal-right">
                 <h2 id="qv-title">Product Title</h2>
-                <p id="qv-price" class="price">>₦00</p>
-                .00
+                
+                <p id="qv-price" class="price">₦0.00</p>
+                
                 <p id="qv-description">Description goes here...</p>
                 
-                <!-- This will be automatically filled by the script -->
                 <div id="qv-actions"></div>
             </div>
         </div>
