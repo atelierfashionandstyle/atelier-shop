@@ -5,7 +5,7 @@ import { supabase } from './supabaseClient.js';
 // =========================================================================
 let allProducts = [];          // Stores your collection data from Supabase
 let currentPage = 1;           // Tracks active viewing page frame
-let itemsPerPage = 8;          // Controls how many luxury pieces show at once
+let itemsPerPage = 17;          // Controls how many luxury pieces show at once
 
 window.atelierMemoryCart = window.atelierMemoryCart || [];
 window.activeOrderSnapshot = window.activeOrderSnapshot || [];
@@ -44,13 +44,13 @@ async function fetchAtelierProducts() {
         renderProducts(allProducts);
     } else {
         console.warn("Atelier System Core: Supabase table loaded empty. Generating design fallback frame.");
-        // Internal fallback structure matches updated production structural rules
+        // Internal placeholder matches luxury presentation schema rules
         allProducts = [{
             id: "fallback_01",
             title: "ATELIER LUXURY OVERCOAT",
-            valuation_price: 125000,
+            price: 125000,
             category: "clothing",
-            images: ["fashion.jpg.jpg"],
+            images: ["https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=800"],
             status: "active",
             stock: 5,
             description: "STORY:\nCrafted for elite silhouettes.\n\nHIGHLIGHTS:\nPremium Custom Cotton\nHandmade in Lagos"
@@ -66,13 +66,14 @@ function renderProducts(products) {
     const productGrid = document.querySelector('.product-grid');
     if (!productGrid) return;
     
-    // Inject responsive, high-contrast layout rules immediately
+    // Updated Grid Rules: Standard layout switches to a clean 2-column pattern on mobile down to 160px
     productGrid.style.cssText = `
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 30px 20px;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 25px 15px;
         width: 100%;
         box-sizing: border-box;
+        padding: 0 10px;
     `;
     productGrid.innerHTML = '';
 
@@ -98,7 +99,7 @@ function renderProducts(products) {
         {
             subtitle: 'PRODUCTION LEGACY',
             title: 'HANDMADE IN LAGOS',
-            text: 'Every garment passes through rigorous structural validation, utilizing custom textiles and global finishing standards.',
+            text: 'Every garment passes through rigorous structural validation, finishing standards.',
             actionText: 'EXPLORE OUR STORY'
         }
     ];
@@ -114,15 +115,15 @@ function renderProducts(products) {
 
             const adCard = document.createElement('div');
             adCard.className = 'atelier-product-card atelier-editorial-billboard';
-            adCard.style.cssText = "background:#000; color:#fff; padding:30px 20px; display:flex; flex-direction:column; justify-content:space-between; border:1px solid #222; min-height:400px; box-sizing:border-box; text-align:center;";
+            adCard.style.cssText = "background:#000; color:#fff; padding:25px 15px; display:flex; flex-direction:column; justify-content:space-between; border:1px solid #222; min-height:320px; box-sizing:border-box; text-align:center;";
             adCard.innerHTML = `
                 <div style="margin: auto 0; display: flex; flex-direction: column; gap: 15px;">
-                    <span style="font-size: 9px; letter-spacing: 3px; color: #888; text-transform: uppercase; font-weight: bold;">${adData.subtitle}</span>
-                    <h2 style="font-size: 18px; font-weight: 300; letter-spacing: 4px; text-transform: uppercase; margin: 0; line-height: 1.3; color:#fff;">${adData.title}</h2>
-                    <div style="width: 30px; height: 1px; background: #fff; margin: 5px auto;"></div>
-                    <p style="font-size: 11px; font-weight: 300; line-height: 1.6; color: #ccc; max-width: 240px; margin: 0 auto;">${adData.text}</p>
+                    <span style="font-size: 8px; letter-spacing: 2px; color: #888; text-transform: uppercase; font-weight: bold;">${adData.subtitle}</span>
+                    <h2 style="font-size: 15px; font-weight: 300; letter-spacing: 3px; text-transform: uppercase; margin: 0; line-height: 1.3; color:#fff;">${adData.title}</h2>
+                    <div style="width: 20px; height: 1px; background: #fff; margin: 5px auto;"></div>
+                    <p style="font-size: 10px; font-weight: 300; line-height: 1.5; color: #ccc; margin: 0 auto; max-width: 100%;">${adData.text}</p>
                 </div>
-                <button type="button" onclick="openBespokeModal()" style="width:100%; background:#fff; color:#000; padding:12px; border:none; font-size:10px; font-weight:bold; letter-spacing:2px; cursor:pointer; text-transform:uppercase;">${adData.actionText}</button>
+                <button type="button" onclick="openBespokeModal()" style="width:100%; background:#fff; color:#000; padding:10px; border:none; font-size:9px; font-weight:bold; letter-spacing:1px; cursor:pointer; text-transform:uppercase; margin-top: 15px;">${adData.actionText}</button>
             `;
             productGrid.appendChild(adCard);
         }
@@ -133,13 +134,32 @@ function renderProducts(products) {
         const originalPrice = product.original_price || Math.round(productPrice * 1.35); 
         const discountPercentage = Math.round(((originalPrice - productPrice) / originalPrice) * 100);
 
+        // --- SAFE DATA TYPE EXTRACTOR SYSTEM ---
         let imageArray = [];
-        if (Array.isArray(product.images) && product.images.length > 0) {
-            imageArray = product.images;
-        } else if (typeof product.images === 'string' && product.images.trim() !== '') {
-            try { imageArray = JSON.parse(product.images); } catch(e) { imageArray = [product.images]; }
-        } else {
-            imageArray = ['fashion.jpg.jpg'];
+        let rawSource = product.images || product.image;
+
+        if (Array.isArray(rawSource) && rawSource.length > 0) {
+            imageArray = rawSource;
+        } else if (typeof rawSource === 'string' && rawSource.trim() !== '' && rawSource !== '[]') {
+            try {
+                // Try parsing structural array variations
+                let cleanStr = rawSource.trim();
+                if (cleanStr.startsWith('[') && cleanStr.endsWith(']')) {
+                    imageArray = JSON.parse(cleanStr);
+                } else {
+                    imageArray = [cleanStr];
+                }
+            } catch(e) { 
+                imageArray = [rawSource.replace(/[\[\]\"]/g, '').trim()]; 
+            }
+        }
+
+        // Clean out broken fallbacks
+        imageArray = imageArray.filter(imgUrl => imgUrl && !imgUrl.includes('fashion.jpg') && imgUrl.startsWith('http'));
+
+        // If the product still has an empty array list, use a clean live asset placeholder
+        if (imageArray.length === 0) {
+            imageArray = ['https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=600'];
         }
         
         const mainImageUrl = imageArray[0];
@@ -155,45 +175,45 @@ function renderProducts(products) {
         }
 
         const sizeHTML = `
-            <select id="size-select-${product.id}" class="atelier-size-select" style="background:#000; color:#fff; border:1px solid #333; padding:10px; font-size:11px; width:100%; margin-top:5px; text-transform:uppercase; height:38px; -webkit-appearance:none;">
+            <select id="size-select-${product.id}" class="atelier-size-select" style="background:#000; color:#fff; border:1px solid #333; padding:8px; font-size:10px; width:100%; margin-top:4px; text-transform:uppercase; height:36px; -webkit-appearance:none; border-radius:0; box-sizing:border-box;">
                 ${sizeOptions}
             </select>`;
 
         const isSoldOut = product.status === 'sold-out' || (product.stock !== undefined && product.stock <= 0);
         
         const actionButtonHTML = isSoldOut 
-            ? `<button type="button" class="luxury-add-trigger" disabled style="background:#222; color:#555; border:1px solid #222; width:100%; padding:12px; font-size:10px; font-weight:bold; letter-spacing:2px; text-transform:uppercase; margin-top:8px; cursor:not-allowed;">ARCHIVE</button>`
-            : `<button type="button" class="luxury-add-trigger" style="width:100%; background:#fff; color:#000; border:1px solid #fff; padding:12px; font-size:10px; font-weight:bold; letter-spacing:2px; text-transform:uppercase; margin-top:8px; cursor:pointer;">ADD TO BAG</button>`;
+            ? `<button type="button" class="luxury-add-trigger" disabled style="background:#222; color:#555; border:1px solid #222; width:100%; padding:10px; font-size:9px; font-weight:bold; letter-spacing:1px; text-transform:uppercase; margin-top:6px; cursor:not-allowed; box-sizing:border-box;">ARCHIVE</button>`
+            : `<button type="button" class="luxury-add-trigger" style="width:100%; background:#fff; color:#000; border:1px solid #fff; padding:10px; font-size:9px; font-weight:bold; letter-spacing:1px; text-transform:uppercase; margin-top:6px; cursor:pointer; box-sizing:border-box;">ADD TO BAG</button>`;
 
-        // --- CLEAN NO-STRETCH BADGE SYSTEM ---
         let premiumLabelHTML = '';
         if (isSoldOut) {
-            premiumLabelHTML = '<span style="position:absolute; top:12px; left:12px; background:#000; color:#fff; border:1px solid #fff; font-size:9px; padding:4px 8px; font-weight:bold; letter-spacing:1px; z-index:10; max-height:20px; line-height:10px; display:inline-block; text-transform:uppercase;">ARCHIVE</span>';
+            premiumLabelHTML = '<span style="position:absolute; top:8px; left:8px; background:#000; color:#fff; border:1px solid #fff; font-size:8px; padding:3px 6px; font-weight:bold; letter-spacing:1px; z-index:10; display:inline-block; text-transform:uppercase;">ARCHIVE</span>';
         } else if (product.stock <= 2) {
-            premiumLabelHTML = '<span style="position:absolute; top:12px; left:12px; background:#fff; color:#000; font-size:9px; padding:4px 8px; font-weight:bold; letter-spacing:1px; z-index:10; max-height:20px; line-height:10px; display:inline-block; text-transform:uppercase;">LIMITED</span>';
+            premiumLabelHTML = '<span style="position:absolute; top:8px; left:8px; background:#fff; color:#000; font-size:8px; padding:3px 6px; font-weight:bold; letter-spacing:1px; z-index:10; display:inline-block; text-transform:uppercase;">LIMITED</span>';
         } else {
-            premiumLabelHTML = '<span style="position:absolute; top:12px; left:12px; background:#fff; color:#000; font-size:9px; padding:4px 8px; font-weight:bold; letter-spacing:1px; z-index:10; max-height:20px; line-height:10px; display:inline-block; text-transform:uppercase;">SPECIAL RELEASE</span>';
+            premiumLabelHTML = '<span style="position:absolute; top:8px; left:8px; background:#fff; color:#000; font-size:8px; padding:3px 6px; font-weight:bold; letter-spacing:1px; z-index:10; display:inline-block; text-transform:uppercase;">SPECIAL RELEASE</span>';
         }
 
         const productCard = document.createElement('div');
         productCard.className = 'atelier-product-card'; 
         productCard.setAttribute('data-product-id', product.id); 
+        productCard.style.cssText = "display:flex; flex-direction:column; width:100%; box-sizing:border-box;";
 
         productCard.innerHTML = `
-            <div class="product-image-wrapper" style="position:relative; overflow:hidden; aspect-ratio:3/4; background:#111; cursor:pointer;">
-                <img src="${mainImageUrl}" alt="${productTitle}" class="product-main-img" style="width:100%; height:100%; object-fit:cover; transition: opacity 0.4s ease;" onerror="this.src='fashion.jpg.jpg'">
+            <div class="product-image-wrapper" style="position:relative; overflow:hidden; aspect-ratio:3/4; background:#111; cursor:pointer; width:100%;">
+                <img src="${mainImageUrl}" alt="${productTitle}" class="product-main-img" style="width:100%; height:100%; object-fit:cover; transition: opacity 0.4s ease;" onerror="this.src='https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=600'">
                 ${premiumLabelHTML}
             </div>
-            <div class="product-info-wrapper" style="padding:12px 0 0 0; display:flex; flex-direction:column; gap:4px;">
-                <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                    <h4 style="margin:0; font-size:9px; letter-spacing:2px; color:#666; text-transform:uppercase;">ATELIER</h4>
-                    ${discountPercentage > 0 && !isSoldOut ? `<span style="font-size: 8px; font-weight: bold; color:#c9a054;">VALUE DEV (-${discountPercentage}%)</span>` : ''}
+            <div class="product-info-wrapper" style="padding:10px 0 0 0; display:flex; flex-direction:column; gap:3px; width:100%; box-sizing:border-box;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; width:100%;">
+                    <h4 style="margin:0; font-size:8px; letter-spacing:1px; color:#666; text-transform:uppercase;">ATELIER</h4>
+                    ${discountPercentage > 0 && !isSoldOut ? `<span style="font-size: 7px; font-weight: bold; color:#c9a054;">VALUE (-${discountPercentage}%)</span>` : ''}
                 </div>
-                <h3 class="product-item-name" style="margin:0; font-size:13px; font-weight:400; letter-spacing:1px; color:#ffffff; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${productTitle}</h3>
+                <h3 class="product-item-name" style="margin:0; font-size:12px; font-weight:400; letter-spacing:0.5px; color:#ffffff; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%;">${productTitle}</h3>
                 
-                <div class="luxury-price-row" style="display:flex; align-items:center; gap:8px; margin: 2px 0;">
-                    <span class="current-price" style="font-size:13px; font-weight:700; font-family:monospace; color:#ffffff;">₦${Number(productPrice).toLocaleString()}</span>
-                    ${discountPercentage > 0 && !isSoldOut ? `<span style="font-size:11px; font-family:monospace; color:#555555; text-decoration:line-through;">₦${Number(originalPrice).toLocaleString()}</span>` : ''}
+                <div class="luxury-price-row" style="display:flex; align-items:center; gap:6px; margin: 1px 0; width:100%;">
+                    <span class="current-price" style="font-size:12px; font-weight:700; font-family:monospace; color:#ffffff;">₦${Number(productPrice).toLocaleString()}</span>
+                    ${discountPercentage > 0 && !isSoldOut ? `<span style="font-size:10px; font-family:monospace; color:#555555; text-decoration:line-through;">₦${Number(originalPrice).toLocaleString()}</span>` : ''}
                 </div>
                 ${sizeHTML}
                 ${actionButtonHTML}
@@ -207,9 +227,16 @@ function renderProducts(products) {
         }
 
         productCard.querySelector('.product-image-wrapper').addEventListener('click', () => {
-            window.openQuickView(productTitle, rawDescription, imageArray, productPrice);
-        });
-
+    // 1. MUST use 'imageArray' (the locally processed multi-image array)
+    // 2. MUST pass 'product.category' at the end to auto-switch size matrices
+    window.openQuickView(
+        productTitle, 
+        rawDescription, 
+        imageArray, 
+        productPrice, 
+        product.category
+    );
+});
         if (!isSoldOut) {
             productCard.querySelector('.luxury-add-trigger').addEventListener('click', (e) => {
                 e.stopPropagation(); 
@@ -221,134 +248,162 @@ function renderProducts(products) {
         productGrid.appendChild(productCard);
     });
 
-    // Fire restored control builder
     renderPaginationControls(activeShowroomProducts.length);
 }
 
 // =========================================================================
-// --- 4. ATELIER PREMIUM QUICK VIEW INTERFACE LOGIC ---
+// ATELIER RESHAPED & VIEWPORT-OPTIMIZED QUICK VIEW ENGINE
 // =========================================================================
-window.openQuickView = function(title, mixedDescription, images, price, isBespoke = false) {
-    const modal = document.getElementById('quick-view-modal');
-    if (!modal) return console.error("Quick View Modal structure missing from DOM!");
-
-    const imageArray = Array.isArray(images) ? images : [images];
-    let storyText = mixedDescription || "";
-    let highlightsText = "";
-
-    // Safely parse custom break segments
-    if (storyText.includes("--- ATELIER SPECIFICATIONS ---")) {
-        const parts = storyText.split("--- ATELIER SPECIFICATIONS ---");
-        storyText = parts[0].replace("STORY:\n", "").trim();
-        highlightsText = parts[1] || "";
-    } else if (storyText.includes("STORY:\n") && storyText.includes("\n\nHIGHLIGHTS:\n")) {
-        const parts = storyText.split("\n\nHIGHLIGHTS:\n");
-        storyText = parts[0].replace("STORY:\n", "");
-        highlightsText = parts[1] || "";
+window.openQuickView = function(title, description, imageArray, price, category) {
+    let modalContainer = document.getElementById('luxury-quickview-modal');
+    if (!modalContainer) {
+        modalContainer = document.createElement('div');
+        modalContainer.id = 'luxury-quickview-modal';
+        document.body.appendChild(modalContainer);
     }
 
-    const titleEl = document.getElementById('qv-title');
-    if (titleEl) {
-        titleEl.textContent = title.toUpperCase();
-        titleEl.style.color = "#ffffff";
+    // Secure multi-image data array parsing execution
+    let finalImages = [];
+    if (Array.isArray(imageArray) && imageArray.length > 0) {
+        finalImages = imageArray;
+    } else if (typeof imageArray === 'string' && imageArray.trim() !== '' && imageArray !== '[]') {
+        try {
+            let cleanStr = imageArray.trim();
+            if (cleanStr.startsWith('{') && cleanStr.endsWith('}')) {
+                finalImages = cleanStr.replace(/[{}]/g, '').split(',').map(url => url.replace(/["']/g, '').trim());
+            } else if (cleanStr.startsWith('[') && cleanStr.endsWith(']')) {
+                finalImages = JSON.parse(cleanStr);
+            } else {
+                finalImages = [cleanStr];
+            }
+        } catch(e) {
+            finalImages = [imageArray.replace(/[\[\]\{\}\"\']/g, '').trim()];
+        }
+    }
+    finalImages = finalImages.filter(imgUrl => imgUrl && imgUrl.startsWith('http'));
+    if (finalImages.length === 0) {
+        finalImages = ['https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=800'];
     }
 
-    const priceEl = document.getElementById('qv-price');
-    if (priceEl) {
-        priceEl.style.color = "#ffffff";
-        priceEl.style.fontWeight = "700";
-        priceEl.style.fontFamily = "monospace";
-        // If it's a bespoke service, hide standard numbers and show luxury callout
-        priceEl.innerHTML = isBespoke ? `PRICE UPON REQUEST` : `₦${Number(price).toLocaleString()}`;
-    }
-    
-    const descContainer = document.getElementById('qv-description');
-    if (descContainer) {
-        let highlightsHTML = '';
-        if (highlightsText.trim()) {
-            const bulletLines = highlightsText.split('\n')
-                .map(l => l.trim())
-                .filter(l => l !== "" && l !== "-");
-            
-            highlightsHTML = `
-                <div class="qv-highlights-box" style="margin-top: 20px; padding-top: 15px; border-top: 1px dashed #333;">
-                    <span class="qv-highlights-header" style="font-size: 10px; font-weight: bold; letter-spacing: 2px; color: #ffffff; display: block; margin-bottom: 8px;">HIGHLIGHTS</span>
-                    <ul class="qv-highlights-list" style="margin: 0; padding-left: 15px; font-size: 11px; color: #cccccc; line-height: 1.8;">
-                        ${bulletLines.map(line => `<li>${line.startsWith('-') ? line.substring(1).trim() : line}</li>`).join('')}
+    // Format description text metrics safely
+    let storyText = description || '';
+    let specificationsHTML = '';
+    if (storyText.includes('--- ATELIER SPECIFICATIONS ---')) {
+        const structuralSplits = storyText.split('--- ATELIER SPECIFICATIONS ---');
+        storyText = structuralSplits[0].trim();
+        const highlightsList = structuralSplits[1].trim().split('\n').filter(line => line.trim() !== '');
+        
+        if (highlightsList.length > 0) {
+            specificationsHTML = `
+                <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #222;">
+                    <h5 style="margin: 0 0 8px 0; font-size: 9px; letter-spacing: 2px; color: #888; text-transform: uppercase;">SPECIFICATIONS</h5>
+                    <ul style="margin: 0; padding-left: 12px; font-size: 10px; color: #ccc; line-height: 1.5; display: flex; flex-direction: column; gap: 3px;">
+                        ${highlightsList.map(item => `<li>${item.replace(/^-\s*/, '')}</li>`).join('')}
                     </ul>
-                </div>`;
+                </div>
+            `;
         }
-
-        // Add premium direct inquiry block inside the description space if bespoke is triggered
-        let bespokeContactHTML = '';
-        if (isBespoke) {
-            bespokeContactHTML = `
-                <div class="qv-bespoke-contact-box" style="margin-top: 25px; padding: 15px; border: 1px solid #333; background: #050505; text-align: center;">
-                    <span style="font-size: 10px; font-weight: bold; letter-spacing: 3px; color: #c9a054; display: block; margin-bottom: 5px;">PRIVATE SELECTION</span>
-                    <p style="font-size: 11px; color: #aaa; margin: 0 0 12px 0; line-height: 1.5;">This silhouette requires hand-tailored curation and direct atelier arrangements.</p>
-                    <div style="display:flex; flex-direction:column; gap:8px;">
-                        <a href="mailto:concierge@atelier.com" style="color: #fff; font-size: 11px; text-decoration: none; font-family: monospace; letter-spacing: 1px;">📧 concierge@atelier.com</a>
-                        <a href="https://wa.me/234XXXXXXXXXX" target="_blank" style="color: #c9a054; font-size: 11px; text-decoration: none; font-family: monospace; letter-spacing: 1px;">💬 WhatsApp Atelier Salon</a>
-                    </div>
-                </div>`;
-        }
-
-        descContainer.innerHTML = `
-            <div class="qv-story-text" style="font-size:12px; color:#cccccc; line-height:1.6; margin-bottom:15px; letter-spacing:0.3px;">
-                ${storyText.replace(/\n/g, '<br>')}
-            </div>
-            ${highlightsHTML}
-            ${bespokeContactHTML}
-        `;
     }
 
-    const mainImgEl = document.getElementById('qv-image');
-    if (mainImgEl && imageArray.length > 0) {
-        mainImgEl.src = imageArray[0];
+    // Size context selection processing
+    let modalSizeOptions = '';
+    const cleanCategoryString = (category || '').toLowerCase();
+    if (cleanCategoryString.includes('footwear') || cleanCategoryString.includes('shoe') || cleanCategoryString.includes('slide')) {
+        modalSizeOptions = `<option value="40">40</option><option value="41">41</option><option value="42" selected>42</option><option value="43">43</option><option value="44">44</option><option value="45">45</option>`;
+    } else {
+        modalSizeOptions = `<option value="S">SMALL (S)</option><option value="M" selected>MEDIUM (M)</option><option value="L">LARGE (L)</option><option value="XL">EXTRA LARGE (XL)</option><option value="XXL">XXL</option>`;
     }
 
-    let thumbnailRow = document.getElementById('qv-thumbnails-row');
-    if (!thumbnailRow && mainImgEl) {
-        thumbnailRow = document.createElement('div');
-        thumbnailRow.id = 'qv-thumbnails-row';
-        thumbnailRow.className = 'quickview-thumbnails-container';
-        mainImgEl.parentNode.appendChild(thumbnailRow);
-    }
+    // Overlaid gray backdrop container workspace layout frame 
+    modalContainer.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:10000; display:flex; align-items:center; justify-content:center; padding:20px; box-sizing:border-box; animation: fadeIn 0.3s ease-out;";
     
-    if (thumbnailRow) {
-        thumbnailRow.innerHTML = '';
-        if (imageArray.length > 1) {
-            imageArray.forEach(imgUrl => {
-                const thumbImg = document.createElement('img');
-                thumbImg.src = imgUrl;
-                thumbImg.alt = "Preview Thumbnail";
-                thumbImg.className = "qv-thumbnail-item";
-                thumbImg.style.cssText = "width:50px; height:65px; object-fit:cover; margin-right:8px; cursor:pointer; border:1px solid #333;";
-                thumbImg.addEventListener('mouseover', () => {
-                    if (mainImgEl) mainImgEl.src = imgUrl;
-                });
-                thumbnailRow.appendChild(thumbImg);
-            });
-        }
-    }
+    // UPDATED INTERFACE SHAPE MATRICES: Slimmer 760px frame configuration layout rules
+    modalContainer.innerHTML = `
+        <div class="atelier-modal-body" style="background:#000; border:1px solid #222; width:100%; max-width:760px; display:grid; grid-template-columns: 1.1fr 0.9fr; position:relative; box-sizing:border-box; color:#fff; height: 520px; max-height: 85vh; overflow: hidden;">
+            
+            <button onclick="closeLuxuryQuickView()" style="position:absolute; top:12px; right:15px; background:none; border:none; color:#fff; font-size:22px; cursor:pointer; font-weight:200; z-index:100; line-height:1;">&times;</button>
+            
+            <div style="display:flex; flex-direction:column; padding:15px; gap:12px; background:#0a0a0a; border-right:1px solid #111; justify-content: center; box-sizing: border-box; height: 100%; overflow: hidden;">
+                <div class="main-viewport-wrapper" style="width:100%; height: 380px; background:#111; overflow:hidden; border:1px solid #222;">
+                    <img id="modal-primary-display" src="${finalImages[0]}" style="width:100%; height:100%; object-fit:cover; transition: opacity 0.2s ease;">
+                </div>
+                
+                <div class="thumbnail-roller" style="display:flex; gap:8px; width:100%; overflow-x:auto; padding-bottom:4px; justify-content: flex-start; scrollbar-width: none; -ms-overflow-style: none;">
+                    ${finalImages.map((imgUrl, idx) => `
+                        <div class="thumb-frame" onclick="switchQuickViewDisplayImage(this, '${imgUrl}')" style="width:45px; height:55px; flex-shrink:0; cursor:pointer; border:${idx === 0 ? '2px solid #fff' : '1px solid #333'}; background:#111; transition:all 0.2s;">
+                            <img src="${imgUrl}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=100'">
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
 
-    // Dynamic button controller logic based on product tier type
-    const actionArea = document.querySelector('.quickview-action-container') || document.getElementById('qv-action-area');
-    if (actionArea) {
-        if (isBespoke) {
-    actionArea.innerHTML = `<button type="button" onclick="window.closeQuickView(); openBespokeModal();" style="width:100%; background:#fff; color:#000; border:none; padding:14px; font-size:10px; font-weight:bold; letter-spacing:3px; text-transform:uppercase; cursor:pointer;">REQUEST PRIVATE BOOKING</button>`;
-        } else {
-            // Standard bag initialization layout rules
-            actionArea.innerHTML = `<button type="button" class="qv-add-to-bag-btn" style="width:100%; background:#fff; color:#000; border:none; padding:14px; font-size:10px; font-weight:bold; letter-spacing:3px; text-transform:uppercase; cursor:pointer;">ADD TO BAG</button>`;
-        }
-    }
+            <div style="padding:25px 20px 20px 20px; display:flex; flex-direction:column; justify-content:space-between; box-sizing:border-box; height: 100%; overflow: hidden; background:#000;">
+                
+                <div class="roller-content-container" style="overflow-y:auto; flex:1; padding-right:6px; margin-bottom:12px; scrollbar-width: thin; scrollbar-color: #333 #000;">
+                    <h4 style="margin:0 0 4px 0; font-size:9px; letter-spacing:2px; color:#888; text-transform:uppercase;">ATELIER LABS</h4>
+                    <h2 style="margin:0 0 8px 0; font-size:16px; font-weight:300; letter-spacing:0.5px; text-transform:uppercase; line-height:1.2;">${title}</h2>
+                    <div style="font-size:14px; font-weight:bold; font-family:monospace; margin-bottom:12px; color:#fff;">₦${Number(price).toLocaleString()}</div>
+                    
+                    <div style="font-size:11px; color:#ccc; line-height:1.5; font-weight:300; white-space: pre-wrap;">
+                        ${storyText}
+                    </div>
+                    
+                    ${specificationsHTML}
+                </div>
 
-    modal.style.display = 'flex';
+                <div class="persistent-actions-anchor" style="background:#000; padding-top:10px; border-top:1px solid #111; display:flex; flex-direction:column; gap:10px;">
+                    <div>
+                        <label style="font-size:8px; font-weight:bold; letter-spacing:1px; color:#888; display:block; margin-bottom:4px; text-transform:uppercase;">Select Execution Size</label>
+                        <select id="modal-size-select" style="width:100%; background:#111; color:#fff; border:1px solid #333; padding:10px; font-size:10px; font-weight:bold; letter-spacing:1px; border-radius:0; -webkit-appearance:none; height:38px; box-sizing:border-box;">
+                            ${modalSizeOptions}
+                        </select>
+                    </div>
+
+                    <button type="button" onclick="executeModalBagInsertion('${title}', ${price}, '${finalImages[0]}')" style="width:100%; background:#fff; color:#000; border:none; padding:12px; font-size:10px; font-weight:bold; letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:background 0.2s;">
+                        ADD TO COLLECTION BAG
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    `;
+
+    modalContainer.addEventListener('click', function(e) {
+        if (e.target === modalContainer) window.closeLuxuryQuickView();
+    });
 };
 
-window.closeQuickView = function() {
-    const modal = document.getElementById('quick-view-modal');
-    if (modal) modal.style.display = 'none';
+window.closeLuxuryQuickView = function() {
+    const modalContainer = document.getElementById('luxury-quickview-modal');
+    if (modalContainer) {
+        modalContainer.style.animation = "fadeOut 0.2s ease-out forwards";
+        setTimeout(() => { modalContainer.remove(); }, 200);
+    }
+};
+
+window.switchQuickViewDisplayImage = function(selectedThumbFrame, targetImgUrl) {
+    const mainDisplay = document.getElementById('modal-primary-display');
+    if (mainDisplay) {
+        mainDisplay.style.opacity = '0.3';
+        setTimeout(() => {
+            mainDisplay.src = targetImgUrl;
+            mainDisplay.style.opacity = '1';
+        }, 150);
+    }
+    document.querySelectorAll('.thumb-frame').forEach(frame => { frame.style.border = '1px solid #333'; });
+    selectedThumbFrame.style.border = '2px solid #fff';
+};
+
+window.executeModalBagInsertion = function(title, price, image) {
+    const chosenSize = document.getElementById('modal-size-select').value;
+    if (typeof window.addToBag === 'function') {
+        window.addToBag('qv_' + Date.now(), title, price, image, chosenSize);
+        if (typeof window.updateCartSidebar === 'function') window.updateCartSidebar();
+        if (typeof window.renderCart === 'function') window.renderCart();
+        window.closeLuxuryQuickView();
+    } else {
+        console.error("Atelier Core Error: E-commerce cart data-layer architecture missing.");
+    }
 };
 // =========================================================================
 // --- AUTOMATED BOUTIQUE COUTURE INTAKE PIPELINE ---
@@ -822,14 +877,25 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // --- STEP 2: ATTACH TO SPECIFIC CHANNELS DETACHED FROM INLINE ONCLICK ---
+    // --- STEP 2: ATTACH INTELLIGENT ROUTER TO DUAL ACTION CHECKOUT BUTTON ---
     const payBtn = document.getElementById('pay-btn');
     if (payBtn) {
         payBtn.addEventListener('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
-            console.log("Atelier Interface Trigger: Forwarding request to Paystack Engine.");
-            window.payWithPaystack();
+            
+            // Look for checked high-contrast payment method select button or input field
+            // Expected UI field element names: 'payment_method' values: 'online' or 'pay_on_delivery'
+            const selectedMethodEl = document.querySelector('input[name="payment_method"]:checked') || document.getElementById('payment-method-select');
+            const paymentMethod = selectedMethodEl ? selectedMethodEl.value : 'online';
+
+            if (paymentMethod === 'pay_on_delivery') {
+                console.log("Atelier Interface Trigger: Forwarding request to Postpaid Engine.");
+                window.executePayOnDeliveryWorkflow();
+            } else {
+                console.log("Atelier Interface Trigger: Forwarding request to Paystack Engine.");
+                window.payWithPaystack();
+            }
         });
     }
 
@@ -839,32 +905,44 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // =========================================================================
-// --- 3. PAYSTACK GATEWAY LIFECYCLE SEQUENCE ---
+// --- 3. PAYSTACK GATEWAY LIFECYCLE SEQUENCE (PREPAID ENGINE) ---
 // =========================================================================
 window.payWithPaystack = function () {
-    console.log("Atelier: Payment Sequence Initiated");
+    console.log("Atelier: Prepaid Payment Sequence Initiated");
 
     const checkoutData = collectCheckoutFormData();
     if (!checkoutData) return; 
 
     if (typeof PaystackPop === 'undefined' || !PaystackPop.setup) {
-        alert("Paystack SDK failed to load. Please verify your script references.");
+        alert("Paystack SDK failed to load.");
         return;
     }
 
-    // Traditional wrapper mapping function to resolve dynamic structural async promises
     const executePayloadSynchronization = function(referenceCode) {
+        const orderTotal = Number(checkoutData.calculatedTotal);
+        
+        // --- REVENUE SPLIT MATH LOGIC ---
+        const platformCommission = Math.round(orderTotal * 0.10); // 10% Platform Cut
+        const vendorNetPayout = orderTotal - platformCommission;
+
+        // --- DYNAMIC SELLER ID LOOKUP ---
+        // Extract the seller_id from the first item in the bag snapshot, fallback safely if empty
+        const dynamicSellerId = (checkoutData.orderSnapshot && checkoutData.orderSnapshot[0] && checkoutData.orderSnapshot[0].seller_id) 
+            ? checkoutData.orderSnapshot[0].seller_id 
+            : "00000000-0000-0000-0000-000000000001";
+
         const compiledOrderPayload = {
             id: referenceCode,
             email: checkoutData.email,
             name: checkoutData.fullName,
             phone: checkoutData.phone,
-            total_amount: checkoutData.calculatedTotal,
+            total_amount: orderTotal,
             status: 'Paid',
-            seller_id: "00000000-0000-0000-0000-000000000001", // Static seller ID for this implementation
-            commission_fee: 0,
+            payment_method: 'online',
+            seller_id: dynamicSellerId, // Dynamic assignment fix
+            commission_fee: platformCommission, // Dynamic assignment fix
             shipping_fee_seller: 0,
-            net_payout: checkoutData.calculatedTotal,
+            net_payout: vendorNetPayout, // Dynamic assignment fix
             shipping_region: checkoutData.state,
             address: `${checkoutData.address}, ${checkoutData.city}`,
             items: checkoutData.orderSnapshot
@@ -879,20 +957,52 @@ window.payWithPaystack = function () {
         amount: Math.round(checkoutData.calculatedTotal * 100),
         currency: 'NGN',
         ref: 'T' + Date.now(),
-        metadata: {
-            customer_name: checkoutData.fullName,
-            customer_phone: checkoutData.phone
-        },
         callback: function (response) {
-            console.log("Paystack Verification Handshake Verified. Reference Code:", response.reference);
             executePayloadSynchronization(response.reference);
-        },
-        onClose: function () {
-            console.log("Atelier Checkout: Customer closed payment window.");
         }
     });
-
     handler.openIframe();
+};
+
+// =========================================================================
+// --- 3B. PAY ON DELIVERY ENGINE MODULE (POSTPAID ENGINE) ---
+// =========================================================================
+window.executePayOnDeliveryWorkflow = function() {
+    console.log("Atelier: Postpaid Payment Sequence Initiated");
+
+    const checkoutData = collectCheckoutFormData();
+    if (!checkoutData) return; 
+
+    const orderReferenceCode = 'POD' + Date.now();
+    const orderTotal = Number(checkoutData.calculatedTotal);
+
+    // --- REVENUE SPLIT MATH LOGIC ---
+    const platformCommission = Math.round(orderTotal * 0.10); // 10% Platform Cut
+    const vendorNetPayout = orderTotal - platformCommission;
+
+    // --- DYNAMIC SELLER ID LOOKUP ---
+    const dynamicSellerId = (checkoutData.orderSnapshot && checkoutData.orderSnapshot[0] && checkoutData.orderSnapshot[0].seller_id) 
+        ? checkoutData.orderSnapshot[0].seller_id 
+        : "00000000-0000-0000-0000-000000000001";
+
+    const compiledOrderPayload = {
+        id: orderReferenceCode,
+        email: checkoutData.email,
+        name: checkoutData.fullName,
+        phone: checkoutData.phone,
+        total_amount: orderTotal,
+        status: 'pending_delivery',
+        payment_method: 'pay_on_delivery',
+        seller_id: dynamicSellerId, // Dynamic assignment fix
+        commission_fee: platformCommission, // Dynamic assignment fix
+        shipping_fee_seller: 0,
+        net_payout: vendorNetPayout, // Dynamic assignment fix
+        shipping_region: checkoutData.state,
+        address: `${checkoutData.address}, ${checkoutData.city}`,
+        items: checkoutData.orderSnapshot
+    };
+
+    window.saveOrderToSupabase(compiledOrderPayload);
 };
 
 // =========================================================================
@@ -900,19 +1010,14 @@ window.payWithPaystack = function () {
 // =========================================================================
 window.saveOrderToSupabase = async function (orderData) {
     console.log("Atelier Sync Core: Opening channel transaction for ID:", orderData.id);
-
-    // Explicitly pull the global database instance we initialized in index.html
     const clientDbEngine = window.supabaseClientInstance;
 
     if (!clientDbEngine || typeof clientDbEngine.from !== 'function') {
-        console.error("Atelier Sync Error: Global database instance structure is missing or unassigned.");
-        alert("Database connection offline. Processing transactional email recovery cascade...");
         await processPostPaymentAutomations(orderData);
         return;
     }
 
     try {
-        // Execute remote record insert mapping directly to your Supabase table schema
         const { data, error } = await clientDbEngine
             .from('orders')
             .insert([
@@ -923,10 +1028,11 @@ window.saveOrderToSupabase = async function (orderData) {
                     customer_phone: orderData.phone,
                     total_amount: Number(orderData.total_amount),
                     status: orderData.status,
-                    seller_id: orderData.seller_id,
-                    commission_fee: Number(orderData.commission_fee),
+                    payment_method: orderData.payment_method,
+                    seller_id: orderData.seller_id, // Saved accurately to target specific vendors
+                    commission_fee: Number(orderData.commission_fee), // Split logged correctly
                     shipping_fee_seller: Number(orderData.shipping_fee_seller),
-                    net_payout: Number(orderData.net_payout),
+                    net_payout: Number(orderData.net_payout), // Split logged correctly
                     tracking_number: orderData.id,
                     shipping_region: orderData.shipping_region,
                     address: orderData.address,
@@ -939,9 +1045,8 @@ window.saveOrderToSupabase = async function (orderData) {
 
     } catch (err) {
         console.error("Atelier Critical Core Ledger Sync Exception:", err);
-        alert(`Database Sync Delayed: ${err.message || err}`);
+        alert(`Database Sync Error: ${err.message || err}`);
     } finally {
-        // Execute email delivery and page state tear down
         await processPostPaymentAutomations(orderData);
     }
 };
@@ -952,7 +1057,6 @@ window.saveOrderToSupabase = async function (orderData) {
 async function processPostPaymentAutomations(orderData) {
     console.log("Atelier Core Lifecycle: Processing order teardown and notification sequences.");
 
-    // Clear active shopping bag configurations cleanly
     window.atelierMemoryCart = [];
     localStorage.removeItem('cart');
 
@@ -960,59 +1064,63 @@ async function processPostPaymentAutomations(orderData) {
         try { window.updateCartUI(); } catch(e) { console.error(e); }
     }
 
-    // Fire EmailJS sequence to dispatch notifications immediately 
     if (typeof window.sendAtelierEmail === 'function' || typeof sendAtelierEmail === 'function') {
         try {
             console.log("Atelier Sync Core: Triggering EmailJS operational channels.");
             const emailFn = window.sendAtelierEmail || sendAtelierEmail;
             
-            // This will now correctly pause execution until EmailJS finishes its network loop
-            await emailFn(orderData.id, orderData.email, orderData.total_amount);
+            await emailFn(orderData.id, orderData.email, orderData.total_amount, orderData.payment_method);
             
-            alert(`Payment Received & Order Confirmed!\nYour Atelier Order ID is: ${orderData.id}\nCheck your inbox for confirmation.`);
+            // Dynamic alert messaging based on payment choice architecture rules
+            if (orderData.payment_method === 'pay_on_delivery') {
+                alert(`Order Confirmed via Pay on Delivery!\nYour Atelier Order ID is: ${orderData.id}\nOur team will contact you on ${orderData.phone} before delivery dispatch.`);
+            } else {
+                alert(`Payment Received & Order Confirmed!\nYour Atelier Order ID is: ${orderData.id}\nCheck your inbox for confirmation.`);
+            }
         } catch (emailErr) {
             console.error("Atelier Email Automation Trigger Exception:", emailErr);
             alert(`Order Saved successfully (ID: ${orderData.id}), but confirmation email failed to dispatch. Our admin team will process manually.`);
         }
     } else {
         console.warn("Atelier Warning: Global email routing channel unmapped on lifecycle thread.");
-        alert(`Payment Received Successfully!\nYour Atelier Order ID is: ${orderData.id}`);
+        alert(`Order Received Successfully!\nYour Atelier Order ID is: ${orderData.id}`);
     }
 
-    // =========================================================================
-    // SAFE REDIRECTION: Runs only after the email sequence settles completely
-    // =========================================================================
     window.location.href = window.location.origin + window.location.pathname;
 }
 
-// --- 7. EMAIL CONFIRMATION ---
-function sendAtelierEmail(ref, customerEmail, amount) {
+// =========================================================================
+// --- 7. EMAIL CONFIRMATION (WITH DUAL METHOD TRACKING TYPE VALUES) ---
+// =========================================================================
+function sendAtelierEmail(ref, customerEmail, amount, paymentMethod) {
     if (!customerEmail) {
         console.error("Atelier Error: No recipient email found.");
         return Promise.reject("Missing customer email address.");
     }
 
-    // Ensure initialization is fresh
     emailjs.init("0pSpit0Eoff3xV_O9"); 
+
+    // Convert method parameter string values into crystal clear display descriptors
+    const methodDisplay = paymentMethod === 'pay_on_delivery' ? 'Pay on Delivery (Cash/Transfer)' : 'Online Secured Payment';
 
     const templateParams = {
         to_email: customerEmail, 
-        order_id: ref,           
+        order_id: ref,          
         total_amount: `₦${Number(amount).toLocaleString()}`,
+        payment_type: methodDisplay, // <-- Passes method clean label straight to your EmailJS parameters wrapper template
         track_link: `https://atelier-shop-psi.vercel.app/track-order.html?id=${ref}`
     };
 
     console.log("Atelier: Attempting email dispatch...", templateParams);
 
-    // CRITICAL: Added 'return' here so the checkout engine can accurately await it
     return emailjs.send('service_zi3z4lm', 'template_9lhj8aj', templateParams)
         .then((res) => {
             console.log("Atelier: Email SUCCESS", res.status, res.text);
-            return res; // Pass success up the execution context
+            return res;
         })
         .catch(err => {
             console.error("Atelier Email Detailed Error:", err);
-            throw err; // Pass error up to the try/catch handler safely
+            throw err;
         });
 }
 // B. BACK TO SHOP (From Shipping back to Store)
@@ -1031,6 +1139,205 @@ window.backToShop = function() {
     // 3. Reset Scroll to top so the header looks right
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
+
+document.addEventListener('DOMContentLoaded', () => {
+    const trackBtn = document.getElementById('track-btn');
+    const trackingInput = document.getElementById('tracking-number');
+    const resultContainer = document.getElementById('tracking-result');
+    const currentStatusSpan = document.getElementById('current-status');
+    const displayOrderIdSpan = document.getElementById('display-order-id');
+    const lastUpdatedSpan = document.getElementById('last-updated');
+    const progressFill = document.getElementById('progress-fill');
+
+    if (!trackBtn || !trackingInput) return;
+
+    trackBtn.addEventListener('click', async () => {
+        let rawInput = trackingInput.value.trim();
+        if (!rawInput) {
+            alert('Please enter a valid order reference code.');
+            return;
+        }
+
+        let searchId = rawInput.replace(/#/g, '').replace(/ATL-/i, '').trim();
+        const activeDatabaseClient = window.db || window.supabaseClientInstance || window.supabase;
+        
+        if (!activeDatabaseClient) {
+            alert('System connectivity offline. Please reload and try again.');
+            return;
+        }
+
+        trackBtn.innerText = 'LOCATING LOG...';
+        trackBtn.disabled = true;
+
+        try {
+            const { data: orders, error } = await activeDatabaseClient
+                .from('orders')
+                .select('*');
+
+            if (error) throw error;
+
+            const foundOrder = orders.find(o => 
+                o.id.toString().toLowerCase() === searchId.toLowerCase() ||
+                o.id.toString().toUpperCase().includes(searchId.toUpperCase())
+            );
+
+            if (!foundOrder) {
+                alert(`No matching package found for tracking token: "${rawInput}"`);
+                resultContainer.style.display = 'none';
+                return;
+            }
+
+            // 1. Process Status & Progress Tracking States
+            const statusStr = foundOrder.status ? String(foundOrder.status).toLowerCase().trim() : 'pending_delivery';
+            let statusText = 'ORDER RECEIVED & PROCESSING';
+            let progressPercentage = '25%';
+            let barColor = '#0091ff'; // Default to blue for early stages
+            
+            let step1 = '●', step2 = '○', step3 = '○';
+
+            if (statusStr === 'shipped' || statusStr === 'closed') {
+                statusText = 'DISPATCHED FROM HUB & EN ROUTE';
+                progressPercentage = '65%';
+                step1 = '✓'; step2 = '●';
+            } else if (statusStr === 'delivered') {
+                statusText = 'DELIVERED SUCCESSFULLY';
+                progressPercentage = '100%';
+                step1 = '✓'; step2 = '✓'; step3 = '✓';
+            } else if (statusStr === 'cancelled') {
+                statusText = 'REVOKED / CANCELLED';
+                progressPercentage = '0%';
+                barColor = '#dc3545';
+                step1 = '✕'; step2 = '✕'; step3 = '✕';
+            }
+
+            // 2. Parse Manifest Items
+            let items = [];
+            try {
+                items = typeof foundOrder.items === 'string' ? JSON.parse(foundOrder.items) : foundOrder.items;
+                if (!Array.isArray(items)) items = [];
+            } catch(e) { }
+
+            // Build Horizontal Spread Items Rows with High-Contrast Size Badges
+            let manifestItemsHTML = '';
+            if (items.length > 0) {
+                manifestItemsHTML = items.map(item => {
+                    const imgUrl = item.image || item.img || '';
+                    const imgTag = imgUrl 
+                        ? `<img src="${imgUrl}" style="width: 50px; height: 50px; object-fit: cover; border: 1px solid #000;" />`
+                        : `<div style="width: 50px; height: 50px; background: #f0f0f0; border: 1px solid #000; font-size: 8px; display: flex; align-items: center; justify-content: center; color: #000; font-weight: bold;">ATELIER</div>`;
+                    
+                    return `
+                        <div style="display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee; font-size: 11px;">
+                            <div style="width: 60px;">${imgTag}</div>
+                            <div style="flex: 2.5; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #000;">${item.name || 'Luxury Custom Piece'}</div>
+                            <div style="flex: 1; text-align: center;">
+                                <span style="background: #000000; color: #ffffff; padding: 4px 10px; font-weight: bold; font-family: monospace; font-size: 10px; letter-spacing: 0.5px; display: inline-block; min-width: 25px;">${item.size || item.selectedSize || '—'}</span>
+                            </div>
+                            <div style="flex: 1; text-align: center; font-weight: bold; color: #000;">x${item.quantity || 1}</div>
+                            <div style="flex: 1; text-align: right; font-family: monospace; font-weight: bold; color: #000;">₦${Number(item.price || 0).toLocaleString()}</div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                manifestItemsHTML = `<div style="color: #666; font-style: italic; font-size: 11px; padding: 15px 0;">Standard Atelier Package Container</div>`;
+            }
+
+            // 3. Clean Formatting Dates
+            const parsedDate = foundOrder.updated_at || foundOrder.created_at
+                ? new Date(foundOrder.updated_at || foundOrder.created_at).toLocaleDateString('en-GB', {
+                    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                  })
+                : 'Recent Log Update';
+
+            // Core card structural assignments
+            currentStatusSpan.textContent = statusText;
+            currentStatusSpan.style.color = barColor;
+            displayOrderIdSpan.textContent = `ATL-${foundOrder.id.toString().substring(0, 10).toUpperCase()}`;
+            lastUpdatedSpan.textContent = parsedDate;
+            progressFill.style.width = progressPercentage;
+            progressFill.style.backgroundColor = barColor;
+
+            // Clear previous append logs to prevent duplication layout stacking
+            const oldExtendedBlock = document.getElementById('tracking-extended-details');
+            if (oldExtendedBlock) oldExtendedBlock.remove();
+
+            // FIXED: Targeted correct database schema values -> foundOrder.name & foundOrder.delivery_address
+            const clientName = foundOrder.customer_name || 'Verified Client';
+            const clientPhone = foundOrder.customer_phone || 'No Contact Number Attached';
+            const shippingRegion = foundOrder.shipping_region || 'Lagos';
+            const detailedAddress = foundOrder.address || 'No Detailed Address Specified';
+
+            // 4. Premium Structural Layout Injection Matrix
+            const extendedLayoutHTML = `
+                <div id="tracking-extended-details" style="margin-top: 40px; border-top: 2px solid #000; padding-top: 30px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+                    
+                    <div style="display: flex; justify-content: space-between; font-size: 9px; font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 40px; text-align: center; color: #777;">
+                        <div style="flex: 1; color: #000;"><span style="font-size: 16px; display: block; margin-bottom: 6px; font-weight: bold; color: #000;">${step1}</span> ORDER PLACED</div>
+                        <div style="flex: 1; color: ${(statusStr === 'shipped' || statusStr === 'closed' || statusStr === 'delivered') ? '#000' : '#ccc'};"><span style="font-size: 16px; display: block; margin-bottom: 6px;">${step2}</span> DEPARTED HUB</div>
+                        <div style="flex: 1; color: ${statusStr === 'delivered' ? '#000' : '#ccc'};"><span style="font-size: 16px; display: block; margin-bottom: 6px;">${step3}</span> ARRIVED DESTINATION</div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 40px; margin-top: 20px; align-items: start;">
+                        
+                        <div style="background: #ffffff; border: 1px solid #000; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.01);">
+                            <h4 style="margin: 0 0 15px 0; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #000; font-weight: bold; border-bottom: 1px solid #000; padding-bottom: 8px;">LOGISTICS ROUTING PROFILE</h4>
+                            
+                            <div style="margin-bottom: 12px;">
+                                <span style="font-size: 9px; color: #777; letter-spacing: 0.5px; display: block; text-transform: uppercase;">Consignee Client</span>
+                                <span style="font-size: 12px; font-weight: bold; color: #000; text-transform: uppercase;">${clientName}</span>
+                            </div>
+                            
+                            <div style="margin-bottom: 12px;">
+                                <span style="font-size: 9px; color: #777; letter-spacing: 0.5px; display: block; text-transform: uppercase;">Contact Assignment</span>
+                                <span style="font-size: 11px; font-weight: 500; color: #000; font-family: monospace;">${clientPhone}</span>
+                            </div>
+                            
+                            <div style="margin-bottom: 5px;">
+                                <span style="font-size: 9px; color: #777; letter-spacing: 0.5px; display: block; text-transform: uppercase;">Hub Dispatch Region</span>
+                                <span style="font-size: 11px; font-weight: bold; color: #000; text-transform: uppercase; letter-spacing: 0.5px;">${shippingRegion}</span>
+                            </div>
+                            
+                            <div>
+                                <span style="font-size: 9px; color: #777; letter-spacing: 0.5px; display: block; text-transform: uppercase;">Destination Address</span>
+                                <span style="font-size: 11px; color: #222; font-weight: 500; line-height: 16px; text-transform: uppercase; display: block; margin-top: 2px;">${detailedAddress}</span>
+                            </div>
+                        </div>
+
+                        <div style="background: #ffffff; border: 1px solid #000; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.01);">
+                            <h4 style="margin: 0 0 10px 0; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #000; font-weight: bold; border-bottom: 1px solid #000; padding-bottom: 8px;">CONSOLIDATED PACKAGE MANIFEST</h4>
+                            
+                            <div style="display: flex; padding: 8px 0; border-bottom: 1px solid #000; font-weight: bold; font-size: 8px; letter-spacing: 1px; color: #555; text-transform: uppercase;">
+                                <div style="width: 60px;">Item</div>
+                                <div style="flex: 2.5;">Description</div>
+                                <div style="flex: 1; text-align: center;">Size</div>
+                                <div style="flex: 1; text-align: center;">Qty</div>
+                                <div style="flex: 1; text-align: right;">Price</div>
+                            </div>
+
+                            <div style="overflow-y: auto; max-height: 220px; padding-right: 5px;">
+                                ${manifestItemsHTML}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            resultContainer.insertAdjacentHTML('beforeend', extendedLayoutHTML);
+            resultContainer.style.display = 'block';
+
+        } catch (err) {
+            console.error("Tracking Framework Runtime Exception:", err);
+            alert("Error connecting to real-time manifest routing layers.");
+        } finally {
+            trackBtn.innerText = 'Track Package';
+            trackBtn.disabled = false;
+        }
+    });
+
+    trackingInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') trackBtn.click();
+    });
+});
 
 // ATELIER NAVIGATION FIX:
 // This ensures that clicking "SHOP" at the top always shows the products
@@ -1105,7 +1412,8 @@ window.filterProducts = function() {
     const filteredResults = allProducts.filter(product => {
         const title = (product.name || product.title || '').toLowerCase();
         const category = (product.category || '').toLowerCase();
-        return title.includes(searchTerm) || category.includes(searchTerm);
+        const  tags = (product.tags || '').toLowerCase();
+        return title.includes(searchTerm) || category.includes(searchTerm) || tags.includes(searchTerm);
     });
 
     // 2. Structural Interception: Check if search query yields empty result arrays

@@ -180,11 +180,14 @@ nav a, .cart-icon { color: #fff; text-decoration: none; margin-left: 30px; curso
     clear: both;
 }
 
-.product-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 40px 30px; /* Balances structural vertical and horizontal separation rows */
-    width: 100%;
+@media (max-width: 768px) {
+    .product-grid {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
+        gap: 30px 15px !important;
+        width: 100% !important;
+        overflow-x: hidden !important;
+    }
 }
 /* Consolidated Minimalist Luxury Product Card Architecture */
 .atelier-product-card, .product-card {
@@ -653,6 +656,35 @@ nav a, .cart-icon { color: #fff; text-decoration: none; margin-left: 30px; curso
 
 .close-modal:hover {
     color: #ffffff;
+}
+/* Custom smooth scrollbar treatment for the Atelier Roller write up */
+.roller-content-container::-webkit-scrollbar {
+    width: 3px;
+}
+.roller-content-container::-webkit-scrollbar-track {
+    background: #000;
+}
+.roller-content-container::-webkit-scrollbar-thumb {
+    background: #222;
+    border-radius: 10px;
+}
+.roller-content-container::-webkit-scrollbar-thumb:hover {
+    background: #444;
+}
+
+/* Responsive adjustments for mobile quick view overlays */
+@media (max-width: 768px) {
+    .atelier-modal-body {
+        grid-template-columns: 1fr !important;
+        max-height: 95vh !important;
+        overflow-y: auto !important;
+    }
+    .atelier-modal-body > div {
+        padding: 20px !important;
+    }
+    .roller-content-container {
+        max-height: 200px !important;
+    }
 }
 
 /* =========================================================================

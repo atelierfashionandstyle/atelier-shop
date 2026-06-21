@@ -72,27 +72,28 @@
 <div class="atelier-editorial-gap-layer">
     
     <div class="gap-brand-statement">
-        <span class="gap-edition-tag">COLLECTION N°02</span>
-        <h2 class="gap-main-headline">THE SHOWROOM DIRECTORY</h2>
+        <span class="gap-edition-tag">ATELIER SHOWROOM DIRECTORY</span>
+        <h2 class="gap-main-headline">ENJOY OUR EMAZINE PROMOTION</h2>
+        <span class="gap-edition-tag">(26%OFF ON ALL PRODUCTS)</span>
     </div>
 
     <div class="gap-marquee-wrapper">
         <div class="gap-marquee-inner">
             <span>• BESPOKE COMMISSIONS OPEN </span>
-            <span>• RIGOROUS STRUCTURAL VALIDATION </span>
+            <span>• 26% DISCOUNT OFF ON ALL PRODUCTS </span>
             <span>• PREMIUM WEIGHT TEXTILES </span>
-            <span>• SHIPPED FROM LAGOS GLOBALITY </span>
+            <span>• SHIPPED FROM LAGOS GLOBALLY </span>
             <span>• BESPOKE COMMISSIONS OPEN </span>
-            <span>• RIGOROUS STRUCTURAL VALIDATION </span>
+            <span>• 26% DISCOUNT OFF ON ALL PRODUCTS </span>
             <span>• PREMIUM WEIGHT TEXTILES </span>
-            <span>• SHIPPED FROM LAGOS GLOBALITY </span>
+            <span>• SHIPPED FROM LAGOS GLOBALLY </span>
         </div>
     </div>
 
 </div>
     <!-- Move the H2 inside the DIV like this -->
 <div id="shop-page">
-    <h2>Featured Collection</h2>
+    <h2>ATELIER COLLECTION</h2>
     
     <div class="product-grid"></div>
     
@@ -101,7 +102,7 @@
 </div>
 <div id="cart-panel" class="cart-sidebar">
     <div class="cart-header">
-        <h2>YOUR BAG</h2>
+        <h2>YOUR SHOPPING BAG</h2>
         <span class="close-bag" onclick="closeCart()">&times;</span>
     </div>
 
@@ -222,64 +223,123 @@
     </div>
 </div>
 <div class="checkout-container">
-<section id="checkout-section" class="checkout-container" style="display: none;">
-    <button type="button" class="back-to-shop-btn" onclick="window.backToShop()">
-    &larr; RETURN TO SHOP
-</button>
-<h2>SHIPPING INFORMATION</h2>
-
-<form id="shipping-form" class="checkout-stack">
-    <input type="text" name="full_name" placeholder="Full Name" required>
-    <input type="email" name="email_address" placeholder="Email Address" required>
-    <input type="tel" name="phone" placeholder="Phone (e.g. +234...)" required>
+<section id="checkout-section" class="checkout-container" style="display: none; max-width: 650px; margin: 0 auto; padding: 20px; color: #fff; background: #000;">
     
-    <select name="country" class="checkout-select" style="color-scheme: dark;">
-        <option value="Nigeria" selected>Nigeria 🇳🇬</option>
-        <option value="United Kingdom">United Kingdom 🇬🇧</option>
-        <option value="United States">United States 🇺🇸</option>
-    </select>
+    <button type="button" class="back-to-shop-btn" onclick="window.backToShop()" style="background: none; border: none; color: #888; font-size: 11px; font-weight: bold; letter-spacing: 2px; cursor: pointer; padding: 0; margin-bottom: 25px; text-transform: uppercase; transition: color 0.2s;">
+        &larr; Return to Shop
+    </button>
+    
+    <h2 style="font-size: 18px; font-weight: 300; letter-spacing: 3px; text-transform: uppercase; margin: 0 0 20px 0; border-bottom: 1px solid #222; padding-bottom: 10px;">
+        Shipping Information
+    </h2>
 
-    <input type="text" name="street_address" placeholder="Street Address" required>
-
-    <div class="triple-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
-        <input type="text" name="city" placeholder="City" required>
-        <select id="state" name="state" class="checkout-input" required>
-            <option value="" disabled selected>Select State</option>
-            <option value="Lagos">Lagos</option>
-            <option value="Abuja">Abuja</option>
-            <option value="Ogun">Ogun</option>
-            <option value="Port Harcourt">Port Harcourt</option>
-            <option value="Ibadan">Ibadan</option>
-            <option value="Kano">Kano</option>
-            <option value="Enugu">Enugu</option>
+    <form id="shipping-form" class="checkout-stack" style="display: flex; flex-direction: column; gap: 15px;">
+        <input type="text" name="full_name" placeholder="Full Name" required style="width: 100%; background: #111; color: #fff; border: 1px solid #222; padding: 12px; font-size: 12px; border-radius: 0; box-sizing: border-box;">
+        <input type="email" name="email_address" placeholder="Email Address" required style="width: 100%; background: #111; color: #fff; border: 1px solid #222; padding: 12px; font-size: 12px; border-radius: 0; box-sizing: border-box;">
+        <input type="tel" name="phone" placeholder="Phone (e.g. +234...)" required style="width: 100%; background: #111; color: #fff; border: 1px solid #222; padding: 12px; font-size: 12px; border-radius: 0; box-sizing: border-box;">
+        
+        <select name="country" class="checkout-select" style="width: 100%; background: #111; color: #fff; border: 1px solid #222; padding: 12px; font-size: 12px; border-radius: 0; height: 44px; color-scheme: dark; box-sizing: border-box;">
+            <option value="Nigeria" selected>Nigeria 🇳🇬</option>
+            <option value="United Kingdom">United Kingdom 🇬🇧</option>
+            <option value="United States">United States 🇺🇸</option>
         </select>
-        <input type="text" name="zip" placeholder="Zip">
-    </div>
 
-    <button type="button" id="pay-btn" class="checkout-btn">CONTINUE PAYMENT</button>
-</form>
+        <input type="text" name="street_address" placeholder="Street Address" required style="width: 100%; background: #111; color: #fff; border: 1px solid #222; padding: 12px; font-size: 12px; border-radius: 0; box-sizing: border-box;">
 
-<div class="order-summary-display" style="margin-top: 25px; border-top: 1px solid #000; padding-top: 15px;">
-    <div style="display: flex; justify-content: space-between;">
-        <span>Subtotal:</span>
-        <span>₦<span id="display-subtotal">0</span></span>
-    </div>
-    <div style="display: flex; justify-content: space-between;">
-        <span>Shipping (incl. 7.5% VAT):</span>
-        <span>₦<span id="display-shipping">0</span></span>
-    </div>
-    <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2rem; margin-top: 10px;">
-        <span>Total:</span>
-        <span>₦<span id="display-total">0</span></span>
-    </div>
-</div>
+        <div class="triple-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+            <input type="text" name="city" placeholder="City" required style="width: 100%; background: #111; color: #fff; border: 1px solid #222; padding: 12px; font-size: 12px; border-radius: 0; box-sizing: border-box;">
+            <select id="state" name="state" class="checkout-input" required style="width: 100%; background: #111; color: #fff; border: 1px solid #222; padding: 12px; font-size: 12px; border-radius: 0; height: 44px; color-scheme: dark; box-sizing: border-box;">
+                <option value="" disabled selected>Select State</option>
+                <option value="Lagos">Lagos</option>
+                <option value="Abuja">Abuja</option>
+                <option value="Ogun">Ogun</option>
+                <option value="Port Harcourt">Port Harcourt</option>
+                <option value="Ibadan">Ibadan</option>
+                <option value="Kano">Kano</option>
+                <option value="Enugu">Enugu</option>
+                <option value="imo state">IMO STATE</option>
+                <option value="Kaduna">Kaduna</option>
+                <option value="Rivers">Rivers</option>
+                <option value="Delta">Delta</option>
+                <option value="Edo">Edo</option>
+                <option value="Anambra">Anambra</option>
+                <option value="Akwa Ibom">Akwa Ibom</option>
+                <option value="Cross River">Cross River</option>
+                <option value="Bauchi">Bauchi</option>
+                <option value="Benue">Benue</option>
+                <option value="Borno">Borno</option>
+                <option value="Katsina">Katsina</option>
+                <option value="Kebbi">Kebbi</option>
+                <option value="Kogi">Kogi</option>
+                <option value="Kwara">Kwara</option>
+                <option value="Nasarawa">Nasarawa</option>
+                <option value="Niger">Niger</option>
+                <option value="Sokoto">Sokoto</option>
+                <option value="Taraba">Taraba</option>
+                <option value="Yobe">Yobe</option>
+                <option value="Osun">Osun</option>
+                <option value="Zamfara">Zamfara</option>
+                <option value="Ekiti">Ekiti</option>
+                <option value="Gombe">Gombe</option>
+                <option value="Jigawa">Jigawa</option>
+                <option value="Bayelsa">Bayelsa</option>
+                <option value="Ebonyi">Ebonyi</option>
+                <option value="Kebbi">Kebbi</option>
+                <option value="Ondo">Ondo</option>
+            </select>
+            <input type="text" name="zip" placeholder="Zip" style="width: 100%; background: #111; color: #fff; border: 1px solid #222; padding: 12px; font-size: 12px; border-radius: 0; box-sizing: border-box;">
+        </div>
+
+        <div class="order-summary-display" style="margin-top: 15px; border-top: 1px solid #222; border-bottom: 1px solid #222; padding: 15px 0; display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; justify-content: space-between; font-size: 12px; color: #888; letter-spacing: 0.5px;">
+                <span>Subtotal:</span>
+                <span>₦<span id="display-subtotal">0</span></span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px; color: #888; letter-spacing: 0.5px;">
+                <span>Shipping (incl. 7.5% VAT):</span>
+                <span>₦<span id="display-shipping">0</span></span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 15px; margin-top: 4px; color: #fff; font-family: monospace;">
+                <span>TOTAL SETTLEMENT:</span>
+                <span>₦<span id="display-total">0</span></span>
+            </div>
+        </div>
+
+        <div class="payment-method-selection" style="margin-top: 5px; margin-bottom: 5px;">
+            <label style="display: block; font-size: 9px; font-weight: bold; letter-spacing: 2px; color: #888; text-transform: uppercase; margin-bottom: 12px;">
+                Select Settlement Route
+            </label>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <label style="background: #0a0a0a; border: 1px solid #222; padding: 15px; display: flex; align-items: center; gap: 12px; cursor: pointer; color: #fff; transition: border 0.2s; box-sizing: border-box;">
+                    <input type="radio" name="payment_method" value="online" checked style="accent-color: #fff; transform: scale(1.1); margin: 0;">
+                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                        <span style="font-size: 11px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">Secure Online Payment (Paystack)</span>
+                        <span style="font-size: 9px; color: #666;">Instant card confirmation or direct bank processing channels.</span>
+                    </div>
+                </label>
+                
+                <label style="background: #0a0a0a; border: 1px solid #222; padding: 15px; display: flex; align-items: center; gap: 12px; cursor: pointer; color: #fff; transition: border 0.2s; box-sizing: border-box;">
+                    <input type="radio" name="payment_method" value="pay_on_delivery" style="accent-color: #fff; transform: scale(1.1); margin: 0;">
+                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                        <span style="font-size: 11px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; color: #fff;">Pay On Delivery (POD)</span>
+                        <span style="font-size: 9px; color: #888; font-weight: 300;">Inspect and receive your designer pieces before paying via Cash or Transfer.</span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <button type="button" id="pay-btn" class="checkout-btn" style="width: 100%; background: #fff; color: #000; border: none; padding: 16px; font-size: 11px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; margin-top: 10px; transition: background 0.2s; border-radius: 0;">
+            PLACE YOUR ORDER
+        </button>
+    </form>
 </section>
    </div>
 </div>
 <section class="tracking-section">
     <h3>Track Your Atelier Order</h3>
     <div class="tracking-input-wrapper">
-        <input type="text" id="tracking-number" placeholder="Enter Tracking Number (e.g. ATL-123)">
+        <input type="text" id="tracking-number" placeholder="Enter Tracking Number (e.g. POP123 / #T123)">
         <button id="track-btn">Track Package</button>
     </div>
 </section>
@@ -289,8 +349,8 @@
         <p><strong>Order ID:</strong> <span id="display-order-id"></span></p>
         <p><strong>Last Updated:</strong> <span id="last-updated"></span></p>
         
-        <div class="progress-bar-container" style="background: #eee; height: 10px; width: 100%; border-radius: 5px;">
-            <div id="progress-fill" style="background: #4caf50; height: 100%; width: 0%; border-radius: 5px; transition: 0.5s;"></div>
+        <div class="progress-bar-container" style="background: #e5e5e5; height: 6px; width: 100%; margin-top: 15px; overflow: hidden;">
+          <div id="progress-fill" style="background: #000; height: 100%; width: 0%; transition: width 0.6s cubic-bezier(0.25, 1, 0.5, 1);"></div>
         </div>
     </div>
 </div>
@@ -317,7 +377,9 @@
                 <li><a href="#" onclick="window.backToShop()">Shop All</a></li>
                 <li><a href="#" onclick="showAbout()">About Us</a></li>
                 <li><a href="#">Shipping Policy</a></li>
-                <li><a href="#">Return & Exchanges</a></li>
+                <li><a href="#">Return, cancellation & Exchanges</a></li><p>Phone: <a href="tel:+2348138116238">+234 813 811 6238</a></p>
+                <li><a href="#">Privacy Policy</a></li>
+                <li><a href="#">Terms & Conditions</a></li>
             </ul>
         </div>
 
