@@ -319,9 +319,9 @@ window.openQuickView = function(title, description, imageArray, price, category)
     
     // UPDATED INTERFACE SHAPE MATRICES: Slimmer 760px frame configuration layout rules
     modalContainer.innerHTML = `
-        <div class="atelier-modal-body" style="background:#000; border:1px solid #222; width:100%; max-width:760px; display:grid; grid-template-columns: 1.1fr 0.9fr; position:relative; box-sizing:border-box; color:#fff; height: 520px; max-height: 85vh; overflow: hidden;">
+        <div class="atelier-modal-body" style="background:#000; border:1px solid #222; width:100%; max-width:760px; display:grid; grid-template-columns: 1.1fr 0.9fr; position:relative; box-sizing:border-box; color:#fff; height: 580px; max-height: 100vh; overflow: hidden;">
             
-            <button onclick="closeLuxuryQuickView()" style="position:absolute; top:12px; right:15px; background:none; border:none; color:#fff; font-size:22px; cursor:pointer; font-weight:200; z-index:100; line-height:1;">&times;</button>
+            <button onclick="closeLuxuryQuickView()" style="position:absolute; top:12px; right:15px; background:none; border:none; color:#fff; font-size:25px; cursor:pointer; font-weight:200; z-index:100; line-height:1;">&times;</button>
             
             <div style="display:flex; flex-direction:column; padding:15px; gap:12px; background:#0a0a0a; border-right:1px solid #111; justify-content: center; box-sizing: border-box; height: 100%; overflow: hidden;">
                 <div class="main-viewport-wrapper" style="width:100%; height: 380px; background:#111; overflow:hidden; border:1px solid #222;">
@@ -341,8 +341,8 @@ window.openQuickView = function(title, description, imageArray, price, category)
                 
                 <div class="roller-content-container" style="overflow-y:auto; flex:1; padding-right:6px; margin-bottom:12px; scrollbar-width: thin; scrollbar-color: #333 #000;">
                     <h4 style="margin:0 0 4px 0; font-size:9px; letter-spacing:2px; color:#888; text-transform:uppercase;">ATELIER LABS</h4>
-                    <h2 style="margin:0 0 8px 0; font-size:16px; font-weight:300; letter-spacing:0.5px; text-transform:uppercase; line-height:1.2;">${title}</h2>
-                    <div style="font-size:14px; font-weight:bold; font-family:monospace; margin-bottom:12px; color:#fff;">₦${Number(price).toLocaleString()}</div>
+                    <h2 style="margin:0 0 8px 0; font-size:20px; font-weight:300; letter-spacing:0.5px; text-transform:uppercase; line-height:1.2;">${title}</h2>
+                    <div style="font-size:16px; font-weight:bold; font-family:monospace; margin-bottom:12px; color:#fff;">₦${Number(price).toLocaleString()}</div>
                     
                     <div style="font-size:11px; color:#ccc; line-height:1.5; font-weight:300; white-space: pre-wrap;">
                         ${storyText}
@@ -1189,22 +1189,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 1. Process Status & Progress Tracking States
             const statusStr = foundOrder.status ? String(foundOrder.status).toLowerCase().trim() : 'pending_delivery';
-            let statusText = 'ORDER RECEIVED & PROCESSING';
+            let statusText = 'ORDER PENDING';
             let progressPercentage = '25%';
             let barColor = '#0091ff'; // Default to blue for early stages
             
             let step1 = '●', step2 = '○', step3 = '○';
 
             if (statusStr === 'shipped' || statusStr === 'closed') {
-                statusText = 'DISPATCHED FROM HUB & EN ROUTE';
+                statusText = 'ORDER SHIPPED';
                 progressPercentage = '65%';
                 step1 = '✓'; step2 = '●';
             } else if (statusStr === 'delivered') {
-                statusText = 'DELIVERED SUCCESSFULLY';
+                statusText = 'DELIVERED';
                 progressPercentage = '100%';
                 step1 = '✓'; step2 = '✓'; step3 = '✓';
             } else if (statusStr === 'cancelled') {
-                statusText = 'REVOKED / CANCELLED';
+                statusText = 'CANCELLED';
                 progressPercentage = '0%';
                 barColor = '#dc3545';
                 step1 = '✕'; step2 = '✕'; step3 = '✕';

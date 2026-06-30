@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATELIER — DELIVERY VERIFICATION HUB</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #fdfdfd; color: #000; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 90vh; }
+        .terminal-card { width: 100%; max-width: 420px; border: 1px solid #000; background: #fff; padding: 25px; box-sizing: border-box; }
+        .branding { font-size: 20px; font-weight: 900; letter-spacing: 5px; text-align: center; margin-bottom: 20px; text-transform: uppercase; }
+        .status-pill { text-align: center; padding: 10px; font-size: 11px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; border: 1px dashed #000; margin-bottom: 20px; }
+        .info-row { margin-bottom: 12px; font-size: 12px; line-height: 1.5; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; }
+        .label { font-size: 9px; font-weight: bold; color: #666; letter-spacing: 1px; text-transform: uppercase; display: block; margin-bottom: 2px; }
+        .value { font-weight: 600; color: #000; }
+        .action-btn { width: 100%; background: #000; color: #fff; border: none; padding: 15px; font-size: 11px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; margin-top: 15px; transition: all 0.2s; }
+        .action-btn:disabled { background: #ccc; cursor: not-allowed; }
+        #feedback { font-size: 11px; font-weight: bold; text-align: center; margin-top: 15px; text-transform: uppercase; letter-spacing: 0.5px; }
+    </style>
+</head>
+<body>
+
+<div class="terminal-card">
+    <div class="branding">ATELIER</div>
+    <div style="text-align: center; font-size: 8px; letter-spacing: 1.5px; color: #666; text-transform: uppercase; margin-top: -15px; margin-bottom: 20px;">Delivery Verification Hub</div>
+    
+    <div id="loading-state" style="text-align: center; font-size: 11px; letter-spacing: 1px; padding: 30px; color: #555;">READING WAYBILL DIGITAL MANIFEST...</div>
+    
+    <div id="loaded-content" style="display: none;">
+        <div class="status-pill" id="status-display">EN ROUTE / AWAITING VERIFICATION</div>
+        
+        <div class="info-row"><span class="label">Waybill ID String</span><span class="value" id="view-id"></span></div>
+        <div class="info-row"><span class="label">Consignee Name</span><span class="value" id="view-customer"></span></div>
+        <div class="info-row"><span class="label">Destination Address</span><span class="value" id="view-address"></span></div>
+        <div class="info-row"><span class="label">Total Collected Value</span><span class="value" style="font-family: monospace; font-weight: bold;" id="view-amount"></span></div>
+        <div class="info-row"><span class="label">Settlement Mode</span><span class="value" id="view-method"></span></div>
+
+        <button id="action-trigger" onclick="commitLogisticsDeliveredState()" class="action-btn">VERIFY ARRIVAL & CONFIRM DELIVERY</button>
+        <div id="feedback"></div>
+    </div>
+</div>
+
+<script>
+    const SUPABASE_URL = 'https://ittsskhqkcbeuwuasjxf.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInRefiI6Iml0dHNza2hxa2NiZXV3dWFzanhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMzkyMzYsImV4cCI6MjA4ODgxNTIzNn0.PD82j5owKbIMZS2YchFqrqQPyppbFNYkE12PhD-Wibw'; 
+
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let currentOrderID = null;
+
+    window.onload = async function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        currentOrderID = urlParams.get('id');
+
+        if (!currentOrderID) {
+            document.getElementById('loading-state').innerHTML = "<span style='color:red; font-weight:bold;'>❌ ERROR: INVALID OR MISSING COURIER WAYBILL ID</span>";
+            return;
+        }
+
+        try {
+            let { data: order, error } = await db
+                .from('orders')
+                .select('*')
+                .eq('id', currentOrderID)
+                .single();
+
+            if (error || !order) {
+                const fallback = await db
+                    .from('orders')
+                    .select('*')
+                    .eq('tracking_number', currentOrderID)
+                    .single();
+                
+                order = fallback.data;
+                error = fallback.error;
+            }
+
+            if (error || !order) {
+                document.getElementById('loading-state').innerHTML = "<span style='color:red; font-weight:bold;'>❌ SPECIFIED MANIFEST NOT FOUND ON SYSTEM RECORDS</span>";
+                return;
+            }
+
+            document.getElementById('view-id').textContent = `#${String(order.id).toUpperCase()}`;
+            document.getElementById('view-customer').textContent = String(order.customer_name || 'Private Buyer').toUpperCase();
+            document.getElementById('view-address').textContent = `${String(order.address || '').toUpperCase()} (${String(order.shipping_region || 'Lagos').toUpperCase()})`;
+            document.getElementById('view-amount').textContent = `₦${Number(order.total_amount || 0).toLocaleString()}`;
+            document.getElementById('view-method').textContent = order.payment_method === 'pay_on_delivery' ? 'CASH ON DELIVERY (POD)' : 'PREPAID ONLINE TRANSACTION';
+
+            const statusDisplay = document.getElementById('status-display');
+            if (order.status === 'delivered') {
+                statusDisplay.textContent = "✓ ROUTE DELIVERED / AWAITING VENDOR AUDIT";
+                statusDisplay.style.background = "#e2f0d9";
+                statusDisplay.style.color = "#155724";
+                document.getElementById('action-trigger').disabled = true;
+                document.getElementById('action-trigger').textContent = "DELIVERY ARTIFACT CONFIRMED";
+            } else {
+                statusDisplay.textContent = "EN ROUTE / AWAITING VERIFICATION";
+                statusDisplay.style.background = "#fff3cd";
+                statusDisplay.style.color = "#856404";
+            }
+
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('loaded-content').style.display = 'block';
+
+        } catch (err) {
+            console.error("Catch handler error:", err);
+            document.getElementById('loading-state').textContent = "Critical handshake exception error occurred.";
+        }
+    };
+
+    async function commitLogisticsDeliveredState() {
+        const btn = document.getElementById('action-trigger');
+        const feedback = document.getElementById('feedback');
+        btn.disabled = true;
+        feedback.textContent = "Recording secure destination fulfillment ledger index...";
+
+        try {
+            const { data: idData, error: idError } = await db
+                .from('orders')
+                .update({ status: 'delivered' })
+                .eq('id', currentOrderID)
+                .select();
+
+            if (idError) throw idError;
+
+            if (!idData || idData.length === 0) {
+                const { data: trackData, error: trackError } = await db
+                    .from('orders')
+                    .update({ status: 'delivered' })
+                    .eq('tracking_number', currentOrderID)
+                    .select();
+                
+                if (trackError) throw trackError;
+                if (!trackData || trackData.length === 0) {
+                    throw new Error("No matching record found in system ledger.");
+                }
+            }
+
+            feedback.style.color = "green";
+            feedback.textContent = "✓ COURIER SCAN COMPLETE: ORDER MOVED TO DELIVERED STATUS.";
+            
+            const statusDisplay = document.getElementById('status-display');
+            statusDisplay.textContent = "✓ ROUTE DELIVERED / AWAITING VENDOR AUDIT";
+            statusDisplay.style.background = "#e2f0d9";
+            statusDisplay.style.color = "#155724";
+            btn.textContent = "DELIVERY ARTIFACT CONFIRMED";
+
+        } catch (err) {
+            feedback.style.color = "red";
+            feedback.textContent = "Verification failed: " + err.message;
+            btn.disabled = false;
+        }
+    }
+</script>
+</body>
+</html>
