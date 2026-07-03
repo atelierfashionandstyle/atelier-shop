@@ -1,969 +1,177 @@
-/* Core Styling */
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-body { background: #000; color: #fff; line-height: 1.6; }
-
-/* Navigation */
-header { display: flex; justify-content: space-between; padding: 30px 5%; position: fixed; width: 100%; z-index: 1000; }
-.logo { letter-spacing: 8px; font-weight: bold; font-size: 24px; text-transform: uppercase; }
-nav a, .cart-icon { color: #fff; text-decoration: none; margin-left: 30px; cursor: pointer; text-transform: uppercase; font-size: 12px; letter-spacing: 2px; }
-
-.hero {
-    position: relative;
-    width: 100%;
-    height: 100vh;
-    /* Correct syntax below: single url, leading slash to ensure it finds the images folder */
-    background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), 
-                url('fashion.jpg.jpg'); 
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+:root {
+    --noir-black: #0a0a0a;
+    --noir-dark: #1a1a1a;
+    --noir-gold: #ffd700;
+    --noir-gray: #888;
 }
 
-/* Ensure the text sits ON TOP of the image */
-.hero-content {
-    position: relative; /* Required to sit above the dark overlay */
-    z-index: 2;
-    text-align: center;
-    color: #fff;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px; /* This creates clean spacing between text and button */
-}
-
-.hero-content h1 {
-    font-size: 80px; /* Big and bold */
-    letter-spacing: 15px;
-    margin-bottom: 10px;
-}
-
-/* This is the part that brings it down */
-.hero-btn {
-    margin-top: 40px; /* Adjust this to move it further down */
-    padding: 15px 40px;
-    background: #fff;
-    color: #000;
-    border: 1px solid #fff;
-    font-size: 12px;
-    font-weight: bold;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: 0.3s ease-all;
-}
-
-.hero-btn:hover {
-    background: transparent;
-    color: #fff;
-}
-
-/* =========================================================================
-   1. GLOBAL SYSTEM UTILITIES & LOADING BARS
-   ========================================================================= */
-#loader-bar {
-    position: fixed;
-    top: 0; 
-    left: 0;
-    height: 3px;
-    background: #ffffff; /* High contrast white against dark background theme */
-    width: 0%;
-    transition: width 0.4s ease;
-    z-index: 9999;
-}
-/* =========================================================================
-   ATELIER EDITORIAL GAP ARCHITECTURE
-   ========================================================================= */
-.atelier-editorial-gap-layer {
-    width: 100%;
-    background: #ffffff;
-    border-top: 1px solid #000000;
-    border-bottom: 2px solid #000000;
-    padding: 60px 0 30px 0; /* Creates luxury padding padding around elements */
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
-    box-sizing: border-box;
-    overflow: hidden;
-}
-
-/* Staggered Heading Elements */
-.gap-brand-statement {
-    padding: 0 4%;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    text-align: left;
-}
-
-.gap-edition-tag {
-    font-size: 9px;
-    font-weight: bold;
-    letter-spacing: 3px;
-    color: #666666;
-    text-transform: uppercase;
-}
-
-.gap-main-headline {
-    font-size: 18px;
-    font-weight: 300;
-    letter-spacing: 5px;
-    text-transform: uppercase;
+body.vendor-noir {
     margin: 0;
-    color: #000000;
-}
-
-/* Infinite Kinetic Ribbon Container */
-.gap-marquee-wrapper {
-    width: 100%;
-    background: #000000;
-    color: #ffffff;
-    padding: 14px 0;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    border-style: 1px solid #000000;
-}
-
-.gap-marquee-inner {
-    display: flex;
-    white-space: nowrap;
-    gap: 40px;
-    animation: luxuryInfiniteScroll 35s linear infinite;
-}
-
-.gap-marquee-inner span {
-    font-size: 10px;
-    font-weight: bold;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    flex-shrink: 0;
-}
-
-/* Infinite Glide Animation Rules */
-@keyframes luxuryInfiniteScroll {
-    0% {
-        transform: translate3d(0, 0, 0);
-    }
-    100% {
-        transform: translate3d(-50%, 0, 0);
-    }
-}
-
-/* Responsive Scaling Pinpoint */
-@media (max-width: 768px) {
-    .atelier-editorial-gap-layer {
-        padding: 40px 0 20px 0;
-    }
-    .gap-main-headline {
-        font-size: 14px;
-        letter-spacing: 3px;
-    }
-}
-/* =========================================================================
-   2. MAIN COLLECTION GRID & HIGH-PERFORMANCE CARDS
-   ========================================================================= */
-.featured-products { 
-    padding: 100px 5%; 
-    background-color: #000000;
-}
-
-/* --- EXTRA PRODUCTION SPACING RESOLUTION --- */
-.product-grid-section {
-    width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 80px 4% 120px 4%; /* Generous luxury breathing room layout cushion */
-    box-sizing: border-box;
-    clear: both;
-}
-
-@media (max-width: 768px) {
-    .product-grid {
-        display: grid !important;
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
-        gap: 30px 15px !important;
-        width: 100% !important;
-        overflow-x: hidden !important;
-    }
-}
-/* Consolidated Minimalist Luxury Product Card Architecture */
-.atelier-product-card, .product-card {
-    background: #0f0f0f; /* Refined dark luxury tone */
-    padding: 16px;
-    border: 1px solid #1a1a1a;
-    border-radius: 0px; /* Sharp modern corners matching your minimal layout aesthetic */
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.atelier-product-card:hover, .product-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 30px rgba(255, 255, 255, 0.03);
-    border-color: #333333;
-}
-
-/* Square Image Viewport Frame Box */
-.product-image-wrapper, .image-container {
-    position: relative;
-    width: 100%;
-    padding-top: 125%; /* Golden portrait fashion ratio (4:5 presentation alignment) */
-    overflow: hidden;
-    background-color: #050505;
-    cursor: pointer;
-}
-
-.product-image-wrapper img, .product-card img, .main-prod-img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Tailor-fitted to showcase clean luxury profile crops without stretching */
-    transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-.atelier-product-card:hover .product-image-wrapper img,
-.product-card:hover img {
-    transform: scale(1.04);
-}
-
-/* High Conversion Urgency Pill Tag */
-.luxury-stock-badge {
-    position: absolute;
-    bottom: 12px;
-    left: 12px;
-    background-color: #ffffff;
-    color: #000000;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    padding: 5px 10px;
-    text-transform: uppercase;
-    z-index: 2;
-}
-
-/* Typography Content Alignment Wrappers */
-.product-info-wrapper, .product-info {
-    padding-top: 14px;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-}
-
-.product-brand-title {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin: 0 0 4px 0;
-    color: #888888;
-}
-
-.product-info h3, .product-item-name {
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 400;
-    margin: 0 0 8px 0;
-    color: #ffffff;
-    line-height: 1.4;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    height: 34px;
-}
-
-/* Elegant Contrast Alternative to Jumia Split Pricing */
-.luxury-price-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 12px;
-}
-
-.current-price, .price {
-    font-size: 14px;
-    font-weight: 700;
-    color: #ffffff;
-    margin: 0;
-}
-
-.original-strike-price {
-    font-size: 11px;
-    font-weight: 400;
-    color: #555555;
-    text-decoration: line-through;
-}
-
-.percentage-pill {
-    background-color: #1c110a;
-    color: #d67d3e; /* High-end contrast color format instead of loud retail orange codes */
-    font-size: 10px;
-    font-weight: 600;
-    padding: 2px 6px;
-}
-
-/* Sizing Controls Selector Panels */
-.size-selector {
-    display: flex;
-    gap: 5px;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.size-select-spacer {
-    height: 42px;
-}
-
-.atelier-size-select, .product-size-select {
-    width: 100%;
-    height: 42px;
-    background: #000000;
-    color: #ffffff;
-    border: 1px solid #222222;
-    font-size: 11px;
-    padding: 0 10px;
-    margin-bottom: 12px;
-    outline: none;
-    border-radius: 0;
-    -webkit-appearance: none;
-    appearance: none;
-}
-
-/* Persistent Direct Action Conversion Triggers */
-.luxury-add-trigger, .add-to-bag-btn {
-    width: 100%;
-    height: 45px;
-    background-color: #ffffff;
-    color: #000000;
-    border: 1px solid #ffffff;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    cursor: pointer;
-    margin-top: auto; /* Securely pins click elements linearly across multi-row cards */
-    transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.luxury-add-trigger:hover, .add-to-bag-btn:hover {
-    background-color: #000000;
-    color: #ffffff;
-    border-color: #ffffff;
-}
-
-/* =========================================================================
-   LUXURY MINIMAL PAGINATION GRAPHICS BLOCK
-   ========================================================================= */
-#pagination-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    margin: 40px 0;
-}
-
-.page-btn {
-    background-color: #000000;
-    color: #ffffff;
-    border: 1px solid #333333;
-    padding: 10px 16px;
-    font-size: 14px;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    min-width: 44px;
-}
-
-.page-btn:hover {
-    background-color: #ffffff;
-    color: #000000;
-    border-color: #ffffff;
-}
-
-.page-btn.active {
-    background-color: #ffffff;
-    color: #000000;
-    border-color: #ffffff;
-    font-weight: bold;
-    pointer-events: none;
-}
-
-.page-btn.disabled {
-    opacity: 0.25;
-    cursor: not-allowed;
-    background-color: #000000;
-    color: #ffffff;
-    border-color: #222222;
-}
-
-.arrow-btn {
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* =========================================================================
-   4. LUXURY CART SLIDE-OUT DRAWER SYSTEM
-   ========================================================================= */
-.cart-sidebar {
-    position: fixed;
-    top: 0;
-    right: -400px; /* Securely hides tray window array maps off-canvas default state */
-    width: 400px;
-    height: 100vh;
-    background-color: #0b0b0b;
-    color: #ffffff;
-    z-index: 1000;
-    padding: 30px;
-    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.8);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    transition: right 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-.cart-sidebar.active {
-    right: 0; /* Sliding transition handler */
-}
-
-@media (max-width: 480px) {
-    .cart-sidebar {
-        width: 100%;
-        right: -100%;
-    }
-}
-
-.cart-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-    position: relative;
-}
-
-#cart-items {
-    flex: 1;
-    overflow-y: auto;
-    padding-right: 10px;
-}
-
-/* Clean Custom Scrollbar Parameters for Cart Items List Frame */
-#cart-items::-webkit-scrollbar {
-    width: 4px;
-}
-#cart-items::-webkit-scrollbar-thumb {
-    background: #222222;
-}
-
-.cart-item button {
-    background: transparent;
-    border: none;
-    color: #ffffff;
-    opacity: 0.5;
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: opacity 0.2s;
-}
-
-.cart-item button:hover {
-    opacity: 1;
-}
-
-/* Cart Action Controls & Triggers */
-.close-btn, .close-bag {
-    background: transparent;
-    border: none;
-    color: #888888;
-    font-size: 28px;
-    cursor: pointer;
-    transition: color 0.2s ease, opacity 0.2s;
-    line-height: 1;
-}
-
-.close-btn:hover, .close-bag:hover, .close-cart-btn:hover {
-    color: #ffffff;
-    opacity: 1;
-}
-
-.cart-footer {
-    border-top: 1px solid #1a1a1a;
-    padding-top: 20px;
-    margin-top: 20px;
-}
-
-.cart-footer p {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    font-weight: bold;
-    margin-bottom: 15px;
-}
-
-.checkout-btn {
-    width: 100%;
-    background-color: #ffffff;
-    color: #000000;
-    padding: 16px;
-    border: none;
-    font-weight: 700;
-    letter-spacing: 2px;
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: background-color 0.2s ease;
-}
-
-.checkout-btn:hover {
-    background-color: #cccccc;
-}
-
-/* =========================================================================
-   5. PREMIUM MODAL QUICK VIEW OVERLAY CORE
-   ========================================================================= */
-.modal {
-    display: none; /* Controlled asynchronously via script window triggers */
-    position: fixed;
-    z-index: 1100;
-    left: 0; 
-    top: 0;
-    width: 100%; 
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.95);
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
-
-.modal-content {
-    background: #000000;
-    border: 1px solid #1a1a1a;
-    padding: 40px;
-    width: 100%;
-    max-width: 900px;
-    position: relative;
-    color: #ffffff;
-}
-
-.modal-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 30px;
-}
-
-@media (min-width: 768px) {
-    .modal-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 40px;
-    }
-}
-
-#qv-image {
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-    background-color: #050505;
-}
-/* Quick View Multiple Images Thumbnail Row Styles */
-.quickview-thumbnails-container {
-    display: flex;
-    gap: 10px;
-    margin-top: 15px;
-    justify-content: flex-start;
-    overflow-x: auto;
-    padding-bottom: 5px;
-}
-
-.qv-thumbnail-item {
-    width: 60px;
-    height: 75px;
-    object-fit: cover;
-    border: 1px solid #e5e5e5;
-    cursor: pointer;
-    transition: border-color 0.2s ease, opacity 0.2s ease;
-    background: #fcfcfc;
-}
-
-.qv-thumbnail-item:hover {
-    border-color: #000000; /* Sharp, high-contrast focus lines */
-    opacity: 0.9;
-}
-
-/* Quick View Text Fields Structuring */
-#qv-title {
-    font-size: 18px;
-    letter-spacing: 2px;
-    font-weight: 700;
-    margin-bottom: 10px;
-    color: #ffffff;
-}
-
-#qv-price {
-    font-size: 16px;
-    font-weight: 700;
-    color: #ffffff;
-}
-
-.qv-story-text, #qv-description {
-    font-size: 13px;
-    line-height: 1.6;
-    color: #b5b5b5;
-    margin-top: 20px;
-}
-
-.qv-highlights-box {
-    margin-top: 20px;
-    border-top: 1px solid #1a1a1a;
-    padding-top: 15px;
-}
-
-.qv-highlights-header {
-    font-size: 10px;
-    letter-spacing: 2px;
-    font-weight: bold;
-    display: block;
-    margin-bottom: 10px;
-    color: #ffffff;
-}
-
-.qv-highlights-list {
-    padding-left: 15px;
-    margin: 0;
-    font-size: 12px;
-    color: #b5b5b5;
-    line-height: 1.6;
-}
-
-.close-modal {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    font-size: 32px;
-    color: #888888;
-    cursor: pointer;
-    z-index: 1005;
-    transition: color 0.2s ease;
-}
-
-.close-modal:hover {
-    color: #ffffff;
-}
-/* Custom smooth scrollbar treatment for the Atelier Roller write up */
-.roller-content-container::-webkit-scrollbar {
-    width: 3px;
-}
-.roller-content-container::-webkit-scrollbar-track {
-    background: #000;
-}
-.roller-content-container::-webkit-scrollbar-thumb {
-    background: #222;
-    border-radius: 10px;
-}
-.roller-content-container::-webkit-scrollbar-thumb:hover {
-    background: #444;
-}
-
-/* Responsive adjustments for mobile quick view overlays */
-@media (max-width: 768px) {
-    .atelier-modal-body {
-        grid-template-columns: 1fr !important;
-        max-height: 95vh !important;
-        overflow-y: auto !important;
-    }
-    .atelier-modal-body > div {
-        padding: 20px !important;
-    }
-    .roller-content-container {
-        max-height: 200px !important;
-    }
-}
-
-/* =========================================================================
-   6. CHECKOUT SUITE SYSTEM VIEW LAYOUTS
-   ========================================================================= */
-#checkout-section {
-    padding-top: 60px;
-    background-color: #000000;
-    min-height: 100vh;
-}
-
-.back-to-shop-btn {
-    background: #000000;
-    color: #ffffff;
-    border: 1px solid #222222;
-    padding: 12px 24px;
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    cursor: pointer;
-    margin-bottom: 20px;
-    transition: all 0.2s ease;
-}
-
-.back-to-shop-btn:hover {
-    background-color: #ffffff;
-    color: #000000;
-}
-
-.checkout-container {
-    max-width: 550px;
-    margin: 40px auto;
-    padding: 20px;
-    text-align: center;
-    color: #ffffff;
-}
-
-.checkout-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    margin-top: 30px;
-}
-
-/* Sharp, Flat Luxury Input Parameters (Removes Gray Overlays) */
-.checkout-stack input, 
-.checkout-select,
-.checkout-input {
-    width: 100%;
-    height: 52px;
-    background: #000000 !important;
-    border: 1px solid #222222;
-    padding: 0 15px;
-    color: #ffffff !important;
-    font-family: inherit;
-    font-size: 13px;
-    outline: none;
-    border-radius: 0px; /* Sharp modern edges */
-    box-sizing: border-box;
-    transition: border-color 0.2s ease;
-}
-
-/* Custom Vector Arrow Layout for Selection Boxes */
-.checkout-select, .checkout-input {
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="292.4" height="292.4"><path fill="%23FFFFFF" d="M287 69.4a17.6 17.6 0 0 0-13-5.4H18.4c-5 0-9.3 1.8-12.9 5.4A17.6 17.6 0 0 0 0 82.2c0 5 1.8 9.3 5.4 12.9l128 127.9c3.6 3.6 7.8 5.4 12.8 5.4s9.2-1.8 12.8-5.4L287 95c3.5-3.5 5.4-7.8 5.4-12.8 0-5-1.9-9.2-5.4-12.8z"/></svg>');
-    background-repeat: no-repeat;
-    background-position: right 15px top 50%;
-    background-size: 10px auto;
-    padding-right: 40px;
-}
-
-.checkout-stack input:focus, 
-.checkout-select:focus,
-.checkout-input:focus {
-    border-color: #ffffff;
-}
-
-/* Uniform Grid for Zip/City Splits */
-.triple-grid {
-    display: grid;
-    grid-template-columns: 1.4fr 0.8fr 0.8fr; /* Responsive localized geometric allocation layouts */
-    gap: 10px;
-}
-
-/* Primary Form Checkout Direct Execution Control Button */
-.checkout-btn-final {
-    width: 100%;
-    height: 55px;
-    background: #ffffff;
-    color: #000000;
-    border: 1px solid #ffffff;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    cursor: pointer;
-    margin-top: 15px;
-    transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.checkout-btn-final:hover {
-    background: #000000;
-    color: #ffffff;
-    border-color: #ffffff;
-}
-/* Container for the summary values */
-/* Update your existing selector */
-.shipping-summary {
-    display: none; /* Hidden by default */
-    margin-top: 60px; /* This creates the gap you need */
-    padding: 20px 5%;
-    border-top: 1px solid #333;
-    width: 100%;
-}
-
-.summary-line {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 15px;
-    color: #fff;
-}
-
-.total-bold {
-    font-weight: bold;
-    font-size: 1.4rem;
-    border-top: 1px solid #444;
-    padding-top: 15px;
-}
-.tracking-section {
-    padding: 40px 5%;
-    background-color: #050505; /* Slightly different black to separate sections */
-}
-
-.tracking-input-wrapper {
-    display: flex;
-    gap: 0; /* Joins the input and button */
-    max-width: 500px;
-    margin-top: 15px;
-}
-
-#tracking-number {
-    flex-grow: 1;
-    background: #111;
-    border: 1px solid #444;
-    color: #fff;
-    padding: 12px;
-    outline: none;
-}
-
-#track-btn {
-    background-color: #fff;
-    color: #000;
-    border: none;
-    padding: 0 20px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease; /* Smooth hover effect */
-}
-
-/* The Hover Effect */
-#track-btn:hover {
-    background-color: #cccccc; /* Subtle grey on hover */
-    letter-spacing: 1px; /* Slight "powerful" expansion */
-}
-.main-footer {
-    background-color: #000;
-    color: #fff;
-    padding: 80px 5% 40px 5%;
     font-family: 'Inter', sans-serif;
-    border-top: 1px solid #333;
+    background: #f4f4f4;
 }
 
-.footer-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 40px;
+.app-wrapper {
+    display: flex;
+    height: 100vh;
 }
 
-.footer-col h3 {
+/* SIDEBAR */
+.sidebar {
+    width: 260px;
+    background: var(--noir-black);
+    color: white;
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-logo {
+    padding: 40px 20px;
     font-size: 24px;
-    letter-spacing: 4px;
-    margin-bottom: 20px;
+    letter-spacing: 5px;
+    text-align: center;
+    border-bottom: 1px solid #333;
 }
 
-.footer-col h4 {
+.nav-links {
+    list-style: none;
+    padding: 20px 0;
+    flex-grow: 1;
+}
+
+.nav-links li {
+    padding: 15px 30px;
     font-size: 13px;
     letter-spacing: 2px;
+    cursor: pointer;
+    transition: 0.3s;
     text-transform: uppercase;
-    margin-bottom: 20px;
-    color: #888;
 }
 
-.footer-col p, .footer-col ul li {
-    font-size: 14px;
-    line-height: 1.8;
-    color: #bbb;
+.nav-links li:hover, .nav-links li.active {
+    background: var(--noir-dark);
+    color: var(--noir-gold);
 }
 
-.footer-col ul {
-    list-style: none;
-    padding: 0;
+/* MAIN CONTENT */
+.main-content {
+    flex-grow: 1;
+    overflow-y: auto;
 }
 
-.footer-col ul li a {
-    color: #bbb;
-    text-decoration: none;
+.top-bar {
+    background: white;
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #ddd;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+.noir-input {
+    padding: 15px;
+    border: 1px solid #ddd;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
     transition: 0.3s;
 }
 
-.footer-col ul li a:hover {
+.noir-input:focus {
+    border-color: #000;
+}
+
+.noir-btn-wide {
+    grid-column: span 2;
+    background: #000;
     color: #fff;
-    padding-left: 5px;
+    padding: 20px;
+    border: none;
+    letter-spacing: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
 }
 
-.social-links {
-    display: flex;
-    gap: 15px;
-    margin-top: 20px;
+.noir-btn-wide:hover {
+    background: #333;
+    letter-spacing: 7px;
 }
 
-.social-links a {
-    color: #fff;
-    font-size: 18px;
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
-
-.footer-bottom {
-    margin-top: 60px;
-    padding-top: 20px;
-    border-top: 1px solid #222;
-    text-align: center;
-    font-size: 12px;
-    color: #666;
-}
-/* --- POWER SEARCH BAR STYLE --- */
-.search-box {
-    width: fit-content;
-    height: fit-content;
-    position: relative;
-    display: flex;
-    align-items: center;
-    margin: 0 20px;
-}
-
-.input-search {
-    height: 40px;
-    width: 250px; /* Wider for better visibility */
-    border-style: none;
-    padding: 10px;
-    font-size: 13px;
+.filter-btn {
+    background: transparent;
+    border: 1px solid #000;
+    padding: 10px 25px;
+    cursor: pointer;
+    font-size: 11px;
     letter-spacing: 2px;
-    outline: none;
-    border-bottom: 2px solid #e0e0e0; /* Light gray base line */
-    background-color: transparent;
-    transition: all .5s ease-in-out;
+    text-transform: uppercase;
+    transition: 0.3s;
+}
+
+.filter-btn.active, .filter-btn:hover {
+    background: #000;
     color: #fff;
-    font-family: 'Inter', sans-serif;
+}
+
+.ship-action-btn {
+    background: #000;
+    color: #fff;
+    border: none;
+    padding: 8px 15px;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    letter-spacing: 1px;
+}
+.filter-btn {
+    background: #fff;
+    border: 1px solid #000;
+    padding: 8px 20px;
+    font-size: 10px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.filter-btn.active {
+    background: #000;
+    color: #fff;
+}
+/* ATELIER PRINT ECOSYSTEM */
+@media print {
+    body * { visibility: hidden; }
+    #waybill-print-area, #waybill-print-area * { 
+        visibility: visible; 
+        color: #000 !important; 
+    }
+    #waybill-print-area { 
+        position: absolute; 
+        left: 0; 
+        top: 0; 
+        width: 100%; 
+        border: none !important;
+    }
+    .no-print { display: none !important; }
+}
+
+/* Luxury Dashboard Aesthetics */
+#seller-section {
+    background-color: #fcfcfc;
+    font-family: 'Helvetica', sans-serif;
+}
+
+.status-badge {
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1px;
     text-transform: uppercase;
 }
 
-.input-search::placeholder {
-    color: #ffffff; /* Black placeholder text */
-    font-weight: 300;
-}
-
-/* The "Power" Focus: Line turns black and gets thicker when you click */
-.input-search:focus {
-    width: 300px;
-    border-bottom: 2px solid #000;
-}
-
-.btn-search {
-    width: 40px;
-    height: 40px;
-    border-style: none;
-    font-size: 16px;
-    font-weight: bold;
-    outline: none;
-    cursor: pointer;
-    background-color: transparent;
-    color: #888; /* Subtle gray for the search icon */
-}
+.status-shipped { background: #000; color: #fff; }
+.status-pending { background: #ffd700; color: #000; }

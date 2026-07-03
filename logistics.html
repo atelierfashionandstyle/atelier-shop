@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atelier Logistics Gateway</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #000; color: #fff; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; box-sizing: border-box; }
+        .portal-card { background: #111; border: 1px solid #333; padding: 40px 30px; width: 100%; max-width: 500px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .brand-header { font-size: 24px; font-weight: bold; letter-spacing: 6px; text-align: center; border-bottom: 2px solid #fff; padding-bottom: 15px; margin-bottom: 25px; }
+        .status-badge { background: #fff; color: #000; text-align: center; padding: 8px; font-weight: bold; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 25px; }
+        .data-group { margin-bottom: 20px; border-bottom: 1px solid #222; padding-bottom: 15px; }
+        .data-group:last-of-type { border-bottom: none; margin-bottom: 25px; }
+        .data-label { font-size: 9px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+        .data-value { font-size: 14px; font-weight: 500; color: #fff; }
+        .highlight { font-size: 18px; font-weight: bold; color: #fff; }
+        .confirm-btn { width: 100%; padding: 20px; background: #fff; color: #000; border: none; font-weight: bold; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+        .confirm-btn:hover { background: #eee; }
+        .loading { text-align: center; color: #888; font-size: 12px; letter-spacing: 1px; padding: 40px 0; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabaseclient.js"></script> 
+</head>
+<body>
+
+    <div class="portal-card" id="portal-content">
+        <div class="loading">AUTHENTICATING ATELIER SECURE MANIFEST...</div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            const portal = document.getElementById("portal-content");
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('id');
+
+            if (!orderId) {
+                portal.innerHTML = `
+                    <div class="brand-header">ATELIER</div>
+                    <div class="status-badge" style="background:#ff3333; color:#fff;">TRACKING ERROR</div>
+                    <p style="text-align:center; font-size:12px; color:#aaa;">Invalid or missing Order ID sequence parameters.</p>
+                `;
+                return;
+            }
+
+            const activeDatabaseClient = window.db;
+            if (!activeDatabaseClient) {
+                portal.innerHTML = `
+                    <div class="brand-header">ATELIER</div>
+                    <div class="status-badge" style="background:#ff3333; color:#fff;">CONNECTION OFFLINE</div>
+                `;
+                return;
+            }
+
+            const { data: order, error } = await activeDatabaseClient
+                .from('orders')
+                .select('*')
+                .eq('id', orderId)
+                .single();
+
+            if (error || !order) {
+                portal.innerHTML = `
+                    <div class="brand-header">ATELIER</div>
+                    <div class="status-badge" style="background:#ff3333; color:#fff;">MANIFEST NOT FOUND</div>
+                `;
+                return;
+            }
+
+            portal.innerHTML = `
+                <div class="brand-header">ATELIER</div>
+                <div class="status-badge">LOGISTICS ROUTE EN ROUTE</div>
+
+                <div class="data-group">
+                    <div class="data-label">Order Reference Tracking ID</div>
+                    <div class="data-value" style="font-family: monospace; font-weight: bold; color: #ffd700;">#${order.id}</div>
+                </div>
+                <div class="data-group">
+                    <div class="data-label">Consignee Name</div>
+                    <div class="data-value highlight">${order.customer_name || 'Private Client'}</div>
+                </div>
+                <div class="data-group">
+                    <div class="data-label">Delivery Destination Address</div>
+                    <div class="data-value" style="line-height: 1.5; font-size: 15px; font-weight: bold; text-transform: uppercase;">${order.address || 'Missing Line'}</div>
+                </div>
+
+                <button id="confirm-btn" class="confirm-btn">
+                    CONFIRM DELIVERY & RECORD SETTLEMENT
+                </button>
+            `;
+
+            document.getElementById('confirm-btn').onclick = async () => {
+                const confirmBtn = document.getElementById('confirm-btn');
+                confirmBtn.innerText = "PROCESSING DELIVERY CLOSURE...";
+                confirmBtn.disabled = true;
+
+                const { error: updateError } = await activeDatabaseClient
+                    .from('orders')
+                    .update({ status: 'delivered' })
+                    .eq('id', orderId);
+
+                if (!updateError) {
+                    alert("Atelier System: Order status updated to DELIVERED.");
+                    window.location.reload();
+                } else {
+                    alert("Sync Fault: " + updateError.message);
+                    confirmBtn.innerText = "CONFIRM DELIVERY & RECORD SETTLEMENT";
+                    confirmBtn.disabled = false;
+                }
+            };
+        });
+    </script>
+</body>
+</html>

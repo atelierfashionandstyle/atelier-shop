@@ -35,53 +35,61 @@
         <div class="info-row"><span class="label">Total Collected Value</span><span class="value" style="font-family: monospace; font-weight: bold;" id="view-amount"></span></div>
         <div class="info-row"><span class="label">Settlement Mode</span><span class="value" id="view-method"></span></div>
 
-        <button id="action-trigger" onclick="commitLogisticsDeliveredState()" class="action-btn">VERIFY ARRIVAL & CONFIRM DELIVERY</button>
+        <button id="action-trigger" class="action-btn">VERIFY ARRIVAL & CONFIRM DELIVERY</button>
         <div id="feedback"></div>
     </div>
 </div>
 
 <script>
     const SUPABASE_URL = 'https://ittsskhqkcbeuwuasjxf.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInRefiI6Iml0dHNza2hxa2NiZXV3dWFzanhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMzkyMzYsImV4cCI6MjA4ODgxNTIzNn0.PD82j5owKbIMZS2YchFqrqQPyppbFNYkE12PhD-Wibw'; 
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0dHNza2hxa2NiZXV3dWFzanhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMzkyMzYsImV4cCI6MjA4ODgxNTIzNn0.PD82j5owKbIMZS2YchFqrqQPyppbFNYkE12PhD-Wibw'; 
 
-    const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    let currentOrderID = null;
+    let db;
+    let globalActiveOrderID = null;
 
-    window.onload = async function() {
+    document.addEventListener("DOMContentLoaded", async () => {
+        // Initialize client securely inside DOM layout load event
+        db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         const urlParams = new URLSearchParams(window.location.search);
-        currentOrderID = urlParams.get('id');
+        globalActiveOrderID = urlParams.get('id');
 
-        if (!currentOrderID) {
+        if (!globalActiveOrderID) {
             document.getElementById('loading-state').innerHTML = "<span style='color:red; font-weight:bold;'>❌ ERROR: INVALID OR MISSING COURIER WAYBILL ID</span>";
             return;
         }
 
         try {
+            // 1. Check matching ID column sequence format first
             let { data: order, error } = await db
                 .from('orders')
                 .select('*')
-                .eq('id', currentOrderID)
-                .single();
+                .eq('id', globalActiveOrderID)
+                .maybeSingle();
 
+            // 2. FIXED: Correctly fallback to query the 'tracking_number' column if first lookup yields nothing
             if (error || !order) {
-                const fallback = await db
+                const fallbackResult = await db
                     .from('orders')
                     .select('*')
-                    .eq('tracking_number', currentOrderID)
-                    .single();
+                    .eq('tracking_number', globalActiveOrderID)
+                    .maybeSingle();
                 
-                order = fallback.data;
-                error = fallback.error;
+                if (fallbackResult.data) {
+                    order = fallbackResult.data;
+                }
             }
 
-            if (error || !order) {
+            // 3. If still nothing is found after both attempts, show the missing manifest alert
+            if (!order) {
                 document.getElementById('loading-state').innerHTML = "<span style='color:red; font-weight:bold;'>❌ SPECIFIED MANIFEST NOT FOUND ON SYSTEM RECORDS</span>";
                 return;
             }
 
-            document.getElementById('view-id').textContent = `#${String(order.id).toUpperCase()}`;
+            // Bind values to UI elements cleanly
+            document.getElementById('view-id').textContent = `#${String(order.id || order.tracking_number).toUpperCase()}`;
             document.getElementById('view-customer').textContent = String(order.customer_name || 'Private Buyer').toUpperCase();
-            document.getElementById('view-address').textContent = `${String(order.address || '').toUpperCase()} (${String(order.shipping_region || 'Lagos').toUpperCase()})`;
+            document.getElementById('view-address').textContent = `${String(order.address || '').toUpperCase()}`;
             document.getElementById('view-amount').textContent = `₦${Number(order.total_amount || 0).toLocaleString()}`;
             document.getElementById('view-method').textContent = order.payment_method === 'pay_on_delivery' ? 'CASH ON DELIVERY (POD)' : 'PREPAID ONLINE TRANSACTION';
 
@@ -101,11 +109,14 @@
             document.getElementById('loading-state').style.display = 'none';
             document.getElementById('loaded-content').style.display = 'block';
 
+            // Bind the click event now that layout parameters exist
+            document.getElementById('action-trigger').onclick = commitLogisticsDeliveredState;
+
         } catch (err) {
             console.error("Catch handler error:", err);
             document.getElementById('loading-state').textContent = "Critical handshake exception error occurred.";
         }
-    };
+    });
 
     async function commitLogisticsDeliveredState() {
         const btn = document.getElementById('action-trigger');
@@ -114,19 +125,21 @@
         feedback.textContent = "Recording secure destination fulfillment ledger index...";
 
         try {
-            const { data: idData, error: idError } = await db
+            // Attempt status update targeting ID
+            let { data: idData, error: idError } = await db
                 .from('orders')
                 .update({ status: 'delivered' })
-                .eq('id', currentOrderID)
+                .eq('id', globalActiveOrderID)
                 .select();
 
             if (idError) throw idError;
 
+            // Secondary fallback update attempt targeting tracking_number
             if (!idData || idData.length === 0) {
                 const { data: trackData, error: trackError } = await db
                     .from('orders')
                     .update({ status: 'delivered' })
-                    .eq('tracking_number', currentOrderID)
+                    .eq('tracking_number', globalActiveOrderID)
                     .select();
                 
                 if (trackError) throw trackError;
