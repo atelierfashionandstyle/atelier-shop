@@ -336,21 +336,38 @@ window.openQuickView = function(title, description, imageArray, price, category)
             @media (max-width: 768px) {
                 .atelier-modal-body {
                     grid-template-columns: 1fr !important;
-                    height: auto !important;
-                    max-height: calc(100vh - 40px) !important;
-                    overflow-y: auto !important;
+                    height: calc(100vh - 40px) !important;
+                    max-height: 640px !important;
+                    display: flex !important;
+                    flex-direction: column !important;
+                }
+                .atelier-media-pane {
+                    height: 240px !important;
+                    flex-shrink: 0 !important;
+                    border-right: none !important;
+                    border-bottom: 1px solid #111 !important;
                 }
                 .main-viewport-wrapper {
-                    height: 280px !important;
+                    height: 180px !important;
                 }
                 .atelier-info-pane {
+                    flex: 1 !important;
                     height: auto !important;
-                    overflow: visible !important;
-                    padding: 20px 15px !important;
+                    overflow: hidden !important;
+                    padding: 15px !important;
+                    display: flex !important;
+                    flex-direction: column !important;
                 }
                 .roller-content-container {
-                    overflow-y: visible !important;
-                    flex: none !important;
+                    overflow-y: auto !important;
+                    flex: 1 !important;
+                    margin-bottom: 10px !important;
+                }
+                .persistent-actions-anchor {
+                    background: #000 !important;
+                    padding-top: 10px !important;
+                    border-top: 1px solid #222 !important;
+                    flex-shrink: 0 !important;
                 }
             }
         `;
@@ -365,7 +382,7 @@ window.openQuickView = function(title, description, imageArray, price, category)
             
             <button onclick="closeLuxuryQuickView()" style="position:absolute; top:12px; right:15px; background:none; border:none; color:#fff; font-size:25px; cursor:pointer; font-weight:200; z-index:100; line-height:1;">&times;</button>
             
-            <div style="display:flex; flex-direction:column; padding:15px; gap:12px; background:#0a0a0a; border-right:1px solid #111; justify-content: center; box-sizing: border-box; height: 100%; overflow: hidden;">
+            <div class="atelier-media-pane" style="display:flex; flex-direction:column; padding:15px; gap:12px; background:#0a0a0a; border-right:1px solid #111; justify-content: center; box-sizing: border-box; height: 100%; overflow: hidden;">
                 <div class="main-viewport-wrapper" style="width:100%; height: 380px; background:#111; overflow:hidden; border:1px solid #222;">
                     <img id="modal-primary-display" src="${finalImages[0]}" style="width:100%; height:100%; object-fit:cover; transition: opacity 0.2s ease;">
                 </div>
@@ -393,8 +410,8 @@ window.openQuickView = function(title, description, imageArray, price, category)
                     ${specificationsHTML}
                 </div>
 
-                <div class="persistent-actions-anchor" style="background:#000; padding-top:10px; border-top:1px solid #111; display:flex; flex-direction:column; gap:10px;">
-                    <div>
+                <div class="persistent-actions-anchor">
+                    <div style="margin-bottom: 10px;">
                         <label style="font-size:8px; font-weight:bold; letter-spacing:1px; color:#888; display:block; margin-bottom:4px; text-transform:uppercase;">Select Execution Size</label>
                         <select id="modal-size-select" style="width:100%; background:#111; color:#fff; border:1px solid #333; padding:10px; font-size:10px; font-weight:bold; letter-spacing:1px; border-radius:0; -webkit-appearance:none; height:38px; box-sizing:border-box;">
                             ${modalSizeOptions}
@@ -1060,6 +1077,11 @@ window.saveOrderToSupabase = async function (orderData) {
     }
 
     try {
+        // --- PRE-CHECK SETTLEMENT LIFECYCLE ---
+        // If it's an online payment, the money is already collected -> 'paid'
+        // If it's pay on delivery, the money hasn't been collected yet -> 'unpaid'
+        const initialSettlement = (orderData.payment_method === 'online') ? 'paid' : 'unpaid';
+
         const { data, error } = await clientDbEngine
             .from('orders')
             .insert([
@@ -1071,10 +1093,14 @@ window.saveOrderToSupabase = async function (orderData) {
                     total_amount: Number(orderData.total_amount),
                     status: orderData.status,
                     payment_method: orderData.payment_method,
-                    seller_id: orderData.seller_id, // Saved accurately to target specific vendors
-                    commission_fee: Number(orderData.commission_fee), // Split logged correctly
+                    
+                    // --- THE FIX: Inserts 'paid' immediately for prepaid online orders ---
+                    settlement_status: initialSettlement, 
+                    
+                    seller_id: orderData.seller_id, 
+                    commission_fee: Number(orderData.commission_fee), 
                     shipping_fee_seller: Number(orderData.shipping_fee_seller),
-                    net_payout: Number(orderData.net_payout), // Split logged correctly
+                    net_payout: Number(orderData.net_payout), 
                     tracking_number: orderData.id,
                     shipping_region: orderData.shipping_region,
                     address: orderData.address,
@@ -1106,26 +1132,32 @@ async function processPostPaymentAutomations(orderData) {
         try { window.updateCartUI(); } catch(e) { console.error(e); }
     }
 
+    // --- RECIPIENT FALLBACK SAFEGUARD ---
+    // Safely reads either naming variant to ensure Prepaid tracking never goes blank
+    const recipientEmail = orderData.email || orderData.customer_email;
+    const orderIdentifier = orderData.id || orderData.tracking_number;
+
     if (typeof window.sendAtelierEmail === 'function' || typeof sendAtelierEmail === 'function') {
         try {
             console.log("Atelier Sync Core: Triggering EmailJS operational channels.");
             const emailFn = window.sendAtelierEmail || sendAtelierEmail;
             
-            await emailFn(orderData.id, orderData.email, orderData.total_amount, orderData.payment_method);
+            // Pass the absolute verified recipientEmail string variables downstream
+            await emailFn(orderIdentifier, recipientEmail, orderData.total_amount, orderData.payment_method);
             
             // Dynamic alert messaging based on payment choice architecture rules
             if (orderData.payment_method === 'pay_on_delivery') {
-                alert(`Order Confirmed via Pay on Delivery!\nYour Atelier Order ID is: ${orderData.id}\nOur team will contact you on ${orderData.phone} before delivery dispatch.`);
+                alert(`Order Confirmed via Pay on Delivery!\nYour Atelier Order ID is: ${orderIdentifier}\nOur team will contact you on ${orderData.customer_phone || orderData.phone} before delivery dispatch.`);
             } else {
-                alert(`Payment Received & Order Confirmed!\nYour Atelier Order ID is: ${orderData.id}\nCheck your inbox for confirmation.`);
+                alert(`Payment Received & Order Confirmed!\nYour Atelier Order ID is: ${orderIdentifier}\nCheck your inbox for confirmation.`);
             }
         } catch (emailErr) {
             console.error("Atelier Email Automation Trigger Exception:", emailErr);
-            alert(`Order Saved successfully (ID: ${orderData.id}), but confirmation email failed to dispatch. Our admin team will process manually.`);
+            alert(`Order Saved successfully (ID: ${orderIdentifier}), but confirmation email failed to dispatch. Our admin team will process manually.`);
         }
     } else {
         console.warn("Atelier Warning: Global email routing channel unmapped on lifecycle thread.");
-        alert(`Order Received Successfully!\nYour Atelier Order ID is: ${orderData.id}`);
+        alert(`Order Received Successfully!\nYour Atelier Order ID is: ${orderIdentifier}`);
     }
 
     window.location.href = window.location.origin + window.location.pathname;
@@ -1142,18 +1174,32 @@ function sendAtelierEmail(ref, customerEmail, amount, paymentMethod) {
 
     emailjs.init("0pSpit0Eoff3xV_O9"); 
 
-    // Convert method parameter string values into crystal clear display descriptors
-    const methodDisplay = paymentMethod === 'pay_on_delivery' ? 'Pay on Delivery (Cash/Transfer)' : 'Online Secured Payment';
+    const formattedAmount = `₦${Number(amount).toLocaleString()}`;
+    
+    // Default: Prepaid Settings using your ORIGINAL variable structures
+    let headingText = 'Order Payment Confirmed';
+    let bodyParagraph = `We’ve received your payment of ${formattedAmount} for Order #${ref}. Lay back and relax, Our team is already preparing your unique pieces for shipment.`;
 
+    // Override if it's Pay on Delivery
+    if (paymentMethod === 'pay_on_delivery') {
+        headingText = 'Order Confirmed (Pay on Delivery)';
+        bodyParagraph = `Your order #${ref} for ${formattedAmount} has been successfully booked via Pay on Delivery. Please prepare cash or bank transfer upon arrival. Our team is already preparing your unique pieces for shipment.`;
+    }
+
+    // WE ARE HACKING THE OLD WORKING VARIABLES HERE:
     const templateParams = {
         to_email: customerEmail, 
-        order_id: ref,          
-        total_amount: `₦${Number(amount).toLocaleString()}`,
-        payment_type: methodDisplay, // <-- Passes method clean label straight to your EmailJS parameters wrapper template
+        
+        // Put the entire dynamic text paragraph into the old 'total_amount' slot!
+        total_amount: bodyParagraph, 
+        
+        // Put the dynamic header into the old 'order_id' slot!
+        order_id: headingText,       
+        
         track_link: `https://atelier-shop-psi.vercel.app/track-order.html?id=${ref}`
     };
 
-    console.log("Atelier: Attempting email dispatch...", templateParams);
+    console.log("Atelier: Sending hacked parameters to working slots...", templateParams);
 
     return emailjs.send('service_zi3z4lm', 'template_9lhj8aj', templateParams)
         .then((res) => {
