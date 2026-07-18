@@ -28,10 +28,7 @@ window.activeOrderSnapshot = window.activeOrderSnapshot || [];
 async function fetchAtelierProducts() {
     console.log("Atelier System Core: Initializing Supabase secure download sequence...");
     
-    const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
+    const { data, error } = await supabase.rpc('get_random_products');
 
     if (error) {
         console.error('Supabase Core Sync Interrupted:', error);
@@ -52,7 +49,7 @@ async function fetchAtelierProducts() {
             category: "clothing",
             images: ["https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=800"],
             status: "active",
-            stock: 5,
+            stock: 50,
             description: "STORY:\nCrafted for elite silhouettes.\n\nHIGHLIGHTS:\nPremium Custom Cotton\nHandmade in Lagos"
         }];
         renderProducts(allProducts);
@@ -142,7 +139,6 @@ function renderProducts(products) {
             imageArray = rawSource;
         } else if (typeof rawSource === 'string' && rawSource.trim() !== '' && rawSource !== '[]') {
             try {
-                // Try parsing structural array variations
                 let cleanStr = rawSource.trim();
                 if (cleanStr.startsWith('[') && cleanStr.endsWith(']')) {
                     imageArray = JSON.parse(cleanStr);
@@ -154,10 +150,8 @@ function renderProducts(products) {
             }
         }
 
-        // Clean out broken fallbacks
         imageArray = imageArray.filter(imgUrl => imgUrl && !imgUrl.includes('fashion.jpg') && imgUrl.startsWith('http'));
 
-        // If the product still has an empty array list, use a clean live asset placeholder
         if (imageArray.length === 0) {
             imageArray = ['https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=600'];
         }
@@ -165,19 +159,24 @@ function renderProducts(products) {
         const mainImageUrl = imageArray[0];
         const secondaryImageUrl = imageArray[1] || mainImageUrl;
 
-        let sizeOptions = '';
-        const category = (product.category || '').toLowerCase();
+        // --- NEW MULTIPURPOSE PLATFORM SIZE TREE LOGIC ---
+        let sizeHTML = '';
+        const category = (product.category || '').toLowerCase().trim();
 
-        if (category.includes('slide') || category.includes('footwear') || category.includes('shoe')) {
-            sizeOptions = `<option value="40">40</option><option value="41">41</option><option value="42" selected>42</option><option value="43">43</option><option value="44">44</option><option value="45">45</option>`;
+        if (category === 'accessories') {
+            // No drop down element structural layout strings generated for accessorial items
+            sizeHTML = ''; 
+        } else if (category.includes('slide') || category.includes('footwear') || category.includes('shoe')) {
+            sizeHTML = `
+                <select id="size-select-${product.id}" class="atelier-size-select" style="background:#000; color:#fff; border:1px solid #333; padding:8px; font-size:10px; width:100%; margin-top:4px; text-transform:uppercase; height:36px; -webkit-appearance:none; border-radius:0; box-sizing:border-box;">
+                    <option value="40">40</option><option value="41">41</option><option value="42" selected>42</option><option value="43">43</option><option value="44">44</option><option value="45">45</option>
+                </select>`;
         } else {
-            sizeOptions = `<option value="S">S</option><option value="M" selected>M</option><option value="L">L</option><option value="XL">XL</option><option value="XXL">XXL</option>`;
+            sizeHTML = `
+                <select id="size-select-${product.id}" class="atelier-size-select" style="background:#000; color:#fff; border:1px solid #333; padding:8px; font-size:10px; width:100%; margin-top:4px; text-transform:uppercase; height:36px; -webkit-appearance:none; border-radius:0; box-sizing:border-box;">
+                    <option value="S">S</option><option value="M" selected>M</option><option value="L">L</option><option value="XL">XL</option><option value="XXL">XXL</option>
+                </select>`;
         }
-
-        const sizeHTML = `
-            <select id="size-select-${product.id}" class="atelier-size-select" style="background:#000; color:#fff; border:1px solid #333; padding:8px; font-size:10px; width:100%; margin-top:4px; text-transform:uppercase; height:36px; -webkit-appearance:none; border-radius:0; box-sizing:border-box;">
-                ${sizeOptions}
-            </select>`;
 
         const isSoldOut = product.status === 'sold-out' || (product.stock !== undefined && product.stock <= 0);
         
@@ -227,20 +226,23 @@ function renderProducts(products) {
         }
 
         productCard.querySelector('.product-image-wrapper').addEventListener('click', () => {
-    // 1. MUST use 'imageArray' (the locally processed multi-image array)
-    // 2. MUST pass 'product.category' at the end to auto-switch size matrices
-    window.openQuickView(
-        productTitle, 
-        rawDescription, 
-        imageArray, 
-        productPrice, 
-        product.category
-    );
-});
+            window.openQuickView(
+                productTitle, 
+                rawDescription, 
+                imageArray, 
+                productPrice, 
+                product.category
+            );
+        });
+
         if (!isSoldOut) {
             productCard.querySelector('.luxury-add-trigger').addEventListener('click', (e) => {
                 e.stopPropagation(); 
-                const selectedSize = productCard.querySelector(`#size-select-${product.id}`).value;
+                
+                // Fallback assignment system if product has no size drop-down menu layer
+                const sizeSelectEl = productCard.querySelector(`#size-select-${product.id}`);
+                const selectedSize = sizeSelectEl ? sizeSelectEl.value : 'OSFM'; // One Size Fits Most
+                
                 window.addToBag(product.id, productTitle, productPrice, mainImageUrl, selectedSize);
             });
         }
@@ -305,13 +307,29 @@ window.openQuickView = function(title, description, imageArray, price, category)
         }
     }
 
-    // Size context selection processing
-    let modalSizeOptions = '';
-    const cleanCategoryString = (category || '').toLowerCase();
-    if (cleanCategoryString.includes('footwear') || cleanCategoryString.includes('shoe') || cleanCategoryString.includes('slide')) {
-        modalSizeOptions = `<option value="40">40</option><option value="41">41</option><option value="42" selected>42</option><option value="43">43</option><option value="44">44</option><option value="45">45</option>`;
+    // --- UPDATED MULTIPURPOSE PLATFORM SIZE TREE LOGIC ---
+    let sizeSelectorHTML = '';
+    const cleanCategoryString = (category || '').toLowerCase().trim();
+
+    if (cleanCategoryString === 'accessories') {
+        // Suppress and remove layout formatting for accessories entirely
+        sizeSelectorHTML = '';
+    } else if (cleanCategoryString.includes('footwear') || cleanCategoryString.includes('shoe') || cleanCategoryString.includes('slide')) {
+        sizeSelectorHTML = `
+            <div style="margin-bottom: 10px;">
+                <label style="font-size:8px; font-weight:bold; letter-spacing:1px; color:#888; display:block; margin-bottom:4px; text-transform:uppercase;">Select Execution Size</label>
+                <select id="modal-size-select" style="width:100%; background:#111; color:#fff; border:1px solid #333; padding:10px; font-size:10px; font-weight:bold; letter-spacing:1px; border-radius:0; -webkit-appearance:none; height:38px; box-sizing:border-box;">
+                    <option value="40">40</option><option value="41">41</option><option value="42" selected>42</option><option value="43">43</option><option value="44">44</option><option value="45">45</option>
+                </select>
+            </div>`;
     } else {
-        modalSizeOptions = `<option value="S">SMALL (S)</option><option value="M" selected>MEDIUM (M)</option><option value="L">LARGE (L)</option><option value="XL">EXTRA LARGE (XL)</option><option value="XXL">XXL</option>`;
+        sizeSelectorHTML = `
+            <div style="margin-bottom: 10px;">
+                <label style="font-size:8px; font-weight:bold; letter-spacing:1px; color:#888; display:block; margin-bottom:4px; text-transform:uppercase;">Select Execution Size</label>
+                <select id="modal-size-select" style="width:100%; background:#111; color:#fff; border:1px solid #333; padding:10px; font-size:10px; font-weight:bold; letter-spacing:1px; border-radius:0; -webkit-appearance:none; height:38px; box-sizing:border-box;">
+                    <option value="S">SMALL (S)</option><option value="M" selected>MEDIUM (M)</option><option value="L">LARGE (L)</option><option value="XL">EXTRA LARGE (XL)</option><option value="XXL">XXL</option>
+                </select>
+            </div>`;
     }
 
     // Inject Responsive CSS styles directly to shield layout context
@@ -337,18 +355,26 @@ window.openQuickView = function(title, description, imageArray, price, category)
                 .atelier-modal-body {
                     grid-template-columns: 1fr !important;
                     height: calc(100vh - 40px) !important;
-                    max-height: 640px !important;
+                    max-height: 85vh !important; /* Cap depth constraints on mobile UI */
                     display: flex !important;
                     flex-direction: column !important;
                 }
                 .atelier-media-pane {
-                    height: 240px !important;
+                    height: 200px !important; /* Optimized down for mobile portrait scales */
                     flex-shrink: 0 !important;
                     border-right: none !important;
                     border-bottom: 1px solid #111 !important;
+                    padding: 10px !important;
                 }
                 .main-viewport-wrapper {
-                    height: 180px !important;
+                    height: 150px !important;
+                }
+                .thumbnail-roller {
+                    padding-bottom: 0 !important;
+                }
+                .thumb-frame {
+                    width: 35px !important;
+                    height: 45px !important;
                 }
                 .atelier-info-pane {
                     flex: 1 !important;
@@ -411,12 +437,7 @@ window.openQuickView = function(title, description, imageArray, price, category)
                 </div>
 
                 <div class="persistent-actions-anchor">
-                    <div style="margin-bottom: 10px;">
-                        <label style="font-size:8px; font-weight:bold; letter-spacing:1px; color:#888; display:block; margin-bottom:4px; text-transform:uppercase;">Select Execution Size</label>
-                        <select id="modal-size-select" style="width:100%; background:#111; color:#fff; border:1px solid #333; padding:10px; font-size:10px; font-weight:bold; letter-spacing:1px; border-radius:0; -webkit-appearance:none; height:38px; box-sizing:border-box;">
-                            ${modalSizeOptions}
-                        </select>
-                    </div>
+                    ${sizeSelectorHTML}
 
                     <button type="button" onclick="executeModalBagInsertion('${title}', ${price}, '${finalImages[0]}')" style="width:100%; background:#fff; color:#000; border:none; padding:12px; font-size:10px; font-weight:bold; letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:background 0.2s;">
                         ADD TO COLLECTION BAG
@@ -454,11 +475,17 @@ window.switchQuickViewDisplayImage = function(selectedThumbFrame, targetImgUrl) 
 };
 
 window.executeModalBagInsertion = function(title, price, image) {
-    const chosenSize = document.getElementById('modal-size-select').value;
+    // 1. Safe extraction check: If the selector doesn't exist, fall back to "OSFM" (One Size Fits Most)
+    const sizeElement = document.getElementById('modal-size-select');
+    const chosenSize = sizeElement ? sizeElement.value : 'OSFM';
+    
+    // 2. Core Cart Execution pipeline
     if (typeof window.addToBag === 'function') {
         window.addToBag('qv_' + Date.now(), title, price, image, chosenSize);
+        
         if (typeof window.updateCartSidebar === 'function') window.updateCartSidebar();
         if (typeof window.renderCart === 'function') window.renderCart();
+        
         window.closeLuxuryQuickView();
     } else {
         console.error("Atelier Core Error: E-commerce cart data-layer architecture missing.");
@@ -1011,7 +1038,7 @@ window.payWithPaystack = function () {
     };
 
     const handler = PaystackPop.setup({
-        key: 'pk_test_f530e65d4cebf50a588673f69d1512b7cae51e02',
+        key: 'pk_live_4ca4e2777e1611c52bcf440c58d41929d28bccaa', // Now Replaced with your actual live public key
         email: checkoutData.email,
         amount: Math.round(checkoutData.calculatedTotal * 100),
         currency: 'NGN',
@@ -1279,8 +1306,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const statusStr = foundOrder.status ? String(foundOrder.status).toLowerCase().trim() : 'pending_delivery';
             let statusText = 'ORDER PENDING';
             let progressPercentage = '25%';
-            let barColor = '#0091ff'; // Default to blue for early stages
-            
+            let barColor = '#547039'; // Default to blue for early stages
             let step1 = '●', step2 = '○', step3 = '○';
 
             if (statusStr === 'shipped' || statusStr === 'closed') {
