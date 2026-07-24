@@ -325,14 +325,10 @@ function renderProducts(products) {
 
 // Global Share Handler Engine
 window.shareProduct = async function(productId, title, image) {
-    if (!productId) {
-        console.error("Share Engine Warning: Target product ID unavailable.");
-        alert("Unable to share this item at the moment.");
-        return;
-    }
+    if (!productId) return;
 
-    // Live Vercel Open Graph Endpoint
-    const shareUrl = `https://api-three-tau-32.vercel.app/api/og?product_id=${productId}`;
+    // Clean, branded URL
+    const shareUrl = `https://www.atelierstore.studio/?product_id=${productId}`;
     
     const shareData = {
         title: title || 'ATELIER COLLECTION',
@@ -340,21 +336,15 @@ window.shareProduct = async function(productId, title, image) {
         url: shareUrl
     };
 
-    // 1. Web Share API (Mobile)
     if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
         try {
             await navigator.share(shareData);
             return;
         } catch (err) {
-            if (err.name !== 'AbortError') {
-                console.warn("Native share bypassed, executing clipboard fallback...");
-            } else {
-                return;
-            }
+            if (err.name === 'AbortError') return;
         }
     }
 
-    // 2. Clipboard Fallback (Desktop)
     try {
         await navigator.clipboard.writeText(shareUrl);
         alert("Product link copied to clipboard!");
