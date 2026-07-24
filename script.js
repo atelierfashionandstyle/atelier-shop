@@ -331,14 +331,16 @@ window.shareProduct = async function(productId, title, image) {
         return;
     }
 
-    const shareUrl = `${window.location.origin}${window.location.pathname}?product_id=${productId}`;
+    // Live Vercel Open Graph Endpoint
+    const shareUrl = `https://api-three-tau-32.vercel.app/api/og?product_id=${productId}`;
+    
     const shareData = {
         title: title || 'ATELIER COLLECTION',
         text: `Explore ${title || 'this piece'} on ATELIER.`,
         url: shareUrl
     };
 
-    // 1. Web Share API (Mobile devices / supported browsers)
+    // 1. Web Share API (Mobile)
     if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
         try {
             await navigator.share(shareData);
@@ -347,17 +349,16 @@ window.shareProduct = async function(productId, title, image) {
             if (err.name !== 'AbortError') {
                 console.warn("Native share bypassed, executing clipboard fallback...");
             } else {
-                return; // User manually dismissed native share UI
+                return;
             }
         }
     }
 
-    // 2. Clipboard Fallback (Desktop / unsupported browsers)
+    // 2. Clipboard Fallback (Desktop)
     try {
         await navigator.clipboard.writeText(shareUrl);
         alert("Product link copied to clipboard!");
     } catch (err) {
-        // Legacy fallback
         const dummyInput = document.createElement('input');
         document.body.appendChild(dummyInput);
         dummyInput.value = shareUrl;
