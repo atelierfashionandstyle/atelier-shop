@@ -3,9 +3,11 @@ import { supabase } from './supabaseClient.js';
 // =========================================================================
 // --- 1. GLOBAL SYSTEM STATE MEMORY & RUNTIME MATRIX ---
 // =========================================================================
-let allProducts = [];          // Stores your collection data from Supabase
-let currentPage = 1;           // Tracks active viewing page frame
-let itemsPerPage = 17;          // Controls how many luxury pieces show at once
+let allProducts = [];           // Stores collection data from Supabase
+
+// Bind pagination state directly to window so external pagination listeners can modify it
+window.currentPage = window.currentPage || 1; 
+window.itemsPerPage = window.itemsPerPage || 17; 
 
 window.atelierMemoryCart = window.atelierMemoryCart || [];
 window.activeOrderSnapshot = window.activeOrderSnapshot || [];
@@ -40,7 +42,7 @@ async function fetchAtelierProducts() {
         console.log(`Atelier System Core: ${allProducts.length} premium pieces loaded.`);
         renderProducts(allProducts);
         
-        // Directly trigger deep link routing once products are loaded & rendered (no arbitrary timeout needed)
+        // Directly trigger deep link routing once products are loaded & rendered
         window.checkDeepLinkRouting(allProducts);
     } else {
         console.warn("Atelier System Core: Supabase table loaded empty. Generating design fallback frame.");
@@ -70,7 +72,6 @@ window.checkDeepLinkRouting = function(products) {
 
     if (!sharedProductId) return;
 
-    // Loose equality check (==) handles both string '19' and numerical 19
     const targetProduct = products.find(p => p.id == sharedProductId);
 
     if (targetProduct) {
@@ -97,7 +98,7 @@ window.checkDeepLinkRouting = function(products) {
             imageArray = ['https://ittsskhqkcbeuwuasjxf.supabase.co/storage/v1/object/public/product-images/1.png'];
         }
 
-        // 1. Instantly launch Quick View Modal
+        // Launch Quick View Modal
         if (typeof window.openQuickView === 'function') {
             window.openQuickView(
                 targetProduct.title || targetProduct.name || 'ATELIER PIECE',
@@ -109,7 +110,7 @@ window.checkDeepLinkRouting = function(products) {
             );
         }
 
-        // 2. Scroll smooth directly to the product card in the showroom grid
+        // Scroll directly to product card
         const cardEl = document.querySelector(`[data-product-id="${targetProduct.id}"]`);
         if (cardEl) {
             cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -122,7 +123,8 @@ window.checkDeepLinkRouting = function(products) {
 // =========================================================================
 // --- 3. UNIFIED HIGH-CONTRAST PRODUCT RENDERING ENGINE ---
 // =========================================================================
-function renderProducts(products) {
+window.renderProducts = function(products) {
+    const targetProducts = products || allProducts;
     const productGrid = document.querySelector('.product-grid');
     if (!productGrid) return;
     
@@ -136,16 +138,16 @@ function renderProducts(products) {
     `;
     productGrid.innerHTML = '';
 
-    const activeShowroomProducts = products.filter(p => p.status !== 'hidden');
+    const activeShowroomProducts = targetProducts.filter(p => p.status !== 'hidden');
     const totalItemsCount = activeShowroomProducts.length;
-    const totalPages = Math.ceil(totalItemsCount / (window.itemsPerPage || 12));
+    const totalPages = Math.ceil(totalItemsCount / window.itemsPerPage);
     
     if (window.currentPage > totalPages && totalPages > 0) {
         window.currentPage = totalPages;
     }
     
-    const startIndex = ((window.currentPage || 1) - 1) * (window.itemsPerPage || 12);
-    const endIndex = startIndex + (window.itemsPerPage || 12);
+    const startIndex = (window.currentPage - 1) * window.itemsPerPage;
+    const endIndex = startIndex + window.itemsPerPage;
     const paginatedItems = activeShowroomProducts.slice(startIndex, endIndex);
 
     const editorialAdvertPool = [
@@ -163,7 +165,7 @@ function renderProducts(products) {
         }
     ];
 
-    let advertIndex = 0;
+    let advertIndex = 0; // Ensures fresh ad position recalculation per page render
 
     paginatedItems.forEach((product, loopIndex) => {
         if (loopIndex > 0 && loopIndex % 4 === 0) {
@@ -310,37 +312,12 @@ function renderProducts(products) {
     if (typeof renderPaginationControls === 'function') {
         renderPaginationControls(activeShowroomProducts.length);
     }
-}
-
-// =========================================================================
-// --- ATELIER SOCIAL VISIBILITY & DISTRIBUTION ENGINE ---
-// =========================================================================
-window.shareProduct = function(productId, productTitle, mainImageUrl) {
-    const originUrl = window.location.origin + window.location.pathname;
-    const directShareUrl = `${originUrl}?product_id=${productId}`;
-    const shareCaption = `Discover the ${productTitle.toUpperCase()} on ATELIER.`;
-
-    if (navigator.share) {
-        navigator.share({
-            title: `ATELIER — ${productTitle.toUpperCase()}`,
-            text: shareCaption,
-            url: directShareUrl
-        })
-        .then(() => console.log('Atelier Core Log: Distribution path executed successfully.'))
-        .catch((err) => console.log('Atelier Core Log: Native share dismiss trace.', err));
-    } else {
-        const facebookIntentUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(directShareUrl)}&quote=${encodeURIComponent(shareCaption)}`;
-        const width = 600, height = 400;
-        const left = (window.innerWidth - width) / 2;
-        const top = (window.innerHeight - height) / 2;
-        
-        window.open(
-            facebookIntentUrl, 
-            'atelierShareWindow', 
-            `width=${width},height=${height},top=${top},left=${left},toolbar=0,status=0,menubar=0`
-        );
-    }
 };
+
+// Expose renderProducts globally
+function renderProducts(products) {
+    window.renderProducts(products);
+}
 
 // =========================================================================
 // ATELIER RESHAPED & VIEWPORT-OPTIMIZED QUICK VIEW ENGINE
@@ -584,6 +561,7 @@ window.executeModalBagInsertion = function(productId, title, price, image) {
     }
 };
 
+
 // =========================================================================
 // --- AUTOMATED BOUTIQUE COUTURE INTAKE PIPELINE ---
 // =========================================================================
@@ -646,19 +624,22 @@ function handleBespokeSubmission(event) {
 // =========================================================================
 // --- 5. PREMIUM CATALOG INTERFACE NAVIGATION ENGINE ---
 // =========================================================================
-function renderPaginationControls(totalItems) {
+window.renderPaginationControls = function(totalItems) {
     // Target the specific static pagination wrapper present in your HTML markup
     const container = document.getElementById('pagination-controls');
     if (!container) return console.error("Pagination controls container (#pagination-controls) missing from DOM!");
     
     container.innerHTML = '';
     
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const activeItemsPerPage = window.itemsPerPage || 17;
+    const activeCurrentPage = window.currentPage || 1;
+    const totalPages = Math.ceil(totalItems / activeItemsPerPage);
+    
     if (totalPages <= 1) return; // Completely hide controls if everything fits beautifully on one screen
 
     // --- Dynamic Slider Constraints ---
     let maxVisibleButtons = 3; 
-    let startPage = Math.max(1, currentPage - 1);
+    let startPage = Math.max(1, activeCurrentPage - 1);
     let endPage = Math.min(totalPages, startPage + maxVisibleButtons - 1);
 
     // Adjust boundaries dynamically to always ensure 3 options are clickable if available
@@ -683,9 +664,12 @@ function renderPaginationControls(totalItems) {
             btn.classList.add('disabled');
         } else {
             btn.addEventListener('click', () => {
-                currentPage = targetPage;
-                // Synchronized with your global database data array variable
-                renderProducts(allProducts);
+                window.currentPage = targetPage;
+                
+                // Trigger re-render with active global dataset
+                if (typeof window.renderProducts === 'function') {
+                    window.renderProducts(allProducts);
+                }
                 scrollToShopHeader();
             });
         }
@@ -693,37 +677,45 @@ function renderPaginationControls(totalItems) {
     }
 
     // 1. FIRST PAGE MASTER TRIGGER (|<)
-    container.appendChild(createNavButton('&#10092;&#10092;', 1, currentPage === 1, 'arrow-btn first-page'));
+    container.appendChild(createNavButton('&#10092;&#10092;', 1, activeCurrentPage === 1, 'arrow-btn first-page'));
 
     // 2. PREVIOUS STEP TRIGGER (<)
-    container.appendChild(createNavButton('&#10092;', currentPage - 1, currentPage === 1, 'arrow-btn prev-page'));
+    container.appendChild(createNavButton('&#10092;', activeCurrentPage - 1, activeCurrentPage === 1, 'arrow-btn prev-page'));
 
     // 3. DYNAMIC NUMBER MATRIX ROW
     for (let i = startPage; i <= endPage; i++) {
         const numBtn = document.createElement('button');
         numBtn.innerText = i;
-        numBtn.className = (i === currentPage) ? 'page-btn active' : 'page-btn';
+        numBtn.className = (i === activeCurrentPage) ? 'page-btn active' : 'page-btn';
         
         // Dynamic numbering styles
-        if (i === currentPage) {
+        if (i === activeCurrentPage) {
             numBtn.style.cssText = "background:#fff; color:#000; border:1px solid #fff; padding:10px 15px; font-size:10px; font-weight:bold; font-family:monospace; min-width:40px; cursor:default;";
         } else {
             numBtn.style.cssText = "background:#000; color:#fff; border:1px solid #333; padding:10px 15px; font-size:10px; font-weight:bold; font-family:monospace; min-width:40px; cursor:pointer;";
         }
         
         numBtn.addEventListener('click', () => {
-            currentPage = i;
-            renderProducts(allProducts);
+            window.currentPage = i;
+            
+            if (typeof window.renderProducts === 'function') {
+                window.renderProducts(allProducts);
+            }
             scrollToShopHeader();
         });
         container.appendChild(numBtn);
     }
 
     // 4. NEXT STEP TRIGGER (>)
-    container.appendChild(createNavButton('&#10093;', currentPage + 1, currentPage === totalPages, 'arrow-btn next-page'));
+    container.appendChild(createNavButton('&#10093;', activeCurrentPage + 1, activeCurrentPage === totalPages, 'arrow-btn next-page'));
 
     // 5. LAST PAGE MASTER TRIGGER (>|)
-    container.appendChild(createNavButton('&#10093;&#10093;', totalPages, currentPage === totalPages, 'arrow-btn last-page'));
+    container.appendChild(createNavButton('&#10093;&#10093;', totalPages, activeCurrentPage === totalPages, 'arrow-btn last-page'));
+};
+
+// Local backup alias
+function renderPaginationControls(totalItems) {
+    window.renderPaginationControls(totalItems);
 }
 
 // Viewport Anchor Handler
