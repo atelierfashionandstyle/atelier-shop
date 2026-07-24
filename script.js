@@ -47,7 +47,7 @@ async function fetchAtelierProducts() {
             title: "ATELIER LUXURY OVERCOAT",
             price: 125000,
             category: "clothing",
-            images: ["https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=800"],
+            images: ["https://ittsskhqkcbeuwuasjxf.supabase.co/storage/v1/object/public/product-images/1.png"],
             status: "active",
             stock: 50,
             description: "STORY:\nCrafted for elite silhouettes.\n\nHIGHLIGHTS:\nPremium Custom Cotton\nHandmade in Lagos"
@@ -153,18 +153,17 @@ function renderProducts(products) {
         imageArray = imageArray.filter(imgUrl => imgUrl && !imgUrl.includes('fashion.jpg') && imgUrl.startsWith('http'));
 
         if (imageArray.length === 0) {
-            imageArray = ['https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=600'];
+            imageArray = ['https://ittsskhqkcbeuwuasjxf.supabase.co/storage/v1/object/public/product-images/1.png'];
         }
         
         const mainImageUrl = imageArray[0];
         const secondaryImageUrl = imageArray[1] || mainImageUrl;
 
-        // --- NEW MULTIPURPOSE PLATFORM SIZE TREE LOGIC ---
+        // --- MULTIPURPOSE PLATFORM SIZE TREE LOGIC ---
         let sizeHTML = '';
         const category = (product.category || '').toLowerCase().trim();
 
         if (category === 'accessories') {
-            // No drop down element structural layout strings generated for accessorial items
             sizeHTML = ''; 
         } else if (category.includes('slide') || category.includes('footwear') || category.includes('shoe')) {
             sizeHTML = `
@@ -225,14 +224,18 @@ function renderProducts(products) {
             productCard.addEventListener('mouseleave', () => { imageEl.src = mainImageUrl; });
         }
 
+        // Click wrapper maps directly to window.openQuickView with all 6 required parameters
         productCard.querySelector('.product-image-wrapper').addEventListener('click', () => {
-            window.openQuickView(
-                productTitle, 
-                rawDescription, 
-                imageArray, 
-                productPrice, 
-                product.category
-            );
+            if (typeof window.openQuickView === 'function') {
+                window.openQuickView(
+                    productTitle, 
+                    rawDescription, 
+                    imageArray, 
+                    productPrice, 
+                    product.category,
+                    product.id
+                );
+            }
         });
 
         if (!isSoldOut) {
@@ -241,7 +244,7 @@ function renderProducts(products) {
                 
                 // Fallback assignment system if product has no size drop-down menu layer
                 const sizeSelectEl = productCard.querySelector(`#size-select-${product.id}`);
-                const selectedSize = sizeSelectEl ? sizeSelectEl.value : 'OSFM'; // One Size Fits Most
+                const selectedSize = sizeSelectEl ? sizeSelectEl.value : 'OSFM'; 
                 
                 window.addToBag(product.id, productTitle, productPrice, mainImageUrl, selectedSize);
             });
@@ -254,9 +257,75 @@ function renderProducts(products) {
 }
 
 // =========================================================================
+// --- DEEP LINK DECODER & AUTOMATED MODAL LAUNCH ROUTINE ---
+// =========================================================================
+function checkDeepLinkRouting(products) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharedProductId = urlParams.get('product_id');
+    
+    if (sharedProductId) {
+        // Look inside current records array for data matches
+        const targetedProduct = products.find(p => String(p.id) === String(sharedProductId));
+        
+        if (targetedProduct) {
+            // Trigger seamless launch instantly
+            window.openQuickView(
+                targetedProduct.title || targetedProduct.name,
+                targetedProduct.description,
+                targetedProduct.images || targetedProduct.image,
+                targetedProduct.price,
+                targetedProduct.category
+            );
+        }
+    }
+}
+
+// Invoke this function inside your core loading pipeline right after 
+// you fetch your database arrays and call renderProducts(data);
+// Example placement:
+// renderProducts(fetchedData);
+// checkDeepLinkRouting(fetchedData);
+
+// =========================================================================
+// --- ATELIER SOCIAL VISIBILITY & DISTRIBUTION ENGINE ---
+// =========================================================================
+window.shareProduct = function(productId, productTitle, mainImageUrl) {
+    // Generate the specific deep link for the item
+    // Note: To target individual items on a single-page app framework, we use query parameters
+    const originUrl = window.location.origin + window.location.pathname;
+    const directShareUrl = `${originUrl}?product_id=${productId}`;
+    const shareCaption = `Discover the ${productTitle.toUpperCase()} on ATELIER.`;
+
+    // 1. Mobile & Modern Browser Native Share Pipeline (Navigator Web Share API)
+    if (navigator.share) {
+        navigator.share({
+            title: `ATELIER — ${productTitle.toUpperCase()}`,
+            text: shareCaption,
+            url: directShareUrl
+        })
+        .then(() => console.log('Atelier Core Log: Distribution path executed successfully.'))
+        .catch((err) => console.log('Atelier Core Log: Native share dismiss trace.', err));
+    } else {
+        // 2. Desktop Fallback: Explicit Facebook Web Intent Routing Layer
+        const facebookIntentUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(directShareUrl)}&quote=${encodeURIComponent(shareCaption)}`;
+        
+        // Open a secure, standard luxury popup viewport frame
+        const width = 600, height = 400;
+        const left = (window.innerWidth - width) / 2;
+        const top = (window.innerHeight - height) / 2;
+        
+        window.open(
+            facebookIntentUrl, 
+            'atelierShareWindow', 
+            `width=${width},height=${height},top=${top},left=${left},toolbar=0,status=0,menubar=0`
+        );
+    }
+};
+
+// =========================================================================
 // ATELIER RESHAPED & VIEWPORT-OPTIMIZED QUICK VIEW ENGINE
 // =========================================================================
-window.openQuickView = function(title, description, imageArray, price, category) {
+window.openQuickView = function(title, description, imageArray, price, category, productId) {
     let modalContainer = document.getElementById('luxury-quickview-modal');
     if (!modalContainer) {
         modalContainer = document.createElement('div');
@@ -307,12 +376,11 @@ window.openQuickView = function(title, description, imageArray, price, category)
         }
     }
 
-    // --- UPDATED MULTIPURPOSE PLATFORM SIZE TREE LOGIC ---
+    // --- MULTIPURPOSE PLATFORM SIZE TREE LOGIC ---
     let sizeSelectorHTML = '';
     const cleanCategoryString = (category || '').toLowerCase().trim();
 
     if (cleanCategoryString === 'accessories') {
-        // Suppress and remove layout formatting for accessories entirely
         sizeSelectorHTML = '';
     } else if (cleanCategoryString.includes('footwear') || cleanCategoryString.includes('shoe') || cleanCategoryString.includes('slide')) {
         sizeSelectorHTML = `
@@ -355,12 +423,12 @@ window.openQuickView = function(title, description, imageArray, price, category)
                 .atelier-modal-body {
                     grid-template-columns: 1fr !important;
                     height: calc(100vh - 40px) !important;
-                    max-height: 85vh !important; /* Cap depth constraints on mobile UI */
+                    max-height: 85vh !important;
                     display: flex !important;
                     flex-direction: column !important;
                 }
                 .atelier-media-pane {
-                    height: 200px !important; /* Optimized down for mobile portrait scales */
+                    height: 200px !important;
                     flex-shrink: 0 !important;
                     border-right: none !important;
                     border-bottom: 1px solid #111 !important;
@@ -400,12 +468,15 @@ window.openQuickView = function(title, description, imageArray, price, category)
         document.head.appendChild(styleBlock);
     }
 
-    // Overlaid background layout container workspace frame 
+    // Safe extraction fallback check for Product ID references
+    const verifiedId = productId || 'prod_' + Date.now();
+    // Escape single quotes safely to avoid literal template break errors on strings
+    const safeTitle = title.replace(/'/g, "\\'");
+
     modalContainer.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:10000; display:flex; align-items:center; justify-content:center; padding:20px; box-sizing:border-box; animation: fadeIn 0.3s ease-out;";
     
     modalContainer.innerHTML = `
         <div class="atelier-modal-body">
-            
             <button onclick="closeLuxuryQuickView()" style="position:absolute; top:12px; right:15px; background:none; border:none; color:#fff; font-size:25px; cursor:pointer; font-weight:200; z-index:100; line-height:1;">&times;</button>
             
             <div class="atelier-media-pane" style="display:flex; flex-direction:column; padding:15px; gap:12px; background:#0a0a0a; border-right:1px solid #111; justify-content: center; box-sizing: border-box; height: 100%; overflow: hidden;">
@@ -423,7 +494,6 @@ window.openQuickView = function(title, description, imageArray, price, category)
             </div>
 
             <div class="atelier-info-pane" style="padding:25px 20px 20px 20px; display:flex; flex-direction:column; justify-content:space-between; box-sizing:border-box; height: 100%; overflow: hidden; background:#000;">
-                
                 <div class="roller-content-container" style="overflow-y:auto; flex:1; padding-right:6px; margin-bottom:12px; scrollbar-width: thin; scrollbar-color: #333 #000;">
                     <h4 style="margin:0 0 4px 0; font-size:9px; letter-spacing:2px; color:#888; text-transform:uppercase;">ATELIER LABS</h4>
                     <h2 style="margin:0 0 8px 0; font-size:20px; font-weight:300; letter-spacing:0.5px; text-transform:uppercase; line-height:1.2;">${title}</h2>
@@ -439,11 +509,21 @@ window.openQuickView = function(title, description, imageArray, price, category)
                 <div class="persistent-actions-anchor">
                     ${sizeSelectorHTML}
 
-                    <button type="button" onclick="executeModalBagInsertion('${title}', ${price}, '${finalImages[0]}')" style="width:100%; background:#fff; color:#000; border:none; padding:12px; font-size:10px; font-weight:bold; letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:background 0.2s;">
-                        ADD TO COLLECTION BAG
-                    </button>
+                    <div style="display: flex; gap: 8px; width: 100%; margin-top: 6px;">
+                        <button type="button" 
+                                onclick="executeModalBagInsertion('${safeTitle}', ${price}, '${finalImages[0]}')" 
+                                style="flex: 1; background:#fff; color:#000; border:none; padding:12px; font-size:10px; font-weight:bold; letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:background 0.2s;">
+                            ADD TO COLLECTION BAG
+                        </button>
+                        
+                        <button type="button" 
+                                onclick="if(typeof window.shareProduct === 'function') { window.shareProduct('${verifiedId}', '${safeTitle}', '${finalImages[0]}') } else { console.error('Share engine target unavailable.') }" 
+                                style="width: 44px; background:#111; color:#fff; border:1px solid #333; padding:12px; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-sizing:border-box;"
+                                title="Share to Social Networks">
+                            🔗
+                        </button>
+                    </div>
                 </div>
-
             </div>
         </div>
     `;
@@ -475,11 +555,9 @@ window.switchQuickViewDisplayImage = function(selectedThumbFrame, targetImgUrl) 
 };
 
 window.executeModalBagInsertion = function(title, price, image) {
-    // 1. Safe extraction check: If the selector doesn't exist, fall back to "OSFM" (One Size Fits Most)
     const sizeElement = document.getElementById('modal-size-select');
     const chosenSize = sizeElement ? sizeElement.value : 'OSFM';
     
-    // 2. Core Cart Execution pipeline
     if (typeof window.addToBag === 'function') {
         window.addToBag('qv_' + Date.now(), title, price, image, chosenSize);
         
