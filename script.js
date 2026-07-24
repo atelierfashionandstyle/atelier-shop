@@ -322,6 +322,52 @@ function renderProducts(products) {
 // =========================================================================
 // ATELIER RESHAPED & VIEWPORT-OPTIMIZED QUICK VIEW ENGINE
 // =========================================================================
+
+// Global Share Handler Engine
+window.shareProduct = async function(productId, title, image) {
+    if (!productId) {
+        console.error("Share Engine Warning: Target product ID unavailable.");
+        alert("Unable to share this item at the moment.");
+        return;
+    }
+
+    const shareUrl = `${window.location.origin}${window.location.pathname}?product_id=${productId}`;
+    const shareData = {
+        title: title || 'ATELIER COLLECTION',
+        text: `Explore ${title || 'this piece'} on ATELIER.`,
+        url: shareUrl
+    };
+
+    // 1. Web Share API (Mobile devices / supported browsers)
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        try {
+            await navigator.share(shareData);
+            return;
+        } catch (err) {
+            if (err.name !== 'AbortError') {
+                console.warn("Native share bypassed, executing clipboard fallback...");
+            } else {
+                return; // User manually dismissed native share UI
+            }
+        }
+    }
+
+    // 2. Clipboard Fallback (Desktop / unsupported browsers)
+    try {
+        await navigator.clipboard.writeText(shareUrl);
+        alert("Product link copied to clipboard!");
+    } catch (err) {
+        // Legacy fallback
+        const dummyInput = document.createElement('input');
+        document.body.appendChild(dummyInput);
+        dummyInput.value = shareUrl;
+        dummyInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(dummyInput);
+        alert("Product link copied to clipboard!");
+    }
+};
+
 window.openQuickView = function(title, description, imageArray, price, category, productId) {
     let modalContainer = document.getElementById('luxury-quickview-modal');
     if (!modalContainer) {
@@ -462,7 +508,7 @@ window.openQuickView = function(title, description, imageArray, price, category,
     }
 
     const verifiedId = productId || ('prod_' + Date.now());
-    const safeTitle = title.replace(/'/g, "\\'");
+    const safeTitle = (title || '').replace(/'/g, "\\'");
 
     modalContainer.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:10000; display:flex; align-items:center; justify-content:center; padding:20px; box-sizing:border-box; animation: fadeIn 0.3s ease-out;";
     
@@ -508,7 +554,7 @@ window.openQuickView = function(title, description, imageArray, price, category,
                         </button>
                         
                         <button type="button" 
-                                onclick="if(typeof window.shareProduct === 'function') { window.shareProduct('${verifiedId}', '${safeTitle}', '${finalImages[0]}') } else { console.error('Share engine target unavailable.') }" 
+                                onclick="window.shareProduct('${verifiedId}', '${safeTitle}', '${finalImages[0]}')" 
                                 style="width: 44px; background:#111; color:#fff; border:1px solid #333; padding:12px; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-sizing:border-box;"
                                 title="Share to Social Networks">
                             🔗
