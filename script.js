@@ -57,6 +57,63 @@ async function fetchAtelierProducts() {
 }
 
 // =========================================================================
+// --- DEEP LINK DECODER & AUTOMATED MODAL LAUNCH ROUTINE ---
+// =========================================================================
+window.checkDeepLinkRouting = function(products) {
+    if (!Array.isArray(products) || products.length === 0) return;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharedProductId = urlParams.get('product_id');
+
+    if (!sharedProductId) return;
+
+    // Loose equality check (==) to handle numerical vs string IDs (e.g., 15 vs "15")
+    const targetProduct = products.find(p => p.id == sharedProductId);
+
+    if (targetProduct) {
+        // Extract multi-image data cleanly
+        let imageArray = [];
+        let rawSource = targetProduct.images || targetProduct.image;
+
+        if (Array.isArray(rawSource) && rawSource.length > 0) {
+            imageArray = rawSource;
+        } else if (typeof rawSource === 'string' && rawSource.trim() !== '' && rawSource !== '[]') {
+            try {
+                let cleanStr = rawSource.trim();
+                if (cleanStr.startsWith('[') && cleanStr.endsWith(']')) {
+                    imageArray = JSON.parse(cleanStr);
+                } else {
+                    imageArray = [cleanStr];
+                }
+            } catch(e) {
+                imageArray = [rawSource.replace(/[\[\]\"]/g, '').trim()];
+            }
+        }
+        imageArray = imageArray.filter(imgUrl => imgUrl && imgUrl.startsWith('http'));
+        if (imageArray.length === 0) {
+            imageArray = ['https://ittsskhqkcbeuwuasjxf.supabase.co/storage/v1/object/public/product-images/1.png'];
+        }
+
+        // Small delay ensures DOM elements & QuickView script are initialized
+        setTimeout(() => {
+            if (typeof window.openQuickView === 'function') {
+                window.openQuickView(
+                    targetProduct.title || targetProduct.name || 'ATELIER PIECE',
+                    targetProduct.description || '',
+                    imageArray,
+                    targetProduct.price || 0,
+                    targetProduct.category || '',
+                    targetProduct.id
+                );
+            }
+        }, 300);
+    } else {
+        console.warn(`Atelier Deep Link Notice: Product ID [${sharedProductId}] not found in catalog.`);
+    }
+};
+
+
+// =========================================================================
 // --- 3. UNIFIED HIGH-CONTRAST PRODUCT RENDERING ENGINE (MOBILE OPTIMIZED) ---
 // =========================================================================
 function renderProducts(products) {
@@ -255,36 +312,6 @@ function renderProducts(products) {
 
     renderPaginationControls(activeShowroomProducts.length);
 }
-
-// =========================================================================
-// --- DEEP LINK DECODER & AUTOMATED MODAL LAUNCH ROUTINE ---
-// =========================================================================
-function checkDeepLinkRouting(products) {
-    const urlParams = new URLSearchParams(window.location.search);
-    const sharedProductId = urlParams.get('product_id');
-    
-    if (sharedProductId) {
-        // Look inside current records array for data matches
-        const targetedProduct = products.find(p => String(p.id) === String(sharedProductId));
-        
-        if (targetedProduct) {
-            // Trigger seamless launch instantly
-            window.openQuickView(
-                targetedProduct.title || targetedProduct.name,
-                targetedProduct.description,
-                targetedProduct.images || targetedProduct.image,
-                targetedProduct.price,
-                targetedProduct.category
-            );
-        }
-    }
-}
-
-// Invoke this function inside your core loading pipeline right after 
-// you fetch your database arrays and call renderProducts(data);
-// Example placement:
-// renderProducts(fetchedData);
-// checkDeepLinkRouting(fetchedData);
 
 // =========================================================================
 // --- ATELIER SOCIAL VISIBILITY & DISTRIBUTION ENGINE ---
