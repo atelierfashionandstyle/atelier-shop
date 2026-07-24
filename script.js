@@ -39,9 +39,11 @@ async function fetchAtelierProducts() {
         allProducts = data;
         console.log(`Atelier System Core: ${allProducts.length} premium pieces loaded.`);
         renderProducts(allProducts);
+        
+        // Directly trigger deep link routing once products are loaded & rendered (no arbitrary timeout needed)
+        window.checkDeepLinkRouting(allProducts);
     } else {
         console.warn("Atelier System Core: Supabase table loaded empty. Generating design fallback frame.");
-        // Internal placeholder matches luxury presentation schema rules
         allProducts = [{
             id: "fallback_01",
             title: "ATELIER LUXURY OVERCOAT",
@@ -53,11 +55,12 @@ async function fetchAtelierProducts() {
             description: "STORY:\nCrafted for elite silhouettes.\n\nHIGHLIGHTS:\nPremium Custom Cotton\nHandmade in Lagos"
         }];
         renderProducts(allProducts);
+        window.checkDeepLinkRouting(allProducts);
     }
 }
 
 // =========================================================================
-// --- DEEP LINK DECODER & AUTOMATED MODAL LAUNCH ROUTINE ---
+// --- AUTOMATED DEEP-LINK ROUTER FOR PRODUCT MODALS ---
 // =========================================================================
 window.checkDeepLinkRouting = function(products) {
     if (!Array.isArray(products) || products.length === 0) return;
@@ -67,11 +70,10 @@ window.checkDeepLinkRouting = function(products) {
 
     if (!sharedProductId) return;
 
-    // Loose equality check (==) to handle numerical vs string IDs (e.g., 15 vs "15")
+    // Loose equality check (==) handles both string '19' and numerical 19
     const targetProduct = products.find(p => p.id == sharedProductId);
 
     if (targetProduct) {
-        // Extract multi-image data cleanly
         let imageArray = [];
         let rawSource = targetProduct.images || targetProduct.image;
 
@@ -89,38 +91,41 @@ window.checkDeepLinkRouting = function(products) {
                 imageArray = [rawSource.replace(/[\[\]\"]/g, '').trim()];
             }
         }
+        
         imageArray = imageArray.filter(imgUrl => imgUrl && imgUrl.startsWith('http'));
         if (imageArray.length === 0) {
             imageArray = ['https://ittsskhqkcbeuwuasjxf.supabase.co/storage/v1/object/public/product-images/1.png'];
         }
 
-        // Small delay ensures DOM elements & QuickView script are initialized
-        setTimeout(() => {
-            if (typeof window.openQuickView === 'function') {
-                window.openQuickView(
-                    targetProduct.title || targetProduct.name || 'ATELIER PIECE',
-                    targetProduct.description || '',
-                    imageArray,
-                    targetProduct.price || 0,
-                    targetProduct.category || '',
-                    targetProduct.id
-                );
-            }
-        }, 300);
+        // 1. Instantly launch Quick View Modal
+        if (typeof window.openQuickView === 'function') {
+            window.openQuickView(
+                targetProduct.title || targetProduct.name || 'ATELIER PIECE',
+                targetProduct.description || '',
+                imageArray,
+                targetProduct.price || 0,
+                targetProduct.category || '',
+                targetProduct.id
+            );
+        }
+
+        // 2. Scroll smooth directly to the product card in the showroom grid
+        const cardEl = document.querySelector(`[data-product-id="${targetProduct.id}"]`);
+        if (cardEl) {
+            cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
     } else {
         console.warn(`Atelier Deep Link Notice: Product ID [${sharedProductId}] not found in catalog.`);
     }
 };
 
-
 // =========================================================================
-// --- 3. UNIFIED HIGH-CONTRAST PRODUCT RENDERING ENGINE (MOBILE OPTIMIZED) ---
+// --- 3. UNIFIED HIGH-CONTRAST PRODUCT RENDERING ENGINE ---
 // =========================================================================
 function renderProducts(products) {
     const productGrid = document.querySelector('.product-grid');
     if (!productGrid) return;
     
-    // Updated Grid Rules: Standard layout switches to a clean 2-column pattern on mobile down to 160px
     productGrid.style.cssText = `
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -133,14 +138,14 @@ function renderProducts(products) {
 
     const activeShowroomProducts = products.filter(p => p.status !== 'hidden');
     const totalItemsCount = activeShowroomProducts.length;
-    const totalPages = Math.ceil(totalItemsCount / itemsPerPage);
+    const totalPages = Math.ceil(totalItemsCount / (window.itemsPerPage || 12));
     
-    if (currentPage > totalPages && totalPages > 0) {
-        currentPage = totalPages;
+    if (window.currentPage > totalPages && totalPages > 0) {
+        window.currentPage = totalPages;
     }
     
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
+    const startIndex = ((window.currentPage || 1) - 1) * (window.itemsPerPage || 12);
+    const endIndex = startIndex + (window.itemsPerPage || 12);
     const paginatedItems = activeShowroomProducts.slice(startIndex, endIndex);
 
     const editorialAdvertPool = [
@@ -161,8 +166,6 @@ function renderProducts(products) {
     let advertIndex = 0;
 
     paginatedItems.forEach((product, loopIndex) => {
-        
-        // Dynamic Editorial Billboard Trigger
         if (loopIndex > 0 && loopIndex % 4 === 0) {
             const adData = editorialAdvertPool[advertIndex % editorialAdvertPool.length];
             advertIndex++;
@@ -188,7 +191,6 @@ function renderProducts(products) {
         const originalPrice = product.original_price || Math.round(productPrice * 1.35); 
         const discountPercentage = Math.round(((originalPrice - productPrice) / originalPrice) * 100);
 
-        // --- SAFE DATA TYPE EXTRACTOR SYSTEM ---
         let imageArray = [];
         let rawSource = product.images || product.image;
 
@@ -216,7 +218,6 @@ function renderProducts(products) {
         const mainImageUrl = imageArray[0];
         const secondaryImageUrl = imageArray[1] || mainImageUrl;
 
-        // --- MULTIPURPOSE PLATFORM SIZE TREE LOGIC ---
         let sizeHTML = '';
         const category = (product.category || '').toLowerCase().trim();
 
@@ -281,7 +282,6 @@ function renderProducts(products) {
             productCard.addEventListener('mouseleave', () => { imageEl.src = mainImageUrl; });
         }
 
-        // Click wrapper maps directly to window.openQuickView with all 6 required parameters
         productCard.querySelector('.product-image-wrapper').addEventListener('click', () => {
             if (typeof window.openQuickView === 'function') {
                 window.openQuickView(
@@ -298,11 +298,8 @@ function renderProducts(products) {
         if (!isSoldOut) {
             productCard.querySelector('.luxury-add-trigger').addEventListener('click', (e) => {
                 e.stopPropagation(); 
-                
-                // Fallback assignment system if product has no size drop-down menu layer
                 const sizeSelectEl = productCard.querySelector(`#size-select-${product.id}`);
                 const selectedSize = sizeSelectEl ? sizeSelectEl.value : 'OSFM'; 
-                
                 window.addToBag(product.id, productTitle, productPrice, mainImageUrl, selectedSize);
             });
         }
@@ -310,20 +307,19 @@ function renderProducts(products) {
         productGrid.appendChild(productCard);
     });
 
-    renderPaginationControls(activeShowroomProducts.length);
+    if (typeof renderPaginationControls === 'function') {
+        renderPaginationControls(activeShowroomProducts.length);
+    }
 }
 
 // =========================================================================
 // --- ATELIER SOCIAL VISIBILITY & DISTRIBUTION ENGINE ---
 // =========================================================================
 window.shareProduct = function(productId, productTitle, mainImageUrl) {
-    // Generate the specific deep link for the item
-    // Note: To target individual items on a single-page app framework, we use query parameters
     const originUrl = window.location.origin + window.location.pathname;
     const directShareUrl = `${originUrl}?product_id=${productId}`;
     const shareCaption = `Discover the ${productTitle.toUpperCase()} on ATELIER.`;
 
-    // 1. Mobile & Modern Browser Native Share Pipeline (Navigator Web Share API)
     if (navigator.share) {
         navigator.share({
             title: `ATELIER — ${productTitle.toUpperCase()}`,
@@ -333,10 +329,7 @@ window.shareProduct = function(productId, productTitle, mainImageUrl) {
         .then(() => console.log('Atelier Core Log: Distribution path executed successfully.'))
         .catch((err) => console.log('Atelier Core Log: Native share dismiss trace.', err));
     } else {
-        // 2. Desktop Fallback: Explicit Facebook Web Intent Routing Layer
         const facebookIntentUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(directShareUrl)}&quote=${encodeURIComponent(shareCaption)}`;
-        
-        // Open a secure, standard luxury popup viewport frame
         const width = 600, height = 400;
         const left = (window.innerWidth - width) / 2;
         const top = (window.innerHeight - height) / 2;
@@ -360,7 +353,6 @@ window.openQuickView = function(title, description, imageArray, price, category,
         document.body.appendChild(modalContainer);
     }
 
-    // Secure multi-image data array parsing execution
     let finalImages = [];
     if (Array.isArray(imageArray) && imageArray.length > 0) {
         finalImages = imageArray;
@@ -383,7 +375,6 @@ window.openQuickView = function(title, description, imageArray, price, category,
         finalImages = ['https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=800'];
     }
 
-    // Format description text metrics safely
     let storyText = description || '';
     let specificationsHTML = '';
     if (storyText.includes('--- ATELIER SPECIFICATIONS ---')) {
@@ -403,7 +394,6 @@ window.openQuickView = function(title, description, imageArray, price, category,
         }
     }
 
-    // --- MULTIPURPOSE PLATFORM SIZE TREE LOGIC ---
     let sizeSelectorHTML = '';
     const cleanCategoryString = (category || '').toLowerCase().trim();
 
@@ -427,7 +417,6 @@ window.openQuickView = function(title, description, imageArray, price, category,
             </div>`;
     }
 
-    // Inject Responsive CSS styles directly to shield layout context
     if (!document.getElementById('atelier-quickview-styles')) {
         const styleBlock = document.createElement('style');
         styleBlock.id = 'atelier-quickview-styles';
@@ -495,9 +484,7 @@ window.openQuickView = function(title, description, imageArray, price, category,
         document.head.appendChild(styleBlock);
     }
 
-    // Safe extraction fallback check for Product ID references
-    const verifiedId = productId || 'prod_' + Date.now();
-    // Escape single quotes safely to avoid literal template break errors on strings
+    const verifiedId = productId || ('prod_' + Date.now());
     const safeTitle = title.replace(/'/g, "\\'");
 
     modalContainer.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:10000; display:flex; align-items:center; justify-content:center; padding:20px; box-sizing:border-box; animation: fadeIn 0.3s ease-out;";
@@ -538,7 +525,7 @@ window.openQuickView = function(title, description, imageArray, price, category,
 
                     <div style="display: flex; gap: 8px; width: 100%; margin-top: 6px;">
                         <button type="button" 
-                                onclick="executeModalBagInsertion('${safeTitle}', ${price}, '${finalImages[0]}')" 
+                                onclick="executeModalBagInsertion('${verifiedId}', '${safeTitle}', ${price}, '${finalImages[0]}')" 
                                 style="flex: 1; background:#fff; color:#000; border:none; padding:12px; font-size:10px; font-weight:bold; letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:background 0.2s;">
                             ADD TO COLLECTION BAG
                         </button>
@@ -581,12 +568,12 @@ window.switchQuickViewDisplayImage = function(selectedThumbFrame, targetImgUrl) 
     selectedThumbFrame.style.border = '2px solid #fff';
 };
 
-window.executeModalBagInsertion = function(title, price, image) {
+window.executeModalBagInsertion = function(productId, title, price, image) {
     const sizeElement = document.getElementById('modal-size-select');
     const chosenSize = sizeElement ? sizeElement.value : 'OSFM';
     
     if (typeof window.addToBag === 'function') {
-        window.addToBag('qv_' + Date.now(), title, price, image, chosenSize);
+        window.addToBag(productId, title, price, image, chosenSize);
         
         if (typeof window.updateCartSidebar === 'function') window.updateCartSidebar();
         if (typeof window.renderCart === 'function') window.renderCart();
@@ -596,6 +583,7 @@ window.executeModalBagInsertion = function(title, price, image) {
         console.error("Atelier Core Error: E-commerce cart data-layer architecture missing.");
     }
 };
+
 // =========================================================================
 // --- AUTOMATED BOUTIQUE COUTURE INTAKE PIPELINE ---
 // =========================================================================
