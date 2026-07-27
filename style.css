@@ -60,6 +60,110 @@ nav a, .cart-icon { color: #fff; text-decoration: none; margin-left: 30px; curso
     color: #fff;
 }
 
+/* --- SIGNUP VIEW STYLING --- */
+#signup-view {
+    background: #000000;
+    color: #ffffff;
+    padding: 80px 20px;
+    min-height: 85vh;
+    display: none; /* Managed by switchView() */
+}
+
+#signup-view.active {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+}
+
+.signup-wrapper {
+    width: 100%;
+    max-width: 440px;
+}
+
+.signup-card {
+    background: #111111;
+    border: 1px solid #222222;
+    padding: 35px 25px;
+    border-radius: 8px;
+    text-align: left;
+}
+
+.signup-card h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    color: #ffffff;
+}
+
+.signup-card .subtitle {
+    font-size: 0.85rem;
+    color: #aaaaaa;
+    line-height: 1.4;
+    margin-bottom: 25px;
+}
+
+.signup-card .input-group {
+    margin-bottom: 18px;
+}
+
+.signup-card label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #cccccc;
+    margin-bottom: 6px;
+}
+
+.signup-card input {
+    width: 100%;
+    padding: 12px 14px;
+    background: #000000;
+    border: 1px solid #333333;
+    color: #ffffff;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 0.9rem;
+}
+
+.signup-card input:focus {
+    outline: none;
+    border-color: #ffffff;
+}
+
+.signup-submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: #ffffff;
+    color: #000000;
+    border: none;
+    font-weight: 800;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-top: 10px;
+    transition: opacity 0.2s;
+}
+
+.signup-submit-btn:hover {
+    opacity: 0.9;
+}
+
+.signup-footer {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.signup-footer a {
+    color: #888888;
+    text-decoration: none;
+    font-size: 0.85rem;
+}
+
+.signup-footer a:hover {
+    color: #ffffff;
+}
 /* =========================================================================
    1. GLOBAL SYSTEM UTILITIES & LOADING BARS
    ========================================================================= */
@@ -410,6 +514,94 @@ nav a, .cart-icon { color: #fff; text-decoration: none; margin-left: 30px; curso
     align-items: center;
     justify-content: center;
 }
+/* ATELIER MINIMAL RELATED PRODUCTS */
+.atelier-minimal-related {
+    padding: 50px 5%;
+    background-color: #000000;
+    color: #ffffff;
+    border-top: 1px solid #1a1a1a;
+}
+
+.atelier-minimal-related .related-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    color: #888888;
+}
+
+.related-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 16px;
+}
+
+.atelier-mini-card {
+    cursor: pointer;
+    background: transparent;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.atelier-mini-card:hover {
+    opacity: 0.85;
+    transform: translateY(-2px);
+}
+
+.atelier-mini-card .img-wrapper {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    background-color: #111111;
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+}
+
+.atelier-mini-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Fallback state when image URL fails to load */
+.atelier-mini-card img.img-broken {
+    display: none;
+}
+
+.atelier-mini-card .img-wrapper:has(img.img-broken)::after {
+    content: "ATELIER";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: #444444;
+    letter-spacing: 2px;
+    font-weight: bold;
+    background: #111111;
+}
+
+.atelier-mini-card .mini-info {
+    margin-top: 10px;
+}
+
+.atelier-mini-card .mini-name {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #cccccc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.atelier-mini-card .mini-price {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-top: 4px;
+}
 
 /* =========================================================================
    4. LUXURY CART SLIDE-OUT DRAWER SYSTEM
@@ -528,162 +720,213 @@ nav a, .cart-icon { color: #fff; text-decoration: none; margin-left: 30px; curso
 }
 
 /* =========================================================================
-   5. PREMIUM MODAL QUICK VIEW OVERLAY CORE
+   ATELIER LUXURY QUICK VIEW MODAL
    ========================================================================= */
-.modal {
-    display: none; /* Controlled asynchronously via script window triggers */
+
+#luxury-quickview-modal {
     position: fixed;
-    z-index: 1100;
-    left: 0; 
     top: 0;
-    width: 100%; 
+    left: 0;
+    width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.95);
+    background: rgba(0, 0, 0, 0.88);
+    backdrop-filter: blur(8px);
+    z-index: 10000;
+    display: flex;
     align-items: center;
     justify-content: center;
     padding: 20px;
+    box-sizing: border-box;
+    animation: atelierFadeIn 0.3s ease-out;
 }
 
-.modal-content {
-    background: #000000;
-    border: 1px solid #1a1a1a;
-    padding: 40px;
+@keyframes atelierFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes atelierFadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+/* Modal Body Container */
+.atelier-modal-body {
+    background: #000;
+    border: 1px solid #222;
     width: 100%;
-    max-width: 900px;
-    position: relative;
-    color: #ffffff;
-}
-
-.modal-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 30px;
-}
-
-@media (min-width: 768px) {
-    .modal-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 40px;
-    }
-}
-
-#qv-image {
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-    background-color: #050505;
-}
-/* Quick View Multiple Images Thumbnail Row Styles */
-.quickview-thumbnails-container {
+    max-width: 780px;
     display: flex;
-    gap: 10px;
-    margin-top: 15px;
-    justify-content: flex-start;
-    overflow-x: auto;
-    padding-bottom: 5px;
+    flex-direction: column;
+    position: relative;
+    box-sizing: border-box;
+    color: #fff;
+    height: 580px;
+    max-height: 90vh;
+    overflow: hidden;
 }
 
-.qv-thumbnail-item {
-    width: 60px;
-    height: 75px;
-    object-fit: cover;
-    border: 1px solid #e5e5e5;
-    cursor: pointer;
-    transition: border-color 0.2s ease, opacity 0.2s ease;
-    background: #fcfcfc;
-}
-
-.qv-thumbnail-item:hover {
-    border-color: #000000; /* Sharp, high-contrast focus lines */
-    opacity: 0.9;
-}
-
-/* Quick View Text Fields Structuring */
-#qv-title {
-    font-size: 18px;
-    letter-spacing: 2px;
-    font-weight: 700;
-    margin-bottom: 10px;
-    color: #ffffff;
-}
-
-#qv-price {
-    font-size: 16px;
-    font-weight: 700;
-    color: #ffffff;
-}
-
-.qv-story-text, #qv-description {
-    font-size: 13px;
-    line-height: 1.6;
-    color: #b5b5b5;
-    margin-top: 20px;
-}
-
-.qv-highlights-box {
-    margin-top: 20px;
-    border-top: 1px solid #1a1a1a;
-    padding-top: 15px;
-}
-
-.qv-highlights-header {
-    font-size: 10px;
-    letter-spacing: 2px;
-    font-weight: bold;
-    display: block;
-    margin-bottom: 10px;
-    color: #ffffff;
-}
-
-.qv-highlights-list {
-    padding-left: 15px;
-    margin: 0;
-    font-size: 12px;
-    color: #b5b5b5;
-    line-height: 1.6;
-}
-
-.close-modal {
+/* Close Button */
+.atelier-modal-close-btn {
     position: absolute;
-    top: 20px;
-    right: 20px;
-    font-size: 32px;
-    color: #888888;
+    top: 12px;
+    right: 15px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid #333;
+    color: #fff;
+    font-size: 20px;
     cursor: pointer;
-    z-index: 1005;
-    transition: color 0.2s ease;
+    font-weight: 200;
+    z-index: 110;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    line-height: 1;
+    transition: background 0.2s ease;
 }
 
-.close-modal:hover {
-    color: #ffffff;
+.atelier-modal-close-btn:hover {
+    background: #222;
 }
-/* Custom smooth scrollbar treatment for the Atelier Roller write up */
-.roller-content-container::-webkit-scrollbar {
-    width: 3px;
+
+/* Main Grid Layout (Media + Details Wrapper) */
+.atelier-modal-scroll-wrapper {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0; /* Fixes grid overflow behavior */
+    scrollbar-width: thin;
+    scrollbar-color: #333 #000;
 }
-.roller-content-container::-webkit-scrollbar-track {
+
+/* Media Pane (Images) */
+.atelier-media-pane {
+    display: flex;
+    flex-direction: column;
+    padding: 18px;
+    gap: 12px;
+    background: #0a0a0a;
+    border-right: 1px solid #111;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.main-viewport-wrapper {
+    width: 100%;
+    height: 380px;
+    background: #111;
+    overflow: hidden;
+    border: 1px solid #222;
+}
+
+#modal-primary-display {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.2s ease;
+}
+
+/* Thumbnail Roller */
+.thumbnail-roller {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    justify-content: flex-start;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.thumbnail-roller::-webkit-scrollbar {
+    display: none;
+}
+
+.thumb-frame {
+    width: 45px;
+    height: 55px;
+    flex-shrink: 0;
+    cursor: pointer;
+    background: #111;
+    transition: all 0.2s;
+}
+
+.thumb-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Info Pane (Title, Price, Description, Specs) */
+.atelier-info-pane {
+    padding: 25px 20px;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
     background: #000;
 }
-.roller-content-container::-webkit-scrollbar-thumb {
-    background: #222;
-    border-radius: 10px;
-}
-.roller-content-container::-webkit-scrollbar-thumb:hover {
-    background: #444;
+
+.roller-content-container {
+    display: flex;
+    flex-direction: column;
 }
 
-/* Responsive adjustments for mobile quick view overlays */
+/* Pinned Bottom Actions Footer */
+.persistent-actions-anchor {
+    background: #000;
+    padding: 15px 20px;
+    border-top: 1px solid #181818;
+    flex-shrink: 0;
+    z-index: 100;
+}
+
+/* =========================================================================
+   MOBILE RESPONSIVE RULES (≤ 768px)
+   ========================================================================= */
+
 @media (max-width: 768px) {
+    #luxury-quickview-modal {
+        padding: 10px;
+    }
+
     .atelier-modal-body {
-        grid-template-columns: 1fr !important;
-        max-height: 95vh !important;
-        overflow-y: auto !important;
+        height: 88vh;
+        max-height: 88vh;
     }
-    .atelier-modal-body > div {
-        padding: 20px !important;
+
+    /* Stack images on top of details in a single continuous scroll view */
+    .atelier-modal-scroll-wrapper {
+        display: flex;
+        flex-direction: column;
     }
-    .roller-content-container {
-        max-height: 200px !important;
+
+    .atelier-media-pane {
+        border-right: none;
+        border-bottom: 1px solid #111;
+        padding: 14px;
+    }
+
+    /* Large image display for mobile */
+    .main-viewport-wrapper {
+        height: 350px;
+    }
+
+    .thumb-frame {
+        width: 42px;
+        height: 52px;
+    }
+
+    .atelier-info-pane {
+        padding: 18px 15px;
+    }
+
+    .persistent-actions-anchor {
+        padding: 12px 15px;
+        border-top: 1px solid #222;
     }
 }
 

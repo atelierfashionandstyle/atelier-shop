@@ -25,6 +25,130 @@ window.activeOrderSnapshot = window.activeOrderSnapshot || [];
 })();
 
 // =========================================================================
+// VIEW SWITCHER ENGINE
+// =========================================================================
+window.switchView = function(targetViewId) {
+    document.querySelectorAll('.page-view').forEach(view => {
+        view.style.display = 'none';
+        view.classList.remove('active');
+    });
+
+    const activeView = document.getElementById(targetViewId);
+    if (activeView) {
+        activeView.style.display = 'block';
+        activeView.classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+};
+
+// =========================================================================
+// ATELIER CLUB SIGNUP FORM HANDLER
+// =========================================================================
+document.addEventListener('DOMContentLoaded', () => {
+    const signupForm = document.getElementById('dedicated-signup-form');
+
+    if (signupForm) {
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('signup-submit-btn');
+            const statusMsg = document.getElementById('signup-status');
+
+            // 1. Sanitize & Grab Input Values
+            const fullName = document.getElementById('cust-fullname')?.value.trim();
+            const email = document.getElementById('cust-email')?.value.trim();
+            const phone = document.getElementById('cust-phone')?.value.trim();
+
+            // Guard: Empty Input Validation
+            if (!fullName || !email || !phone) {
+                if (statusMsg) {
+                    statusMsg.style.display = 'block';
+                    statusMsg.style.color = '#e74c3c';
+                    statusMsg.innerText = "Please fill in all fields (Name, Email, and Phone) to claim your discount.";
+                }
+                return;
+            }
+
+            // 2. UI Loading State
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerText = "PROCESSING...";
+            }
+            if (statusMsg) {
+                statusMsg.style.display = 'none';
+            }
+
+            try {
+                // 3. Database Insertion into Supabase
+                if (!window.supabaseClientInstance) {
+                    throw new Error("Database client connection is offline. Please try again later.");
+                }
+
+                const { data, error } = await window.supabaseClientInstance
+                    .from('atelier_club_members')
+                    .insert([
+                        { 
+                            full_name: fullName, 
+                            email: email, 
+                            phone: phone, 
+                            discount_code: 'ATELIER10' 
+                        }
+                    ]);
+
+                if (error) {
+                    if (error.code === '23505') { 
+                        throw new Error('This email address or phone number is already registered in ATELIER Club.');
+                    }
+                    throw error;
+                }
+
+                // 4. Automated Welcome Email Dispatch via EmailJS
+                if (typeof emailjs !== 'undefined') {
+                    // Using your actual Service ID from your dashboard screenshot
+                    const SERVICE_ID = 'service_zi3z4lm'; 
+                    
+                    // Replace 'YOUR_TEMPLATE_ID' with the Template ID from EmailJS -> Email Templates
+                    const TEMPLATE_ID = 'YOUR_TEMPLATE_ID'; 
+
+                    const emailParams = {
+                        to_name: fullName,
+                        to_email: email,
+                        user_phone: phone,
+                        discount_code: 'ATELIER10'
+                    };
+
+                    await emailjs.send(SERVICE_ID, TEMPLATE_ID, emailParams);
+                }
+
+                // 5. UI Success Display
+                if (statusMsg) {
+                    statusMsg.style.display = 'block';
+                    statusMsg.style.color = '#2ecc71';
+                    statusMsg.innerHTML = `WELCOME TO THE CLUB, <strong>${fullName.toUpperCase()}</strong>! USE CODE <strong>ATELIER10</strong> AT CHECKOUT FOR 10% OFF.`;
+                }
+
+                signupForm.reset();
+
+            } catch (err) {
+                console.error("ATELIER Club Sign-up Error:", err);
+                if (statusMsg) {
+                    statusMsg.style.display = 'block';
+                    statusMsg.style.color = '#e74c3c';
+                    statusMsg.innerText = err.message || "Failed to process membership. Please try again.";
+                }
+
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "CLAIM YOUR 10% DISCOUNT";
+                }
+            }
+        });
+    }
+});
+
+
+// =========================================================================
 // --- 2. DATA ACQUISITION & INTEGRATION LAYER ---
 // =========================================================================
 async function fetchAtelierProducts() {
@@ -327,7 +451,6 @@ function renderProducts(products) {
 window.shareProduct = async function(productId, title, image) {
     if (!productId) return;
 
-    // Clean, branded URL
     const shareUrl = `https://www.atelierstore.studio/?product_id=${productId}`;
     
     const shareData = {
@@ -360,6 +483,7 @@ window.shareProduct = async function(productId, title, image) {
 };
 
 window.openQuickView = function(title, description, imageArray, price, category, productId) {
+    // 1. Initialize modal container dynamically or retrieve existing
     let modalContainer = document.getElementById('luxury-quickview-modal');
     if (!modalContainer) {
         modalContainer = document.createElement('div');
@@ -367,6 +491,21 @@ window.openQuickView = function(title, description, imageArray, price, category,
         document.body.appendChild(modalContainer);
     }
 
+    const verifiedId = productId || ('prod_' + Date.now());
+
+    // 2. Record item in local history
+    if (typeof recordRecentlyViewed === 'function') {
+        recordRecentlyViewed({
+            id: verifiedId,
+            title: title,
+            description: description,
+            images: imageArray,
+            price: price,
+            category: category
+        });
+    }
+
+    // 3. Parse and sanitize images
     let finalImages = [];
     if (Array.isArray(imageArray) && imageArray.length > 0) {
         finalImages = imageArray;
@@ -389,6 +528,7 @@ window.openQuickView = function(title, description, imageArray, price, category,
         finalImages = ['https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=800'];
     }
 
+    // 4. Parse specifications / story text
     let storyText = description || '';
     let specificationsHTML = '';
     if (storyText.includes('--- ATELIER SPECIFICATIONS ---')) {
@@ -408,6 +548,7 @@ window.openQuickView = function(title, description, imageArray, price, category,
         }
     }
 
+    // 5. Build Size Selector Component
     let sizeSelectorHTML = '';
     const cleanCategoryString = (category || '').toLowerCase().trim();
 
@@ -415,7 +556,7 @@ window.openQuickView = function(title, description, imageArray, price, category,
         sizeSelectorHTML = '';
     } else if (cleanCategoryString.includes('footwear') || cleanCategoryString.includes('shoe') || cleanCategoryString.includes('slide')) {
         sizeSelectorHTML = `
-            <div style="margin-bottom: 10px;">
+            <div style="margin-bottom: 8px;">
                 <label style="font-size:8px; font-weight:bold; letter-spacing:1px; color:#888; display:block; margin-bottom:4px; text-transform:uppercase;">Select Execution Size</label>
                 <select id="modal-size-select" style="width:100%; background:#111; color:#fff; border:1px solid #333; padding:10px; font-size:10px; font-weight:bold; letter-spacing:1px; border-radius:0; -webkit-appearance:none; height:38px; box-sizing:border-box;">
                     <option value="40">40</option><option value="41">41</option><option value="42" selected>42</option><option value="43">43</option><option value="44">44</option><option value="45">45</option>
@@ -423,7 +564,7 @@ window.openQuickView = function(title, description, imageArray, price, category,
             </div>`;
     } else {
         sizeSelectorHTML = `
-            <div style="margin-bottom: 10px;">
+            <div style="margin-bottom: 8px;">
                 <label style="font-size:8px; font-weight:bold; letter-spacing:1px; color:#888; display:block; margin-bottom:4px; text-transform:uppercase;">Select Execution Size</label>
                 <select id="modal-size-select" style="width:100%; background:#111; color:#fff; border:1px solid #333; padding:10px; font-size:10px; font-weight:bold; letter-spacing:1px; border-radius:0; -webkit-appearance:none; height:38px; box-sizing:border-box;">
                     <option value="S">SMALL (S)</option><option value="M" selected>MEDIUM (M)</option><option value="L">LARGE (L)</option><option value="XL">EXTRA LARGE (XL)</option><option value="XXL">XXL</option>
@@ -431,140 +572,77 @@ window.openQuickView = function(title, description, imageArray, price, category,
             </div>`;
     }
 
-    if (!document.getElementById('atelier-quickview-styles')) {
-        const styleBlock = document.createElement('style');
-        styleBlock.id = 'atelier-quickview-styles';
-        styleBlock.textContent = `
-            .atelier-modal-body {
-                background: #000;
-                border: 1px solid #222;
-                width: 100%;
-                max-width: 760px;
-                display: grid;
-                grid-template-columns: 1.1fr 0.9fr;
-                position: relative;
-                box-sizing: border-box;
-                color: #fff;
-                height: 580px;
-                max-height: 100vh;
-                overflow: hidden;
-            }
-            @media (max-width: 768px) {
-                .atelier-modal-body {
-                    grid-template-columns: 1fr !important;
-                    height: calc(100vh - 40px) !important;
-                    max-height: 85vh !important;
-                    display: flex !important;
-                    flex-direction: column !important;
-                }
-                .atelier-media-pane {
-                    height: 200px !important;
-                    flex-shrink: 0 !important;
-                    border-right: none !important;
-                    border-bottom: 1px solid #111 !important;
-                    padding: 10px !important;
-                }
-                .main-viewport-wrapper {
-                    height: 150px !important;
-                }
-                .thumbnail-roller {
-                    padding-bottom: 0 !important;
-                }
-                .thumb-frame {
-                    width: 35px !important;
-                    height: 45px !important;
-                }
-                .atelier-info-pane {
-                    flex: 1 !important;
-                    height: auto !important;
-                    overflow: hidden !important;
-                    padding: 15px !important;
-                    display: flex !important;
-                    flex-direction: column !important;
-                }
-                .roller-content-container {
-                    overflow-y: auto !important;
-                    flex: 1 !important;
-                    margin-bottom: 10px !important;
-                }
-                .persistent-actions-anchor {
-                    background: #000 !important;
-                    padding-top: 10px !important;
-                    border-top: 1px solid #222 !important;
-                    flex-shrink: 0 !important;
-                }
-            }
-        `;
-        document.head.appendChild(styleBlock);
-    }
-
-    const verifiedId = productId || ('prod_' + Date.now());
     const safeTitle = (title || '').replace(/'/g, "\\'");
+    const cleanNumericPrice = Number(price) || 0;
 
-    modalContainer.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:10000; display:flex; align-items:center; justify-content:center; padding:20px; box-sizing:border-box; animation: fadeIn 0.3s ease-out;";
-    
+    // 6. Build Clean Modal HTML
     modalContainer.innerHTML = `
         <div class="atelier-modal-body">
-            <button onclick="closeLuxuryQuickView()" style="position:absolute; top:12px; right:15px; background:none; border:none; color:#fff; font-size:25px; cursor:pointer; font-weight:200; z-index:100; line-height:1;">&times;</button>
+            <button class="atelier-modal-close-btn" onclick="closeLuxuryQuickView()">&times;</button>
             
-            <div class="atelier-media-pane" style="display:flex; flex-direction:column; padding:15px; gap:12px; background:#0a0a0a; border-right:1px solid #111; justify-content: center; box-sizing: border-box; height: 100%; overflow: hidden;">
-                <div class="main-viewport-wrapper" style="width:100%; height: 380px; background:#111; overflow:hidden; border:1px solid #222;">
-                    <img id="modal-primary-display" src="${finalImages[0]}" style="width:100%; height:100%; object-fit:cover; transition: opacity 0.2s ease;">
+            <!-- SCROLLABLE SECTION (MEDIA + PRODUCT INFO TOGETHER ON MOBILE) -->
+            <div class="atelier-modal-scroll-wrapper">
+                <div class="atelier-media-pane">
+                    <div class="main-viewport-wrapper">
+                        <img id="modal-primary-display" src="${finalImages[0]}">
+                    </div>
+                    
+                    <div class="thumbnail-roller">
+                        ${finalImages.map((imgUrl, idx) => `
+                            <div class="thumb-frame" onclick="switchQuickViewDisplayImage(this, '${imgUrl}')" style="border: ${idx === 0 ? '2px solid #fff' : '1px solid #333'};">
+                                <img src="${imgUrl}" onerror="this.src='https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=100'">
+                            </div>
+                        `).join('')}
+                    </div>
                 </div>
-                
-                <div class="thumbnail-roller" style="display:flex; gap:8px; width:100%; overflow-x:auto; padding-bottom:4px; justify-content: flex-start; scrollbar-width: none; -ms-overflow-style: none;">
-                    ${finalImages.map((imgUrl, idx) => `
-                        <div class="thumb-frame" onclick="switchQuickViewDisplayImage(this, '${imgUrl}')" style="width:45px; height:55px; flex-shrink:0; cursor:pointer; border:${idx === 0 ? '2px solid #fff' : '1px solid #333'}; background:#111; transition:all 0.2s;">
-                            <img src="${imgUrl}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=100'">
+
+                <div class="atelier-info-pane">
+                    <div class="roller-content-container">
+                        <h4 style="margin:0 0 4px 0; font-size:9px; letter-spacing:2px; color:#888; text-transform:uppercase;">ATELIER LABS</h4>
+                        <h2 style="margin:0 0 8px 0; font-size:20px; font-weight:300; letter-spacing:0.5px; text-transform:uppercase; line-height:1.2;">${title}</h2>
+                        <div style="font-size:16px; font-weight:bold; font-family:monospace; margin-bottom:12px; color:#fff;">₦${cleanNumericPrice.toLocaleString()}</div>
+                        
+                        <div style="font-size:11px; color:#ccc; line-height:1.5; font-weight:300; white-space: pre-wrap;">
+                            ${storyText}
                         </div>
-                    `).join('')}
+                        
+                        ${specificationsHTML}
+                    </div>
                 </div>
             </div>
 
-            <div class="atelier-info-pane" style="padding:25px 20px 20px 20px; display:flex; flex-direction:column; justify-content:space-between; box-sizing:border-box; height: 100%; overflow: hidden; background:#000;">
-                <div class="roller-content-container" style="overflow-y:auto; flex:1; padding-right:6px; margin-bottom:12px; scrollbar-width: thin; scrollbar-color: #333 #000;">
-                    <h4 style="margin:0 0 4px 0; font-size:9px; letter-spacing:2px; color:#888; text-transform:uppercase;">ATELIER LABS</h4>
-                    <h2 style="margin:0 0 8px 0; font-size:20px; font-weight:300; letter-spacing:0.5px; text-transform:uppercase; line-height:1.2;">${title}</h2>
-                    <div style="font-size:16px; font-weight:bold; font-family:monospace; margin-bottom:12px; color:#fff;">₦${Number(price).toLocaleString()}</div>
-                    
-                    <div style="font-size:11px; color:#ccc; line-height:1.5; font-weight:300; white-space: pre-wrap;">
-                        ${storyText}
-                    </div>
-                    
-                    ${specificationsHTML}
-                </div>
+            <!-- PINNED ACTIONS FOOTER (STATIC SIZE + ADD TO BAG) -->
+            <div class="persistent-actions-anchor">
+                ${sizeSelectorHTML}
 
-                <div class="persistent-actions-anchor">
-                    ${sizeSelectorHTML}
-
-                    <div style="display: flex; gap: 8px; width: 100%; margin-top: 6px;">
-                        <button type="button" 
-                                onclick="executeModalBagInsertion('${verifiedId}', '${safeTitle}', ${price}, '${finalImages[0]}')" 
-                                style="flex: 1; background:#fff; color:#000; border:none; padding:12px; font-size:10px; font-weight:bold; letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:background 0.2s;">
-                            ADD TO COLLECTION BAG
-                        </button>
-                        
-                        <button type="button" 
-                                onclick="window.shareProduct('${verifiedId}', '${safeTitle}', '${finalImages[0]}')" 
-                                style="width: 44px; background:#111; color:#fff; border:1px solid #333; padding:12px; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-sizing:border-box;"
-                                title="Share to Social Networks">
-                            🔗
-                        </button>
-                    </div>
+                <div style="display: flex; gap: 8px; width: 100%;">
+                    <button type="button" 
+                            onclick="executeModalBagInsertion('${verifiedId}', '${safeTitle}', ${cleanNumericPrice}, '${finalImages[0]}')" 
+                            style="flex: 1; background:#fff; color:#000; border:none; padding:12px; font-size:10px; font-weight:bold; letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:background 0.2s;">
+                        ADD TO COLLECTION BAG
+                    </button>
+                    
+                    <button type="button" 
+                            onclick="window.shareProduct('${verifiedId}', '${safeTitle}', '${finalImages[0]}')" 
+                            style="width: 44px; background:#111; color:#fff; border:1px solid #333; padding:12px; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-sizing:border-box;"
+                            title="Share to Social Networks">
+                        🔗
+                    </button>
                 </div>
             </div>
         </div>
     `;
 
-    modalContainer.addEventListener('click', function(e) {
+    // Close when clicking overlay
+    modalContainer.onclick = function(e) {
         if (e.target === modalContainer) window.closeLuxuryQuickView();
-    });
+    };
 };
 
 window.closeLuxuryQuickView = function() {
     const modalContainer = document.getElementById('luxury-quickview-modal');
     if (modalContainer) {
-        modalContainer.style.animation = "fadeOut 0.2s ease-out forwards";
+        modalContainer.style.animation = "atelierFadeOut 0.2s ease-out forwards";
         setTimeout(() => { modalContainer.remove(); }, 200);
     }
 };
@@ -597,7 +675,177 @@ window.executeModalBagInsertion = function(productId, title, price, image) {
         console.error("Atelier Core Error: E-commerce cart data-layer architecture missing.");
     }
 };
+// =========================================================================
+// ATELIER RECOMMENDATION & HISTORY ENGINE (MODAL INTEGRATED)
+// =========================================================================
 
+// Safe Price Cleaner (Converts any string/number into a pure numeric float)
+function cleanPriceNumber(val) {
+    if (val === null || val === undefined) return 0;
+    const cleaned = String(val).replace(/[^0-9.]/g, '');
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? 0 : num;
+}
+
+// Extract primary image URL from product array or string
+function getPrimaryImage(images) {
+    if (Array.isArray(images) && images.length > 0) return images[0];
+    if (typeof images === 'string' && images.trim() !== '') {
+        try {
+            const parsed = JSON.parse(images);
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
+        } catch (e) {
+            return images.replace(/[\[\]\{\}\"\']/g, '').split(',')[0].trim();
+        }
+    }
+    return 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=800';
+}
+
+// 1. Record Item in History
+function recordRecentlyViewed(product) {
+    if (!product || !product.id) return;
+
+    let viewed = [];
+    try {
+        viewed = JSON.parse(localStorage.getItem('atelier_recently_viewed')) || [];
+    } catch (e) {
+        viewed = [];
+    }
+
+    viewed = viewed.filter(p => String(p.id) !== String(product.id));
+    viewed.unshift({
+        id: product.id,
+        title: product.name || product.title || 'ATELIER Piece',
+        description: product.description || '',
+        images: Array.isArray(product.images) ? product.images : [getPrimaryImage(product.images)],
+        price: cleanPriceNumber(product.price || product.amount),
+        category: product.category || ''
+    });
+
+    if (viewed.length > 8) viewed.pop();
+
+    localStorage.setItem('atelier_recently_viewed', JSON.stringify(viewed));
+    renderRecentlyViewed();
+}
+
+// 2. Render Recently Viewed Items
+function renderRecentlyViewed() {
+    const container = document.getElementById('recently-viewed-list');
+    const section = document.getElementById('recently-viewed-section');
+
+    if (!container || !section) return;
+
+    let viewed = [];
+    try {
+        viewed = JSON.parse(localStorage.getItem('atelier_recently_viewed')) || [];
+    } catch (e) {
+        viewed = [];
+    }
+
+    if (viewed.length === 0) {
+        section.style.display = 'none';
+        return;
+    }
+
+    section.style.display = 'block';
+    container.innerHTML = viewed.map(p => {
+        const rawPrice = cleanPriceNumber(p.price);
+        const img = getPrimaryImage(p.images);
+
+        return `
+            <div class="atelier-mini-card" onclick="handleMiniCardClick('${p.id}')">
+                <div class="img-wrapper">
+                    <img src="${img}" alt="${p.title}" onerror="this.classList.add('img-broken');">
+                </div>
+                <div class="mini-info">
+                    <div class="mini-name">${p.title}</div>
+                    <div class="mini-price">₦ ${rawPrice.toLocaleString()}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// 3. Query Supabase & Render Curated Products
+async function loadRelatedProducts() {
+    const container = document.getElementById('related-products-list');
+    const section = document.getElementById('related-products-section');
+
+    if (!container) return;
+
+    try {
+        const { data: products, error } = await supabase
+            .from('products')
+            .select('*')
+            .limit(6);
+
+        if (error || !products || products.length === 0) {
+            if (section) section.style.display = 'none';
+            return;
+        }
+
+        if (section) section.style.display = 'block';
+
+        // Store products globally so we can look up full objects on click
+        window.atelier_catalog_cache = products;
+
+        container.innerHTML = products.map(item => {
+            const title = item.title || item.name || 'ATELIER Piece';
+            const rawPrice = cleanPriceNumber(item.price || item.amount);
+            const img = getPrimaryImage(item.images || item.image_url);
+
+            return `
+                <div class="atelier-mini-card" onclick="handleMiniCardClick('${item.id}')">
+                    <div class="img-wrapper">
+                        <img src="${img}" alt="${title}" onerror="this.classList.add('img-broken');">
+                    </div>
+                    <div class="mini-info">
+                        <div class="mini-name">${title}</div>
+                        <div class="mini-price">₦ ${rawPrice.toLocaleString()}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+    } catch (err) {
+        console.error("Error loading related products:", err);
+        if (section) section.style.display = 'none';
+    }
+}
+
+// 4. Global Card Click Handler (Fetches product & maps parameters cleanly)
+window.handleMiniCardClick = async function(productId) {
+    let item = (window.atelier_catalog_cache || []).find(p => String(p.id) === String(productId));
+
+    // Fallback to Supabase if not cached
+    if (!item) {
+        const { data } = await supabase.from('products').select('*').eq('id', productId).single();
+        item = data;
+    }
+
+    if (!item) return;
+
+    // Record in history
+    recordRecentlyViewed(item);
+
+    // Clean arguments for openQuickView
+    const title = item.title || item.name || 'ATELIER Piece';
+    const description = item.description || '';
+    const images = item.images || [];
+    const numericPrice = cleanPriceNumber(item.price || item.amount);
+    const category = item.category || '';
+
+    // Invoke openQuickView matching signature
+    if (typeof window.openQuickView === 'function') {
+        window.openQuickView(title, description, images, numericPrice, category, item.id);
+    }
+};
+
+// 5. Initialize on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+    renderRecentlyViewed();
+    loadRelatedProducts();
+});
 
 // =========================================================================
 // --- AUTOMATED BOUTIQUE COUTURE INTAKE PIPELINE ---
@@ -925,9 +1173,21 @@ window.removeFromCart = function(cartId) {
     try { localStorage.setItem('cart', JSON.stringify(window.atelierMemoryCart)); } catch (e) {}
     updateCartUI();
 };
+// Function to open the cart panel
+window.openCartTray = function() {
+    const cartPanel = document.getElementById('cart-panel');
+    if (cartPanel) {
+        cartPanel.classList.add('active'); // or cartPanel.style.display = 'block';
+    }
+};
 
-window.openCart = () => { document.getElementById('cart-panel')?.classList.add('active'); };
-window.closeCart = () => { document.getElementById('cart-panel')?.classList.remove('active'); };
+// Function to close the cart panel
+window.closeCart = function() {
+    const cartPanel = document.getElementById('cart-panel');
+    if (cartPanel) {
+        cartPanel.classList.remove('active'); // or cartPanel.style.display = 'none';
+    }
+};
 
 // Call UI update once script evaluation mounts
 document.addEventListener("DOMContentLoaded", () => { updateCartUI(); });
