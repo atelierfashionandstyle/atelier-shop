@@ -1,6 +1,4 @@
-import { NextResponse } from 'next/server';
-
-export async function middleware(request) {
+export default async function middleware(request) {
   const url = new URL(request.url);
   const productId = url.searchParams.get('product_id');
   const userAgent = request.headers.get('user-agent') || '';
@@ -8,13 +6,18 @@ export async function middleware(request) {
   // Detect social media crawlers
   const isCrawler = /facebookexternalhit|WhatsApp|twitterbot|linkedinbot|pinterest/i.test(userAgent);
 
-  // If a crawler hits a product link, rewrite the request to your /api/og function
+  // If a crawler hits a product link, rewrite the request to /api/og
   if (isCrawler && productId) {
-    return NextResponse.rewrite(new URL(`/api/og?product_id=${productId}`, request.url));
+    const ogUrl = new URL(`/api/og?product_id=${productId}`, request.url);
+    
+    // Perform internal rewrite via fetch
+    return fetch(ogUrl, {
+      headers: request.headers,
+    });
   }
 
-  // Real human visitors proceed straight to index.html normally
-  return NextResponse.next();
+  // Real human visitors proceed straight to the request normally
+  return fetch(request);
 }
 
 export const config = {
