@@ -1,25 +1,21 @@
+import { NextResponse } from 'next/server';
+
 export default async function middleware(request) {
   const url = new URL(request.url);
   const productId = url.searchParams.get('product_id');
   const userAgent = request.headers.get('user-agent') || '';
 
-  // Detect social media crawler scrapers
+  // 1. Detect social media crawler scrapers
   const isCrawler = /facebookexternalhit|WhatsApp|twitterbot|linkedinbot|pinterest/i.test(userAgent);
-  const staticSiteDomain = "https://www.atelierstore.studio";
 
-  // Case A: Social Crawler asks for a deep-linked product
+  // Case A: Social Crawler opening a product link -> Rewrite to og.js API endpoint
   if (isCrawler && productId) {
     const ogUrl = new URL(`/api/og?product_id=${productId}`, request.url);
-    return fetch(ogUrl, { headers: request.headers });
+    return NextResponse.rewrite(ogUrl);
   }
 
-  // Case B: Real Human clicks the raw proxy link -> bounce them safely to the static shop UI
-  if (!isCrawler && productId) {
-    return Response.redirect(`${staticSiteDomain}/?product_id=${productId}`, 302);
-  }
-
-  // Case C: Standard fallback routing
-  return Response.redirect(staticSiteDomain, 302);
+  // Case B & C: Real humans or standard visits -> Let the request pass through normally to index.html!
+  return NextResponse.next();
 }
 
 export const config = {
