@@ -459,19 +459,18 @@ window.shareProduct = async function(productId, title, images) {
     if (!productId) return;
 
     const cleanTitle = title || 'this piece';
-    // Clean URL without adding messy title params to the query string
-    const shareUrl = `https://www.atelierstore.studio/?product_id=${productId}`.replace(/\s+/g, '-').toLowerCase();
-    
-    // Combine text and URL into one complete payload
-    const shareMessage = `Explore ${cleanTitle} on ATELIER.\n${shareUrl}`;
+    // Clean URL targeting query param only
+    const shareUrl = `https://www.atelierstore.studio/?product_id=${productId}${cleanTitle}`;
+    const shareText = `Explore ${cleanTitle} on ATELIER.`;
 
+    // 1. Native Mobile Sharing Sheet (WhatsApp, iMessage, OS Share)
+    // We pass text WITHOUT appending the URL to avoid double link rendering!
     const shareData = {
         title: `ATELIER — ${cleanTitle}`,
-        text: shareMessage,
+        text: shareText,
         url: shareUrl
     };
 
-    // 1. Native Mobile Sharing Sheet (WhatsApp, iMessage, etc.)
     if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
         try {
             await navigator.share(shareData);
@@ -481,16 +480,17 @@ window.shareProduct = async function(productId, title, images) {
         }
     }
 
-    // 2. Clipboard Fallback (For Desktop / Facebook Paste)
+    // 2. Clipboard Fallback (Desktop copy/paste)
+    // Here we DO combine them so pasting into Facebook gives both text and URL
+    const clipboardPayload = `${shareText}\n${shareUrl}`;
+
     try {
-        // Copies both the text AND the link so when pasted on Facebook, the text appears!
-        await navigator.clipboard.writeText(shareMessage);
+        await navigator.clipboard.writeText(clipboardPayload);
         alert("Product details and link copied to clipboard!");
     } catch (err) {
-        // Legacy Clipboard Fallback
         const dummyInput = document.createElement('textarea');
         document.body.appendChild(dummyInput);
-        dummyInput.value = shareMessage;
+        dummyInput.value = clipboardPayload;
         dummyInput.select();
         document.execCommand('copy');
         document.body.removeChild(dummyInput);
