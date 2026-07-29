@@ -460,7 +460,7 @@ window.shareProduct = async function(productId, title, images) {
 
     const cleanTitle = title || 'this piece';
     // Clean URL without adding messy title params to the query string
-    const shareUrl = `https://www.atelierstore.studio/?product_id=${productId}${cleanTitle}`.replace(/\s+/g, '-').toLowerCase();
+    const shareUrl = `https://www.atelierstore.studio/?product_id=${productId}`.replace(/\s+/g, '-').toLowerCase();
     
     // Combine text and URL into one complete payload
     const shareMessage = `Explore ${cleanTitle} on ATELIER.\n${shareUrl}`;
