@@ -179,12 +179,14 @@ window.checkDeepLinkRouting = function(products) {
 
     if (!sharedProductId) return;
 
+    // Loose equality check (==) ensures both string and numeric IDs match safely
     const targetProduct = products.find(p => p.id == sharedProductId);
 
     if (targetProduct) {
         let imageArray = [];
         let rawSource = targetProduct.images || targetProduct.image;
 
+        // 1. Safely extract/parse image array format
         if (Array.isArray(rawSource) && rawSource.length > 0) {
             imageArray = rawSource;
         } else if (typeof rawSource === 'string' && rawSource.trim() !== '' && rawSource !== '[]') {
@@ -200,34 +202,37 @@ window.checkDeepLinkRouting = function(products) {
             }
         }
         
-        imageArray = imageArray.filter(imgUrl => imgUrl && imgUrl.startsWith('http'));
+        // 2. Fallback to default asset if array filter returns empty
+        imageArray = imageArray.filter(imgUrl => typeof imgUrl === 'string' && imgUrl.startsWith('http'));
         if (imageArray.length === 0) {
             imageArray = ['https://ittsskhqkcbeuwuasjxf.supabase.co/storage/v1/object/public/product-images/1.png'];
         }
 
         // =========================================================================
-        // --- DYNAMIC METADATA IMAGE INJECTION HANDLING ---
+        // --- DYNAMIC METADATA IMAGE & TITLE INJECTION ---
         // =========================================================================
-        // Safely pull the first absolute image URL out of your ready imageArray bundle
-        if (imageArray && imageArray.length > 0) {
-            const primaryPreviewImage = imageArray[0];
-            
-            // Overwrite the open-graph and twitter card tags in the DOM layout
-            document.getElementById('meta-og-image')?.setAttribute('content', primaryPreviewImage);
-            document.querySelector('meta[name="twitter:image"]')?.setAttribute('content', primaryPreviewImage);
-            document.querySelector('meta[property="og:image"]')?.setAttribute('content', primaryPreviewImage);
-            
-            // Keep your titles descriptive during shared browser sessions
-            const pieceTitle = targetProduct.title || targetProduct.name || 'ATELIER PIECE';
-            document.title = `ATELIER | ${pieceTitle.toUpperCase()}`;
-            document.querySelector('meta[property="og:title"]')?.setAttribute('content', `ATELIER — ${pieceTitle}`);
-        }
+        const primaryPreviewImage = imageArray[0];
+        const pieceTitle = targetProduct.title || targetProduct.name || 'ATELIER PIECE';
+
+        // Update document tab title
+        document.title = `ATELIER | ${pieceTitle.toUpperCase()}`;
+
+        // Update OpenGraph & Twitter tags for client-side navigation
+        const setMetaContent = (selector, content) => {
+            const tag = document.querySelector(selector);
+            if (tag) tag.setAttribute('content', content);
+        };
+
+        setMetaContent('#meta-og-image', primaryPreviewImage);
+        setMetaContent('meta[property="og:image"]', primaryPreviewImage);
+        setMetaContent('meta[name="twitter:image"]', primaryPreviewImage);
+        setMetaContent('meta[property="og:title"]', `ATELIER — ${pieceTitle}`);
         // =========================================================================
 
-        // Launch Quick View Modal
+        // 3. Trigger Quick View Modal
         if (typeof window.openQuickView === 'function') {
             window.openQuickView(
-                targetProduct.title || targetProduct.name || 'ATELIER PIECE',
+                pieceTitle,
                 targetProduct.description || '',
                 imageArray,
                 targetProduct.price || 0,
@@ -236,11 +241,14 @@ window.checkDeepLinkRouting = function(products) {
             );
         }
 
-        // Scroll directly to product card
-        const cardEl = document.querySelector(`[data-product-id="${targetProduct.id}"]`);
-        if (cardEl) {
-            cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+        // 4. Smooth scroll to product card if visible on screen
+        setTimeout(() => {
+            const cardEl = document.querySelector(`[data-product-id="${targetProduct.id}"]`);
+            if (cardEl) {
+                cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 150);
+
     } else {
         console.warn(`Atelier Deep Link Notice: Product ID [${sharedProductId}] not found in catalog.`);
     }
@@ -446,37 +454,37 @@ function renderProducts(products) {
     window.renderProducts(products);
 }
 
-// =========================================================================
-// ATELIER RESHAPED & VIEWPORT-OPTIMIZED QUICK VIEW ENGINE
-// =========================================================================
-
-// Global Share Handler Engine (Updated with serverless image metadata proxy fallback)
-// Global Share Handler Engine (Clean Static Routing)
-window.shareProduct = async function(productId, title, image) {
+// Global Share Handler Engine (Corrected Template Literal Variables)
+window.shareProduct = async function(productId, title, images) {
     if (!productId) return;
 
-    // FIX: Using regular URL parameters that work natively on your main storefront domain
-    const shareUrl = `https://atelierstore.studio{productId}`;
+    // Direct URL structure with product title/details included
+    const encodedTitle = title ? encodeURIComponent(title) : '';
+    const shareUrl = `https://www.atelierstore.studio/?product_id=${productId}${encodedTitle ? `&title=${encodedTitle}` : ''}`;
     
     const shareData = {
         title: title || 'ATELIER COLLECTION',
         text: `Explore ${title || 'this piece'} on ATELIER.`,
-        url: shareUrl
+        url: shareUrl,
+        product_id: productId,
     };
 
+    // 1. Native Mobile Sharing Sheet (WhatsApp, iMessage, etc.)
     if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
         try {
             await navigator.share(shareData);
             return;
         } catch (err) {
-            if (err.name === 'AbortError') return;
+            if (err.name === 'AbortError') return; // User canceled the share sheet
         }
     }
 
+    // 2. Clipboard Fallback
     try {
         await navigator.clipboard.writeText(shareUrl);
         alert("Product link copied to clipboard!");
     } catch (err) {
+        // Legacy Clipboard Fallback
         const dummyInput = document.createElement('input');
         document.body.appendChild(dummyInput);
         dummyInput.value = shareUrl;
@@ -486,8 +494,19 @@ window.shareProduct = async function(productId, title, image) {
         alert("Product link copied to clipboard!");
     }
 };
+window.addEventListener('DOMContentLoaded', () => {
+    // ... your existing startup code (e.g., fetch products, load cart, etc.) ...
 
+    // Check for shared product link parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharedProductId = urlParams.get('product_id');
 
+    if (sharedProductId) {
+        if (typeof openProductModal === 'function') {
+            openProductModal(sharedProductId);
+        }
+    }
+});
 
 window.openQuickView = function(title, description, imageArray, price, category, productId) {
     // 1. Initialize modal container dynamically or retrieve existing
