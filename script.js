@@ -430,11 +430,12 @@ function renderProducts(products) {
 // ATELIER RESHAPED & VIEWPORT-OPTIMIZED QUICK VIEW ENGINE
 // =========================================================================
 
-// Global Share Handler Engine
+// Global Share Handler Engine (Updated with serverless image metadata proxy fallback)
 window.shareProduct = async function(productId, title, image) {
     if (!productId) return;
 
-    const shareUrl = `https://www.atelierstore.studio/?product_id=${productId}`;
+    // CHANGED: Point this directly to your vercel.json api path to force product image previews
+    const shareUrl = `https://atelierstore.studio{productId}`;
     
     const shareData = {
         title: title || 'ATELIER COLLECTION',
@@ -464,6 +465,7 @@ window.shareProduct = async function(productId, title, image) {
         alert("Product link copied to clipboard!");
     }
 };
+
 
 window.openQuickView = function(title, description, imageArray, price, category, productId) {
     // 1. Initialize modal container dynamically or retrieve existing
