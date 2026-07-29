@@ -205,6 +205,25 @@ window.checkDeepLinkRouting = function(products) {
             imageArray = ['https://ittsskhqkcbeuwuasjxf.supabase.co/storage/v1/object/public/product-images/1.png'];
         }
 
+        // =========================================================================
+        // --- DYNAMIC METADATA IMAGE INJECTION HANDLING ---
+        // =========================================================================
+        // Safely pull the first absolute image URL out of your ready imageArray bundle
+        if (imageArray && imageArray.length > 0) {
+            const primaryPreviewImage = imageArray[0];
+            
+            // Overwrite the open-graph and twitter card tags in the DOM layout
+            document.getElementById('meta-og-image')?.setAttribute('content', primaryPreviewImage);
+            document.querySelector('meta[name="twitter:image"]')?.setAttribute('content', primaryPreviewImage);
+            document.querySelector('meta[property="og:image"]')?.setAttribute('content', primaryPreviewImage);
+            
+            // Keep your titles descriptive during shared browser sessions
+            const pieceTitle = targetProduct.title || targetProduct.name || 'ATELIER PIECE';
+            document.title = `ATELIER | ${pieceTitle.toUpperCase()}`;
+            document.querySelector('meta[property="og:title"]')?.setAttribute('content', `ATELIER — ${pieceTitle}`);
+        }
+        // =========================================================================
+
         // Launch Quick View Modal
         if (typeof window.openQuickView === 'function') {
             window.openQuickView(
@@ -226,6 +245,7 @@ window.checkDeepLinkRouting = function(products) {
         console.warn(`Atelier Deep Link Notice: Product ID [${sharedProductId}] not found in catalog.`);
     }
 };
+
 
 // =========================================================================
 // --- 3. UNIFIED HIGH-CONTRAST PRODUCT RENDERING ENGINE ---
@@ -431,10 +451,11 @@ function renderProducts(products) {
 // =========================================================================
 
 // Global Share Handler Engine (Updated with serverless image metadata proxy fallback)
+// Global Share Handler Engine (Clean Static Routing)
 window.shareProduct = async function(productId, title, image) {
     if (!productId) return;
 
-    // CHANGED: Point this directly to your vercel.json api path to force product image previews
+    // FIX: Using regular URL parameters that work natively on your main storefront domain
     const shareUrl = `https://atelierstore.studio{productId}`;
     
     const shareData = {
@@ -465,6 +486,7 @@ window.shareProduct = async function(productId, title, image) {
         alert("Product link copied to clipboard!");
     }
 };
+
 
 
 window.openQuickView = function(title, description, imageArray, price, category, productId) {
