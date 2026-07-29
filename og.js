@@ -9,36 +9,41 @@ export default async function handler(req, res) {
   const { searchParams } = new URL(req.url, `https://${req.headers.host}`);
   const productId = searchParams.get('product_id');
 
-  // Fallback metadata if no product ID is present
   let title = "ATELIER | Fashion and Style Marketplace";
   let image = "https://ittsskhqkcbeuwuasjxf.supabase.co/storage/v1/object/public/product-images/1.png";
   let description = "Discover luxury footwear and apparel on ATELIER.";
 
   if (productId) {
-    const { data: product } = await supabase
-      .from('products')
-      .select('title, name, image_url, description')
-      .eq('id', productId)
-      .single();
+  const { data: product } = await supabase
+    .from('products')
+    .select('title, name, images, description') // Changed image_url to images to match your database
+    .eq('id', productId)
+    .single();
 
-    if (product) {
-      title = product.title || product.name || title;
-      image = product.image_url || image;
-      description = product.description ? product.description.slice(0, 150) : description;
+  if (product) {
+    title = product.title || product.name || title;
+    description = product.description ? product.description.slice(0, 150) : description;
+    
+    // Safety handle for your text[] array column
+    if (Array.isArray(product.images) && product.images.length > 0) {
+      image = product.images[0]; // Extract the first image link for social previews
+    } else if (typeof product.images === 'string' && product.images.trim() !== '') {
+      // Fallback parsing just in case it returns as a raw string format
+      try {
+        const parsed = JSON.parse(product.images);
+        if (Array.isArray(parsed) && parsed.length > 0) image = parsed[0];
+      } catch(e) {
+        image = product.images.replace(/[\[\]\"]/g, '').trim().split(',')[0];
+      }
     }
   }
+}
 
-  // Detect if caller is a social crawler
-  const userAgent = req.headers['user-agent'] || '';
-  const isCrawler = /facebookexternalhit|WhatsApp|twitterbot|linkedinbot|pinterest/i.test(userAgent);
 
-  if (!isCrawler && productId) {
-    // Redirect real humans straight to your GitHub Pages domain
-    return res.redirect(302, `https://www.atelierstore.studio/?product_id=${productId}`);
-  }
-
-  // Return raw HTML with dynamic OG tags to social crawlers
-  res.setHeader('Content-Type', 'text/html');
+  // Always send HTML containing only the meta tags to the crawlers
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate'); // Cache previews for 24h
+  
   return res.status(200).send(`
     <!DOCTYPE html>
     <html lang="en">
@@ -51,6 +56,8 @@ export default async function handler(req, res) {
       <meta property="og:type" content="product" />
       <meta property="og:url" content="https://www.atelierstore.studio/?product_id=${productId}" />
       <meta name="twitter:card" content="summary_large_image">
+      <meta name="twitter:title" content="${title}">
+      <meta name="twitter:description" content="${description}">
       <meta name="twitter:image" content="${image}">
     </head>
     <body>

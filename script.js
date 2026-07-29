@@ -25,23 +25,6 @@ window.activeOrderSnapshot = window.activeOrderSnapshot || [];
 })();
 
 // =========================================================================
-// VIEW SWITCHER ENGINE
-// =========================================================================
-window.switchView = function(targetViewId) {
-    document.querySelectorAll('.page-view').forEach(view => {
-        view.style.display = 'none';
-        view.classList.remove('active');
-    });
-
-    const activeView = document.getElementById(targetViewId);
-    if (activeView) {
-        activeView.style.display = 'block';
-        activeView.classList.add('active');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-};
-
-// =========================================================================
 // ATELIER CLUB SIGNUP FORM HANDLER
 // =========================================================================
 document.addEventListener('DOMContentLoaded', () => {
@@ -676,7 +659,7 @@ window.executeModalBagInsertion = function(productId, title, price, image) {
     }
 };
 // =========================================================================
-// ATELIER RECOMMENDATION & HISTORY ENGINE (MODAL INTEGRATED)
+// ATELIER RECOMMENDATION & HISTORY ENGINE (DYNAMIC REFRESH ENABLED)
 // =========================================================================
 
 // Safe Price Cleaner (Converts any string/number into a pure numeric float)
@@ -766,7 +749,7 @@ function renderRecentlyViewed() {
     }).join('');
 }
 
-// 3. Query Supabase & Render Curated Products
+// 3. Dynamic Query Supabase & Render Random/Fresh Curated Products
 async function loadRelatedProducts() {
     const container = document.getElementById('related-products-list');
     const section = document.getElementById('related-products-section');
@@ -774,22 +757,27 @@ async function loadRelatedProducts() {
     if (!container) return;
 
     try {
+        // Fetch up to 20 products to select a fresh random subset of 6 on every load
         const { data: products, error } = await supabase
             .from('products')
             .select('*')
-            .limit(6);
+            .limit(20);
 
         if (error || !products || products.length === 0) {
             if (section) section.style.display = 'none';
             return;
         }
 
+        // Shuffle array using Fisher-Yates shuffle algorithm for true randomness on refresh
+        const shuffled = [...products].sort(() => 0.5 - Math.random());
+        const selectedProducts = shuffled.slice(0, 6);
+
         if (section) section.style.display = 'block';
 
-        // Store products globally so we can look up full objects on click
+        // Store active product pool globally
         window.atelier_catalog_cache = products;
 
-        container.innerHTML = products.map(item => {
+        container.innerHTML = selectedProducts.map(item => {
             const title = item.title || item.name || 'ATELIER Piece';
             const rawPrice = cleanPriceNumber(item.price || item.amount);
             const img = getPrimaryImage(item.images || item.image_url);
@@ -813,11 +801,10 @@ async function loadRelatedProducts() {
     }
 }
 
-// 4. Global Card Click Handler (Fetches product & maps parameters cleanly)
+// 4. Global Card Click Handler
 window.handleMiniCardClick = async function(productId) {
     let item = (window.atelier_catalog_cache || []).find(p => String(p.id) === String(productId));
 
-    // Fallback to Supabase if not cached
     if (!item) {
         const { data } = await supabase.from('products').select('*').eq('id', productId).single();
         item = data;
@@ -825,17 +812,14 @@ window.handleMiniCardClick = async function(productId) {
 
     if (!item) return;
 
-    // Record in history
     recordRecentlyViewed(item);
 
-    // Clean arguments for openQuickView
     const title = item.title || item.name || 'ATELIER Piece';
     const description = item.description || '';
     const images = item.images || [];
     const numericPrice = cleanPriceNumber(item.price || item.amount);
     const category = item.category || '';
 
-    // Invoke openQuickView matching signature
     if (typeof window.openQuickView === 'function') {
         window.openQuickView(title, description, images, numericPrice, category, item.id);
     }
@@ -1622,20 +1606,28 @@ function sendAtelierEmail(ref, customerEmail, amount, paymentMethod) {
 }
 // B. BACK TO SHOP (From Shipping back to Store)
 window.backToShop = function() {
-    // 1. Hide Checkout
+    // 1. Hide Checkout view panel
     const checkoutSection = document.getElementById('checkout-section');
     if (checkoutSection) checkoutSection.style.display = 'none';
 
-    // 2. Show Shop and Hero
+    // 2. Show Shop wrapper and Hero layers
+    const shopView = document.getElementById('shop-view');
     const shopPage = document.getElementById('shop-page');
     const hero = document.querySelector('.hero');
     
+    if (shopView) shopView.style.display = 'block'; 
     if (shopPage) shopPage.style.display = 'block';
     if (hero) hero.style.display = 'flex';
 
-    // 3. Reset Scroll to top so the header looks right
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // 3. Smoothly target and glide straight down to the Atelier collection grid header
+    if (shopPage) {
+        shopPage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+        // Fallback safety rule if the DOM query misses
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 };
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const trackBtn = document.getElementById('track-btn');

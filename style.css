@@ -931,132 +931,306 @@ nav a, .cart-icon { color: #fff; text-decoration: none; margin-left: 30px; curso
 }
 
 /* =========================================================================
-   6. CHECKOUT SUITE SYSTEM VIEW LAYOUTS
+   CHECKOUT SECTION STYLES
    ========================================================================= */
-#checkout-section {
-    padding-top: 60px;
-    background-color: #000000;
-    min-height: 100vh;
+
+.checkout-container {
+    max-width: 650px;
+    margin: 40px auto;
+    padding: 20px;
+    color: #ffffff;
+    background: #000000;
+    box-sizing: border-box;
 }
 
+/* Navigation Button */
 .back-to-shop-btn {
-    background: #000000;
-    color: #ffffff;
-    border: 1px solid #222222;
-    padding: 12px 24px;
+    background: none;
+    border: none;
+    color: #888888;
     font-size: 11px;
+    font-weight: bold;
     letter-spacing: 2px;
-    text-transform: uppercase;
     cursor: pointer;
-    margin-bottom: 20px;
-    transition: all 0.2s ease;
+    padding: 0;
+    margin-bottom: 25px;
+    text-transform: uppercase;
+    transition: color 0.2s ease;
 }
 
 .back-to-shop-btn:hover {
-    background-color: #ffffff;
-    color: #000000;
-}
-
-.checkout-container {
-    max-width: 550px;
-    margin: 40px auto;
-    padding: 20px;
-    text-align: center;
     color: #ffffff;
 }
 
+/* Headings */
+.checkout-heading {
+    font-size: 18px;
+    font-weight: 300;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin: 0 0 20px 0;
+    border-bottom: 1px solid #222222;
+    padding-bottom: 10px;
+}
+
+.checkout-sublabel {
+    display: block;
+    font-size: 9px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: #888888;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+/* Form & Input Layouts */
 .checkout-stack {
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    margin-top: 30px;
+    gap: 15px;
 }
 
-/* Sharp, Flat Luxury Input Parameters (Removes Gray Overlays) */
-.checkout-stack input, 
-.checkout-select,
-.checkout-input {
+.checkout-input,
+.checkout-select {
     width: 100%;
-    height: 52px;
-    background: #000000 !important;
+    background: #111111;
+    color: #ffffff;
     border: 1px solid #222222;
-    padding: 0 15px;
-    color: #ffffff !important;
-    font-family: inherit;
-    font-size: 13px;
-    outline: none;
-    border-radius: 0px; /* Sharp modern edges */
+    padding: 12px;
+    font-size: 12px;
     box-sizing: border-box;
+    border-radius: 0; /* Reset default browser rounded corners */
+    outline: none;
     transition: border-color 0.2s ease;
 }
 
-/* Custom Vector Arrow Layout for Selection Boxes */
-.checkout-select, .checkout-input {
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="292.4" height="292.4"><path fill="%23FFFFFF" d="M287 69.4a17.6 17.6 0 0 0-13-5.4H18.4c-5 0-9.3 1.8-12.9 5.4A17.6 17.6 0 0 0 0 82.2c0 5 1.8 9.3 5.4 12.9l128 127.9c3.6 3.6 7.8 5.4 12.8 5.4s9.2-1.8 12.8-5.4L287 95c3.5-3.5 5.4-7.8 5.4-12.8 0-5-1.9-9.2-5.4-12.8z"/></svg>');
-    background-repeat: no-repeat;
-    background-position: right 15px top 50%;
-    background-size: 10px auto;
-    padding-right: 40px;
+.checkout-select {
+    height: 44px;
 }
 
-.checkout-stack input:focus, 
-.checkout-select:focus,
-.checkout-input:focus {
-    border-color: #ffffff;
+.checkout-input:focus,
+.checkout-select:focus {
+    border-color: #555555;
 }
 
-/* Uniform Grid for Zip/City Splits */
 .triple-grid {
     display: grid;
-    grid-template-columns: 1.4fr 0.8fr 0.8fr; /* Responsive localized geometric allocation layouts */
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 10px;
 }
 
-/* Primary Form Checkout Direct Execution Control Button */
-.checkout-btn-final {
+/* Summary Display */
+.order-summary-display {
+    margin-top: 15px;
+    border-top: 1px solid #222222;
+    border-bottom: 1px solid #222222;
+    padding: 15px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #888888;
+}
+
+.summary-total {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    font-size: 15px;
+    color: #ffffff;
+    font-family: monospace;
+}
+
+/* Payment Selection Grid */
+.payment-method-selection {
+    margin-top: 10px;
+}
+
+.payment-options-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.payment-card {
+    background: #111111;
+    border: 1px solid #222222;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    color: #ffffff;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.payment-card:hover {
+    border-color: #444444;
+    background: #161616;
+}
+
+.payment-card input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #ffffff;
+    cursor: pointer;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.payment-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     width: 100%;
-    height: 55px;
+    gap: 8px;
+}
+
+.payment-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.payment-badge {
+    font-size: 8.5px;
+    color: #888888;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    background: #000000;
+    padding: 3px 6px;
+    border: 1px solid #222222;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Submission CTA */
+.checkout-submit-btn {
+    width: 100%;
     background: #ffffff;
     color: #000000;
-    border: 1px solid #ffffff;
-    font-weight: 700;
+    border: none;
+    padding: 16px;
+    font-size: 11px;
+    font-weight: bold;
     letter-spacing: 2px;
     text-transform: uppercase;
     cursor: pointer;
-    margin-top: 15px;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    margin-top: 10px;
+    transition: background 0.2s ease;
 }
 
-.checkout-btn-final:hover {
-    background: #000000;
-    color: #ffffff;
-    border-color: #ffffff;
+.checkout-submit-btn:hover {
+    background: #e5e5e5;
 }
-/* Container for the summary values */
-/* Update your existing selector */
-.shipping-summary {
-    display: none; /* Hidden by default */
-    margin-top: 60px; /* This creates the gap you need */
-    padding: 20px 5%;
-    border-top: 1px solid #333;
+
+/* =========================================================================
+   MOBILE RESPONSIVE BREAKPOINTS
+   ========================================================================= */
+
+@media (max-width: 600px) {
+    /* Stack City, State, Zip vertically on mobile screens */
+    .triple-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .checkout-container {
+        padding: 15px;
+        margin: 20px auto;
+    }
+
+    .payment-card {
+        padding: 10px 12px;
+    }
+
+    .payment-title {
+        font-size: 10px;
+    }
+
+    .payment-badge {
+        font-size: 7.5px;
+        padding: 2px 4px;
+    }
+}
+
+/* Payment Section Container */
+.payment-card {
+    background: #111;
+    border: 1px solid #222;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    color: #fff;
+    transition: border-color 0.2s ease, background 0.2s ease;
+    border-radius: 2px;
     width: 100%;
+    box-sizing: border-box;
 }
 
-.summary-line {
+.payment-card:hover {
+    border-color: #444;
+    background: #161616;
+}
+
+.payment-card input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #fff;
+    cursor: pointer;
+    margin: 0;
+    flex-shrink: 0; /* Prevents radio button from squeezing on mobile */
+}
+
+.payment-details {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 15px;
-    color: #fff;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
 }
 
-.total-bold {
-    font-weight: bold;
-    font-size: 1.4rem;
-    border-top: 1px solid #444;
-    padding-top: 15px;
+.payment-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    line-height: 1.3;
 }
+
+.payment-badge {
+    font-size: 8px;
+    color: #888;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    background: #000;
+    padding: 3px 6px;
+    border: 1px solid #222;
+    white-space: nowrap; /* Keeps tag on one line */
+    flex-shrink: 0;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 480px) {
+    .payment-card {
+        padding: 10px 12px;
+    }
+    
+    .payment-title {
+        font-size: 10px;
+    }
+
+    .payment-badge {
+        font-size: 7.5px;
+        padding: 2px 4px;
+    }
+}
+
 .tracking-section {
     padding: 40px 5%;
     background-color: #050505; /* Slightly different black to separate sections */

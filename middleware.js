@@ -3,21 +3,23 @@ export default async function middleware(request) {
   const productId = url.searchParams.get('product_id');
   const userAgent = request.headers.get('user-agent') || '';
 
-  // Detect social media crawlers
+  // Detect social media crawler scrapers
   const isCrawler = /facebookexternalhit|WhatsApp|twitterbot|linkedinbot|pinterest/i.test(userAgent);
+  const staticSiteDomain = "https://www.atelierstore.studio";
 
-  // If a crawler hits a product link, rewrite the request to /api/og
+  // Case A: Social Crawler asks for a deep-linked product
   if (isCrawler && productId) {
     const ogUrl = new URL(`/api/og?product_id=${productId}`, request.url);
-    
-    // Perform internal rewrite via fetch
-    return fetch(ogUrl, {
-      headers: request.headers,
-    });
+    return fetch(ogUrl, { headers: request.headers });
   }
 
-  // Real human visitors proceed straight to the request normally
-  return fetch(request);
+  // Case B: Real Human clicks the raw proxy link -> bounce them safely to the static shop UI
+  if (!isCrawler && productId) {
+    return Response.redirect(`${staticSiteDomain}/?product_id=${productId}`, 302);
+  }
+
+  // Case C: Standard fallback routing
+  return Response.redirect(staticSiteDomain, 302);
 }
 
 export const config = {
