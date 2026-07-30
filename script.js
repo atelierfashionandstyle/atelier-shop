@@ -194,16 +194,28 @@ window.checkDeepLinkRouting = function(products) {
                 let cleanStr = rawSource.trim();
                 if (cleanStr.startsWith('[') && cleanStr.endsWith(']')) {
                     imageArray = JSON.parse(cleanStr);
+                } else if (cleanStr.includes(',')) {
+                    imageArray = cleanStr.split(',').map(s => s.replace(/[\[\]\"]/g, '').trim());
                 } else {
-                    imageArray = [cleanStr];
+                    imageArray = [cleanStr.replace(/[\[\]\"]/g, '').trim()];
                 }
             } catch(e) {
                 imageArray = [rawSource.replace(/[\[\]\"]/g, '').trim()];
             }
         }
         
-        // 2. Fallback to default asset if array filter returns empty
-        imageArray = imageArray.filter(imgUrl => typeof imgUrl === 'string' && imgUrl.startsWith('http'));
+        // 2. Format & Sanitize URLs (Supports relative URLs and absolute HTTP/HTTPS)
+        imageArray = imageArray
+            .filter(imgUrl => typeof imgUrl === 'string' && imgUrl.trim().length > 0)
+            .map(imgUrl => {
+                let clean = imgUrl.trim();
+                if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
+                    return `https://ittsskhqkcbeuwuasjxf.supabase.co/storage/v1/object/public/product-images/${clean.replace(/^\//, '')}`;
+                }
+                return clean;
+            });
+
+        // Fallback image if array ends up empty
         if (imageArray.length === 0) {
             imageArray = ['https://ittsskhqkcbeuwuasjxf.supabase.co/storage/v1/object/public/product-images/1.png'];
         }
@@ -217,16 +229,22 @@ window.checkDeepLinkRouting = function(products) {
         // Update document tab title
         document.title = `ATELIER | ${pieceTitle.toUpperCase()}`;
 
-        // Update OpenGraph & Twitter tags for client-side navigation
-        const setMetaContent = (selector, content) => {
-            const tag = document.querySelector(selector);
-            if (tag) tag.setAttribute('content', content);
-        };
+        // Directly update your exact ID element
+        const ogImageMeta = document.getElementById('meta-og-image');
+        if (ogImageMeta) {
+            ogImageMeta.setAttribute('content', primaryPreviewImage);
+        }
 
-        setMetaContent('#meta-og-image', primaryPreviewImage);
-        setMetaContent('meta[property="og:image"]', primaryPreviewImage);
-        setMetaContent('meta[name="twitter:image"]', primaryPreviewImage);
-        setMetaContent('meta[property="og:title"]', `ATELIER — ${pieceTitle}`);
+        // Also update og:title & twitter:image if they exist
+        const ogTitleMeta = document.querySelector('meta[property="og:title"]');
+        if (ogTitleMeta) {
+            ogTitleMeta.setAttribute('content', `ATELIER — ${pieceTitle}`);
+        }
+
+        const twitterImageMeta = document.querySelector('meta[name="twitter:image"]');
+        if (twitterImageMeta) {
+            twitterImageMeta.setAttribute('content', primaryPreviewImage);
+        }
         // =========================================================================
 
         // 3. Trigger Quick View Modal
@@ -394,7 +412,7 @@ window.renderProducts = function(products) {
 
         productCard.innerHTML = `
             <div class="product-image-wrapper" style="position:relative; overflow:hidden; aspect-ratio:3/4; background:#111; cursor:pointer; width:100%;">
-                <img src="${mainImageUrl}" alt="${productTitle}" class="product-main-img" style="width:100%; height:100%; object-fit:cover; transition: opacity 0.4s ease;" onerror="this.src='https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=600'">
+                <img src="${mainImageUrl}" alt="${productTitle}" loading="lazy" class="product-main-img" style="width:100%; height:100%; object-fit:cover; transition: opacity 0.4s ease;" onerror="this.src='https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=600'">
                 ${premiumLabelHTML}
             </div>
             <div class="product-info-wrapper" style="padding:10px 0 0 0; display:flex; flex-direction:column; gap:3px; width:100%; box-sizing:border-box;">
@@ -454,34 +472,36 @@ function renderProducts(products) {
     window.renderProducts(products);
 }
 
-// Global Share Handler Engine (Corrected Template Literal Variables)
+// Global Share Handler Engine
 window.shareProduct = async function(productId, title, images) {
     if (!productId) return;
 
     const cleanTitle = title || 'this piece';
-    // Clean URL targeting query param only
-    const shareUrl = `https://www.atelierstore.studio/?product_id=${productId}${cleanTitle}`;
+    
+    // 1. Build a clean URL with JUST the product_id query parameter
+    const shareUrl = `https://www.atelierstore.studio/?product_id=${encodeURIComponent(productId)}`;
     const shareText = `Explore ${cleanTitle} on ATELIER.`;
 
-    // 1. Native Mobile Sharing Sheet (WhatsApp, iMessage, OS Share)
-    // We pass text WITHOUT appending the URL to avoid double link rendering!
     const shareData = {
         title: `ATELIER — ${cleanTitle}`,
         text: shareText,
         url: shareUrl
     };
 
-    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+    // 2. Native Mobile Sharing Sheet (WhatsApp, iMessage, OS Share)
+    if (navigator.share) {
         try {
-            await navigator.share(shareData);
-            return;
+            // Test if canShare is supported before calling it
+            if (!navigator.canShare || navigator.canShare(shareData)) {
+                await navigator.share(shareData);
+                return;
+            }
         } catch (err) {
-            if (err.name === 'AbortError') return; // User closed share sheet
+            if (err.name === 'AbortError') return; // User canceled share sheet
         }
     }
 
-    // 2. Clipboard Fallback (Desktop copy/paste)
-    // Here we DO combine them so pasting into Facebook gives both text and URL
+    // 3. Clipboard Fallback (Desktop copy/paste)
     const clipboardPayload = `${shareText}\n${shareUrl}`;
 
     try {
@@ -497,15 +517,17 @@ window.shareProduct = async function(productId, title, images) {
         alert("Product details and link copied to clipboard!");
     }
 };
-window.addEventListener('DOMContentLoaded', () => {
-    // ... your existing startup code (e.g., fetch products, load cart, etc.) ...
 
+window.addEventListener('DOMContentLoaded', () => {
     // Check for shared product link parameter
     const urlParams = new URLSearchParams(window.location.search);
     const sharedProductId = urlParams.get('product_id');
 
     if (sharedProductId) {
-        if (typeof openProductModal === 'function') {
+        // Triggers the deep-link router if your products array is loaded
+        if (typeof window.checkDeepLinkRouting === 'function' && Array.isArray(window.allProducts)) {
+            window.checkDeepLinkRouting(window.allProducts);
+        } else if (typeof openProductModal === 'function') {
             openProductModal(sharedProductId);
         }
     }

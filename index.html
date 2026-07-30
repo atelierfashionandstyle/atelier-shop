@@ -32,10 +32,9 @@
     <meta name="twitter:description" content="Discover ATELIER — a curated marketplace for sustainable, contemporary fashion. Shop handcrafted footwear, apparel, and accessories that blend timeless craftsmanship with modern minimalism.">
     <meta name="twitter:image" content="https://ittsskhqkcbeuwuasjxf.supabase.co/storage/v1/object/public/product-images/1.png">
 
-    <!-- Stylesheets (Fixed Broken JSDelivr Syntax) -->
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://jsdelivr.net">
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <!-- Meta Pixel Code (Fixed missing tag array target) -->
     <script>
         !function(f,b,e,v,n,t,s)
@@ -339,17 +338,22 @@
     </div>
 
     <!-- 7. Checkout Section -->
-<section id="checkout-section" class="checkout-container page-view" style="display: none;">
-    <button type="button" class="back-to-shop-btn" onclick="backToShop()">
-    &larr; Return to Shop
-</button>
+    <section id="checkout-section" class="checkout-container page-view" style="display: none;">
+        </div>
+            </div>
+               <button type="button" class="back-to-shop-btn" onclick="backToShop()">
+              &larr; Return to Shop
+              </button>
+            </div>
 
-    
-    <h2 class="checkout-heading">
-        Shipping Information
-    </h2>
+                </div>
+                           <h2 class="checkout-heading">
+                                   Shipping Information
+                           </h2>
+                </div>          
+        </div>                   
 
-    <form id="shipping-form" class="checkout-stack">
+     <form id="shipping-form" class="checkout-stack">
         <input type="text" name="full_name" placeholder="Full Name" class="checkout-input" required>
         <input type="email" name="email_address" placeholder="Email Address" class="checkout-input" required>
         <input type="tel" name="phone" placeholder="Phone (e.g. +234...)" class="checkout-input" required>
@@ -358,14 +362,16 @@
             <option value="Nigeria" selected>Nigeria 🇳🇬</option>
             <option value="United Kingdom">United Kingdom 🇬🇧</option>
             <option value="United States">United States 🇺🇸</option>
+            <option value="Canada" selected>Canada 🇨🇦</option>
+            <option value="Dubai" selected>Dubai 🇦🇪</option>
         </select>
 
         <input type="text" name="street_address" placeholder="Street Address" class="checkout-input" required>
 
-        <div class="triple-grid">
-            <input type="text" name="city" placeholder="City" class="checkout-input" required>
+            <div class="triple-grid">
+             <input type="text" name="city" placeholder="City" class="checkout-input" required>
             
-            <select id="state" name="state" class="checkout-select" required>
+             <select id="state" name="state" class="checkout-select" required>
                 <option value="" disabled selected>Select State</option>
                 <option value="Abia">Abia</option>
                 <option value="Adamawa">Adamawa</option>
@@ -404,27 +410,27 @@
                 <option value="Taraba">Taraba</option>
                 <option value="Yobe">Yobe</option>
                 <option value="Zamfara">Zamfara</option>
-            </select>
+             </select>
 
-            <input type="text" name="zip" placeholder="Zip" class="checkout-input">
-        </div>
+             <input type="text" name="zip" placeholder="Zip" class="checkout-input">
+            </div>
 
-        <div class="order-summary-display">
+         <div class="order-summary-display">
             <div class="summary-row">
                 <span>Subtotal:</span>
                 <span>₦<span id="display-subtotal">0</span></span>
             </div>
             <div class="summary-row">
-                <span>Shipping (incl. VAT):</span>
+                <span>Shipping fee (incl. VAT):</span>
                 <span>₦<span id="display-shipping">0</span></span>
             </div>
             <div class="summary-total">
                 <span>TOTAL SETTLEMENT:</span>
                 <span>₦<span id="display-total">0</span></span>
             </div>
-        </div>
+         </div>
 
-        <div class="payment-method-selection">
+         <div class="payment-method-selection">
             <label class="checkout-sublabel">
                 SELECT PAYMENT METHOD
             </label>
@@ -446,13 +452,13 @@
                     </div>
                 </label>
             </div>
-        </div>
+         </div>
 
-        <button type="button" id="pay-btn" class="checkout-submit-btn">
+          <button type="button" id="pay-btn" class="checkout-submit-btn">
             PLACE YOUR ORDER
-        </button>
-    </form>
-</section>
+          </button>
+        </form>
+    </section>
 
 
     <!-- 8. Footer -->
@@ -476,7 +482,8 @@
                     <li><a href="#" onclick="switchView('shop-view'); return false;">Shop All</a></li>
                     <li><a href="#" onclick="showAbout(); return false;">About Us</a></li>
                     <li><a href="#">Shipping Policy</a></li>
-                    <li><a href="#">Return & Exchanges</a></li>
+                    <li><a href="#">for Return & Exchanges</a></li>
+                    <li><a href="tel:+2348138116238">+234 813 811 6238</a></li>
                     <li><a href="#">Privacy Policy</a></li>
                 </ul>
             </div>

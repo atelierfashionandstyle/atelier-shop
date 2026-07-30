@@ -1320,12 +1320,20 @@ nav a, .cart-icon { color: #fff; text-decoration: none; margin-left: 30px; curso
 .social-links {
     display: flex;
     gap: 15px;
-    margin-top: 20px;
+    margin-top: 10px;
+    flex-wrap: wrap;
 }
 
 .social-links a {
-    color: #fff;
-    font-size: 18px;
+    color: #cccccc;
+    text-decoration: none;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    transition: color 0.3s ease;
+}
+
+.social-links a:hover {
+    color: #ffffff;
 }
 
 .footer-bottom {
